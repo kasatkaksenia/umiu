@@ -1,0 +1,173 @@
+/* Layout for the React app: Ionic integration, navigation, sheets and wide-screen layouts. */
+
+:root {
+  --ion-font-family: var(--ff);
+  --ion-background-color: var(--bg);
+  --ion-text-color: var(--tx);
+  --side-w: 248px;
+}
+
+/* ---------- Ionic pages ---------- */
+ion-content.uc { --background: transparent; --color: var(--tx); }
+.up { overflow: hidden; }
+h1, h2, h3, b { color: inherit; }
+
+/* Things that were plain divs in the first version and are buttons now. */
+button.card { display: block; width: 100%; text-align: left; color: var(--tx); font-weight: inherit; }
+button.card.li { display: flex; }
+.plan-card { cursor: pointer; }
+.cw .cwx { margin-left: -8px; margin-right: 4px; font-size: 15px; line-height: 1; padding: 4px 7px; border-radius: 50%; background: var(--ac2); color: var(--tx); border: 0; font-weight: 700; }
+.lab2 { display: block; cursor: pointer; text-align: center; padding: 11px; border-radius: 10px; background: var(--ac2); color: var(--ac); font-weight: 600; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.card-t { display: block; margin-bottom: 4px; }
+.anim { cursor: pointer; }
+/* Sheet: fixed header, scrolling body. */
+.sh { display: flex; flex-direction: column; overflow: hidden !important; }
+.sh-head { align-items: center; flex: none; padding-bottom: 6px; }
+.sh-body { overflow-y: auto; min-height: 0; margin: 0 -6px; padding: 0 6px 4px; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.sh-sub { font-size: 16px; margin: 18px 0 4px; }
+.sh:focus { outline: none; }
+button:disabled { opacity: .5; cursor: default; }
+
+/* Ionic's own tab bar only tracks the sections; the visible nav is .bnav / .side. */
+ion-tab-bar.hidden-tabbar { display: none !important; }
+
+/* ---------- bottom navigation (phones) ---------- */
+.bnav { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- side menu (wide screens) ---------- */
+ion-menu.side { --width: var(--side-w); --background: transparent; border-inline-end: 0; }
+ion-split-pane { --side-width: var(--side-w); --side-min-width: var(--side-w); --side-max-width: var(--side-w); --border: 0; }
+.side-in {
+  height: 100%; display: flex; flex-direction: column; gap: 24px;
+  padding: calc(28px + env(safe-area-inset-top, 0px)) 18px 24px 22px;
+  background: linear-gradient(180deg, var(--bg2), var(--bg));
+  border-right: 1px solid var(--ln);
+}
+.side-logo { color: var(--tx); padding-left: 6px; }
+.side-logo .logo { display: block; width: auto; overflow: visible; }
+.side-in nav { display: flex; flex-direction: column; gap: 6px; }
+.side-in nav button {
+  display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; border-radius: 16px;
+  background: transparent; color: var(--tx); font-weight: 600; text-align: left;
+}
+.side-in nav button:hover { background: var(--ac2); }
+.side-in nav button.on { background: var(--btn); color: var(--btnt); }
+.side-in nav svg { width: 22px; height: 22px; flex: none; }
+.side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.side-foot .mu { margin: 0; font-size: 12px; }
+
+/* ---------- sheets ---------- */
+.ov { animation: ov-in .18s ease-out; }
+.sh { animation: sh-up .24s cubic-bezier(.2, .8, .2, 1); }
+@keyframes ov-in { from { background: rgba(0, 0, 0, 0); } }
+@keyframes sh-up { from { transform: translateY(40px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .ov, .sh { animation: none; } }
+
+/* ---------- content layouts ---------- */
+.cols { display: flex; flex-direction: column; }
+.cols > .col { min-width: 0; }
+.grid-cards { display: block; }
+.masonry > * { break-inside: avoid; }
+.narrow { max-width: 720px; }
+
+/* Tablets: a bit more room, still one column with the bottom bar. */
+@media (min-width: 640px) {
+  .wrap { max-width: 720px; }
+  .grid-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+  .grid-cards > .card { margin: 12px 0; }
+}
+
+/* Wide screens: side menu, two columns, dialogs in the centre. */
+@media (min-width: 900px) {
+  .bnav { display: none; }
+  .top .brand { display: none; }
+  .wrap { max-width: 1120px; padding: 28px 32px 48px; }
+  .wrap .hero { min-height: 220px; }
+  .hero h1 { font-size: 42px; }
+  .tabs { max-width: 560px; }
+
+  .cols { display: grid; gap: 0 24px; align-items: start; }
+  .cols.c-even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .cols.c-main { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+  .cols.c-main > .main { grid-column: 1; grid-row: 1; }
+  .cols.c-main > .side { grid-column: 2; grid-row: 1; }
+  .sticky { position: sticky; top: 12px; }
+
+  .masonry { columns: 2; column-gap: 24px; }
+  .masonry > .card, .masonry > .qc { display: block; margin-top: 0; margin-bottom: 20px; }
+
+  .ov { align-items: center; }
+  .sh { max-width: 620px; max-height: 86%; border-radius: 30px; border-bottom: 1px solid var(--ln); padding: 20px 24px 24px; }
+}
+@media (min-width: 1200px) {
+  .grid-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .wrap.wide .grid-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ---------- mobile-first polish (iPhone) ---------- */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+* { -webkit-tap-highlight-color: transparent; }
+button, .chip, .lab, .lab2, .bnav, .tabs { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+/* iOS zooms into any field with text smaller than 16px; keep every field at 16px or more. */
+input, select, textarea, .hs input.chip { font-size: max(16px, 1em); }
+input[type="date"] { -webkit-appearance: none; appearance: none; min-height: 48px; display: block; text-align: left; }
+input[type="date"]::-webkit-date-and-time-value { text-align: left; }
+.top { margin-bottom: 8px; }
+.tabs { overflow-x: auto; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { white-space: nowrap; padding-inline: 10px; }
+.chip { white-space: nowrap; }
+.row.wrapr { flex-wrap: wrap; }
+.row.wrapr > * { flex: none; }
+.anim svg { max-height: 42vh; margin: 0 auto; }
+.sh { max-height: 88dvh; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.cx { -webkit-user-select: none; user-select: none; }
+
+/* Comfortable touch targets on phones and tablets (Apple suggests at least 44 pt). */
+@media (pointer: coarse) {
+  button.s, .bm, .ic, .lk { min-height: 40px; }
+  .lk { min-width: 40px; }
+  .chip { min-height: 38px; }
+  .ck { width: 28px; height: 28px; }
+}
+
+/* Small phones (iPhone SE, mini): smaller banner so content starts higher. */
+@media (max-width: 400px) {
+  .wrap { padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); }
+  .hero { min-height: 132px; padding: 16px; border-radius: 28px; margin-bottom: 10px; }
+  .hero h1 { font-size: 28px; }
+  .tag { top: 12px; left: 16px; font-size: 11px; }
+  .tabs button { font-size: 13px; padding: 8px 8px; }
+  h1 { font-size: 30px; }
+  .card { padding: 14px; border-radius: 24px; }
+  .sum { gap: 12px; }
+  .ring { width: 112px; }
+  .rc b { font-size: 24px; }
+  .row > button { padding-left: 12px; padding-right: 12px; }
+  .qc p { font-size: 21px; }
+  .bnav button { width: 50px; height: 50px; }
+}
+
+/* Hover effects only where a mouse exists. */
+@media (hover: none) {
+  .side-in nav button:hover { background: transparent; }
+}
+.wfig { flex: none; width: 132px; }
+.nm b { overflow-wrap: normal; word-break: normal; hyphens: auto; -webkit-hyphens: auto; }
+@media (max-width: 400px) {
+  .wfig { width: 96px; }
+  .cx { gap: 8px; padding: 6px; border-radius: 20px; }
+  .th { width: 60px; border-radius: 14px; }
+  .bm { padding: 8px 11px; }
+  .card .row > button.s { font-size: 13px; line-height: 1.2; }
+}
+@media (max-width: 400px) {
+  .dsh { width: 84px; height: 84px; border-radius: 22px; }
+  .dsh svg { width: 76px !important; }
+  .card > .row > button { font-size: 14px; line-height: 1.2; }
+  .hrt { width: 36px; height: 36px; }
+}
+/* Show a control only on phones/tablets or only on wide screens. */
+.only-wide { display: none; }
+@media (min-width: 900px) { .only-wide { display: block; } .only-narrow { display: none !important; } }
