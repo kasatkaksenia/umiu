@@ -5,6 +5,8 @@ description: Verify UI changes in a real browser at iPhone sizes, find visual bu
 
 # Mobile-first UI QA loop
 
+Rules for what "right" looks like: `docs/DESIGN.md`. Bugs table and checklist: `docs/QA.md`.
+
 Goal: every screen works on iPhone SE (375px) first, then larger phones, iPad and desktop. Repeat check → fix → re-check until a round finds nothing new (usually 2–3 rounds).
 
 ## 1. Start the app

@@ -1,3 +1,5 @@
+> **History.** This describes the first single-file version (before the React rebuild on 2026-11-02). Its product decisions still apply; the code structure and build steps don't. Current docs: [AGENTS.md](AGENTS.md).
+
 # umiu: developer handoff
 
 ## What it is

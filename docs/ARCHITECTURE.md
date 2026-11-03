@@ -1,5 +1,7 @@
 # Architecture
 
+Back to [AGENTS.md](../AGENTS.md) · Related: [DESIGN.md](DESIGN.md) (responsive rules), [DECISIONS.md](DECISIONS.md) (why), [IOS.md](IOS.md)
+
 ## Stack
 
 | Piece | Version | Why |
@@ -47,6 +49,8 @@ Routes:
 All pop-ups are in `src/sheets/Sheets.tsx`. Open one with `openSheet({ t: "..." })`; the `Sheet` type in `store.ts` lists them. Bottom sheet on phones, centred dialog on wide screens. Confirmations use Ionic's `useIonAlert` (never `window.confirm`).
 
 ## Layout (mobile first)
+
+Full rules, tokens and per-screen layouts: [DESIGN.md](DESIGN.md).
 
 Base styles target phones. Wider screens add to them:
 

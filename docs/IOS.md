@@ -1,5 +1,7 @@
 # iPhone app with Capacitor
 
+Back to [AGENTS.md](../AGENTS.md) · Related: [DESIGN.md](DESIGN.md) (iOS rules), [ROADMAP.md](ROADMAP.md), skill `ship`
+
 The web app already uses the iOS look (`setupIonicReact({ mode: "ios" })`), safe areas and bundled fonts, so the same build runs inside an iOS app.
 
 ## One-time setup
@@ -16,12 +18,27 @@ The web app already uses the iOS look (`setupIonicReact({ mode: "ios" })`), safe
 ## Each time you want to run it
 
 ```bash
-npm run build -- --mode native   # relative paths instead of /umiu/
-npx cap sync ios
+npm run cap:sync                 # build:native (relative paths, not /umiu/) + cap sync
 npx cap open ios                 # then press Run in Xcode
 ```
 
 App id and name are in `capacitor.config.ts` (`app.umiu`, `umiu`). Change the id before publishing; it must be unique on the App Store.
+
+## Tools
+
+| Tool | Status on the owner's Mac | Needed for |
+|---|---|---|
+| Xcode (full app) | not installed (`xcode-select -p` shows Command Line Tools) | building, Simulator, device install |
+| CocoaPods | not installed | Capacitor iOS dependencies |
+| `@capacitor/cli`, `@capacitor/core` 8.5.3 | installed | sync, config |
+| `@capacitor/ios` | not yet | the iOS platform |
+| Apple Developer account | – | TestFlight / App Store ($99 a year); free account can run on your own iPhone |
+
+Testing order: iOS Simulator (iPhone SE and a Pro Max) → own iPhone via Xcode → TestFlight. Use the same checklist as [QA.md](QA.md).
+
+## Already iOS-ready in the web app
+
+Ionic `mode: "ios"`, swipe back, safe areas, 16 px inputs, bundled fonts, hash routing, no server calls, `viewport-fit=cover`.
 
 ## Things to change for the native app
 

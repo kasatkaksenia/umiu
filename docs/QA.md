@@ -1,5 +1,7 @@
 # UI QA
 
+Back to [AGENTS.md](../AGENTS.md) · Related: [DESIGN.md](DESIGN.md) (what "right" looks like), skill `mobile-qa`
+
 How to check the app in a real browser after UI changes. Mobile first: check iPhone sizes before desktop.
 
 ## 1. Automated checks
@@ -38,6 +40,14 @@ On each phone size, check for:
 - [ ] Sheets: header stays visible while the list scrolls; nothing hides under the home indicator.
 - [ ] Dark mode (`QA_DARK=1`) and all four styles (Style & data) stay readable.
 - [ ] Desktop: side menu, two columns, important buttons (Save, Finish) visible without hunting.
+
+## After a deploy
+
+```bash
+QA_URL=https://kasatkaksenia.github.io/umiu/ npm run qa
+```
+
+Check that only the "Deploy to GitHub Pages" workflow ran. If "pages build and deployment" also runs, Pages is set to "Deploy from a branch"; switch it to GitHub Actions.
 
 ## 3. Real devices
 

@@ -5,7 +5,7 @@ description: Add a new screen, sub-tab, card or pop-up sheet to umiu following t
 
 # Adding UI to umiu
 
-Read `docs/ARCHITECTURE.md` first if you haven't in this session.
+Read `AGENTS.md`, `docs/ARCHITECTURE.md` and `docs/DESIGN.md` first if you haven't in this session. Respect the scope rule: build only what was asked.
 
 ## Data and logic
 

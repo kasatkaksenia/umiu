@@ -8,12 +8,13 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "cap:sync": "npm run build && cap sync",
+    "cap:sync": "npm run build:native && cap sync",
     "dev:phone": "vite --host",
     "qa:nav": "node qa/nav.mjs",
     "qa:flow": "node qa/flow.mjs",
     "qa:shots": "node qa/shots.mjs",
-    "qa": "node qa/nav.mjs && node qa/flow.mjs && node qa/shots.mjs"
+    "qa": "node qa/nav.mjs && node qa/flow.mjs && node qa/shots.mjs",
+    "build:native": "tsc -b && vite build --mode native"
   },
   "dependencies": {
     "@capacitor/core": "8.5.3",
