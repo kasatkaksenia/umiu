@@ -18,7 +18,7 @@ With the dev server running: `npm run qa`. Fix anything it finds (see the `mobil
 ## Web (GitHub Pages)
 
 - `.github/workflows/deploy.yml` builds and deploys on every push to `main`.
-- One-time repo setting: **Settings → Pages → Source: GitHub Actions**. A free plan needs a public repository.
+- Repo setting: **Settings → Pages → Source: GitHub Actions**. If the "pages build and deployment" workflow also runs, the source is wrong (it publishes raw files). Check runs with `curl -s 'https://api.github.com/repos/kasatkaksenia/umiu/actions/runs?per_page=4'`.
 - URL: `https://<user>.github.io/umiu/`. The path comes from `base` in `vite.config.ts`; change it if the repo is renamed.
 - After deploying, check the live site: `QA_URL=https://<user>.github.io/umiu/ npm run qa`.
 - The `gh` CLI may not be installed. Without it, give the user the GitHub page links instead of running `gh` commands.
@@ -30,8 +30,7 @@ Needs full Xcode (not just Command Line Tools) and CocoaPods. Check with `xcode-
 ```bash
 npm install @capacitor/ios@8.5.3 --save-exact   # once
 npx cap add ios                                  # once
-npm run build -- --mode native                   # relative asset paths
-npx cap sync ios
+npm run cap:sync                                 # build:native (relative paths) + sync
 npx cap open ios
 ```
 

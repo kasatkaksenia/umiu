@@ -33,13 +33,15 @@ Screenshots of every screen on iPhone SE, iPhone 15, iPhone 15 Pro Max and deskt
 
 Pushing to `main` runs `.github/workflows/deploy.yml`, which builds and publishes the site.
 
-One-time setup on GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Pages needs a public repository on a free plan.
+One-time setup on GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions** (not "Deploy from a branch", which publishes raw source files). Pages needs a public repository on a free plan.
+
+Live: https://kasatkaksenia.github.io/umiu/
 
 The site is served from `https://<user>.github.io/umiu/`. If the repository name changes, change `base` in `vite.config.ts`.
 
 ## iPhone app (later)
 
-See [docs/IOS.md](docs/IOS.md). Short version: install Xcode, then `npx cap add ios`, `npm run build -- --mode native && npx cap sync`, `npx cap open ios`.
+See [docs/IOS.md](docs/IOS.md). Short version: install Xcode, then `npx cap add ios`, `npm run cap:sync`, `npx cap open ios`.
 
 ## Project layout
 
@@ -56,6 +58,9 @@ qa/                  browser checks (Playwright driving your installed Chrome)
 docs/                architecture, QA and iOS notes
 ```
 
-More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+## Documentation
+
+Start with [AGENTS.md](AGENTS.md) (also used by AI agents; `CLAUDE.md` imports it). Then:
+[architecture](docs/ARCHITECTURE.md) · [design: mobile first](docs/DESIGN.md) · [QA](docs/QA.md) · [iOS](docs/IOS.md) · [decisions](docs/DECISIONS.md) · [roadmap](docs/ROADMAP.md)
 
 The original single-file version (`index.html` built from `build/`) is in git history at commit `d83563b`.
