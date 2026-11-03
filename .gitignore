@@ -1,7 +1,45 @@
-build
-.DS_Store
-node_modules
-dist
-ios/App/App/public
+# Dependencies
+node_modules/
+
+# Build output and caches
+dist/
+*.tsbuildinfo
+.vite/
+.eslintcache
+coverage/
+
+# Old single-file build scripts (local only)
+build/
+
+# Secrets and local overrides (Vite reads .env files)
+.env
+.env.*
+!.env.example
 *.local
-tsconfig.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+
+# QA screenshots
+qa/out/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Personal Claude Code settings (shared skills in .claude/skills stay tracked)
+.claude/settings.local.json
+
+# iOS (Capacitor): generated web copy, CocoaPods and Xcode user data
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+ios/App/Pods/
+ios/App/output/
+ios/DerivedData/
+xcuserdata/
+*.xcuserstate
