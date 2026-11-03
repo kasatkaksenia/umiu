@@ -1,18 +1,61 @@
 # umiu
 
-Mobile-first Train / Food / Cycle app. The whole app is one self-contained file: `index.html`.
+Mobile-first Train / Food / Cycle app. React + Ionic web app today, the same code becomes an iPhone app with Capacitor later.
 
-- No image files are needed. All pictures (hero art, quote pictures, icons, wordmark, exercise figures) are drawn in code.
-- Fonts load from Google Fonts. Optional sync uses the Claude Artifact runtime capabilities (`db`, `user`, `sample`, `downloads`). Without them the app works locally in the browser.
-- `previews/` holds two example images only; the app does not use them.
+- **Train**: workouts, sets and reps, progression advice, history calendar, exercise demos.
+- **Food**: daily log with food search (English, Russian, Bulgarian) and barcode scan, calorie targets, body fat, recipes, shopping list, progress photos.
+- **Cycle**: phase tracking, period tracker, hormone chart, quotes, mood and symptoms, breathing guide.
 
-## Rebuilding index.html
+All data stays on the device (browser storage). Settings → **Style & data** has backup and restore.
 
-The source lives in `build/` and is assembled by a chain of scripts:
+## Run it
 
-    cd build
-    python3 assemble10.py      # writes v10.html
-    cp v10.html ../index.html
+You need Node 22+ (installed with nvm).
 
-`assemble10.py` first runs the earlier steps in `assemble5.py`, then applies its own patches, using `v3.html`, `v4.html`, `v5.html` and the `head*.html` / `p*.js` / `part*.js` files.
-Edit the newest files (`head12.html`, `head_add12.css`, `p3_12.js`, `p8a.js`, `p8b.js`, `p9.js`, `patch10.py`) for new work.
+```bash
+npm install
+npm run dev          # http://localhost:5173/umiu/
+npm run dev:phone    # same, reachable from your iPhone on the same Wi-Fi (use the "Network" address)
+npm run build        # production build in dist/
+npm run typecheck
+```
+
+## Check the UI (QA)
+
+```bash
+npm run dev          # in one terminal
+npm run qa           # in another: navigation + user flows + screenshots
+```
+
+Screenshots of every screen on iPhone SE, iPhone 15, iPhone 15 Pro Max and desktop land in `qa/out/`. See [docs/QA.md](docs/QA.md).
+
+## Deploy to GitHub Pages
+
+Pushing to `main` runs `.github/workflows/deploy.yml`, which builds and publishes the site.
+
+One-time setup on GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**. Pages needs a public repository on a free plan.
+
+The site is served from `https://<user>.github.io/umiu/`. If the repository name changes, change `base` in `vite.config.ts`.
+
+## iPhone app (later)
+
+See [docs/IOS.md](docs/IOS.md). Short version: install Xcode, then `npx cap add ios`, `npm run build -- --mode native && npx cap sync`, `npx cap open ios`.
+
+## Project layout
+
+```text
+src/
+  App.tsx            routes, side menu / bottom bar, sheets
+  data/              exercises, foods + recipes, cycle content (plain data)
+  lib/               logic: store (saved state), train, food, cycle, photos, art, figures, icons
+  components/        shared UI (ui.tsx) and page frame + navigation (layout.tsx)
+  pages/train|food|cycle/   the screens
+  sheets/Sheets.tsx  every pop-up sheet
+  theme/             base.css (design + 4 looks), layout.css (responsive layout)
+qa/                  browser checks (Playwright driving your installed Chrome)
+docs/                architecture, QA and iOS notes
+```
+
+More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+The original single-file version (`index.html` built from `build/`) is in git history at commit `d83563b`.
