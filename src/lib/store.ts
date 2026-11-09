@@ -64,6 +64,7 @@ export type Sheet =
   | { t: "ai"; f: string[]; n?: number; e?: string }
   | { t: "wid" }
   | { t: "cm" }
+  | { t: "mp"; url: string; file: File }
   | { t: "pnd" }
   | { t: "col"; items?: { title: string; img: string }[]; msg?: string }
   | { t: "csel"; sel: string[] }

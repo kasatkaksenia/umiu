@@ -2,6 +2,7 @@
 import { ALI, CATS, FD, FSRC, REC, Recipe, catOf, nz, stem } from "../data/foods";
 import { S, ShopItem, commit } from "./store";
 import { TODAY } from "./util";
+import { ai } from "./ai";
 
 export const allRecipes = (): Recipe[] => REC.concat(S.rec);
 
@@ -261,4 +262,21 @@ export function favTog(r: Recipe) {
   k < 0 ? f.push(r.t) : f.splice(k, 1);
   S.fav = f;
   commit();
+}
+
+/* ---------- meal from a photo ---------- */
+/** One ingredient of a meal: grams on the plate, nutrition per 100 g. */
+export interface MealIng { n: string; g: number; k: number; p: number; c: number; f: number }
+/** Ask the AI (when connected) to name the meal and list its ingredients with grams and nutrition per 100 g. */
+export async function analyseMeal(file: Blob): Promise<{ n: string; items: MealIng[] }> {
+  if (!ai) throw new Error("no ai");
+  const r = await ai.json(
+    'Look at this food photo. List each visible ingredient or component with an estimated weight in grams and its nutrition PER 100 g. Reply ONLY JSON: {"n":"short dish name","items":[{"n":"ingredient","g":grams,"k":kcal per 100g,"p":protein per 100g,"c":carbs per 100g,"f":fat per 100g}]} (numbers).',
+    { images: [await shrinkBlob(file)] },
+  );
+  const it = Array.isArray(r?.items) ? r.items.filter((x: any) => x && x.n && +x.g > 0) : [];
+  return {
+    n: String(r?.n || "Meal").slice(0, 40),
+    items: it.slice(0, 15).map((x: any) => ({ n: String(x.n).slice(0, 40), g: Math.round(+x.g), k: +x.k || 0, p: +x.p || 0, c: +x.c || 0, f: +x.f || 0 })),
+  };
 }

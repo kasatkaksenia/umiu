@@ -7,7 +7,7 @@ Back to [AGENTS.md](../AGENTS.md) · Related: [ARCHITECTURE.md](ARCHITECTURE.md)
 1. **Phone first.** Base CSS is the iPhone layout. Wider screens add rules with `@media (min-width: …)`. Small-phone tweaks use `@media (max-width: 400px)`.
 2. **One codebase, three shapes:** phone (bottom bar), tablet (wider single column), desktop (side menu + columns). Never a separate desktop site.
 3. **Feels like iOS:** Ionic in `mode: "ios"` (slide transitions, swipe back, alerts), safe areas, 16 px inputs, comfortable touch targets.
-4. **Keep the look:** "moss-and-glass" from the first version: frosted cards, pill controls, generated nature art, four base styles (plus nine extra looks). Don't swap in Ionic's default components visually.
+4. **Keep the look:** "moss-and-glass" from the first version: frosted cards, pill controls, generated nature art, ten looks. Don't swap in Ionic's default components visually.
 
 ## Breakpoints
 
@@ -37,7 +37,7 @@ Per screen: Train workout `c-main` (next workout left, plan and welcome-back rig
 
 ## Design tokens (`src/theme/base.css`)
 
-CSS variables on `:root`, redefined per look (`data-look` on `<html>`: `b` Cerulean & soil (default), `u` Urban glow, `p` Bright pop (brown, always dark), `w` Clean white; plus nine extra looks in `src/theme/looks.css`: `gs` Glow signal, `sl` Still life, `em` Ember, `np` Night planner (always dark), `dh` Desert HUD, `px` Pixel, `gh` Golden hour, `ga` Gallery, `mi` Mist) and per colour scheme (`prefers-color-scheme`, or `data-theme="dark|light"`).
+CSS variables on `:root`, redefined per look (`data-look` on `<html>`: `u` Urban glow (default), `w` Clean white; plus eight looks in `src/theme/looks.css`: `gs` Glow signal, `sl` Still life, `em` Ember, `np` Night planner (always dark), `dh` Desert HUD, `px` Pixel, `ga` Gallery, `mi` Mist. The plain `:root` tokens are the shared base; no look uses them on its own any more) and per colour scheme (`prefers-color-scheme`, or `data-theme="dark|light"`).
 
 | Token | Use |
 |---|---|
@@ -54,7 +54,7 @@ CSS variables on `:root`, redefined per look (`data-look` on `<html>`: `b` Cerul
 
 The logo (`<Logo>`) is "umiu" in Shantell Sans 500, converted to SVG shapes with each letter riding a gentle wave, plain black (`--logo`; white in dark mode). Brand marks: `BRAND.wave` (Cycle banner, `Hero icon="wave"`) and `BRAND.moon`, drawn with `<BrandMark k="moon" />` in the current colour. Icons inside buttons: just put `<Ico>` before the text; the 5px gap and centring come from CSS.
 
-Always use tokens, never raw colours, so all looks and dark mode keep working. Check new UI in at least the default look, Bright pop and dark mode (`QA_DARK=1`).
+Always use tokens, never raw colours, so all looks and dark mode keep working. Check new UI in at least the default look (Urban glow), one always-dark look (e.g. Glow signal) and dark mode (`QA_DARK=1`).
 
 ## Components and patterns
 

@@ -38,7 +38,7 @@ On each phone size, check for:
 - [ ] The banner doesn't take more than about a third of the screen on iPhone SE.
 - [ ] The last item of each screen can scroll above the floating bottom bar.
 - [ ] Sheets: header stays visible while the list scrolls; nothing hides under the home indicator.
-- [ ] Dark mode (`QA_DARK=1`) and all four styles (Style & data) stay readable.
+- [ ] Dark mode (`QA_DARK=1`) and all styles (Style) stay readable.
 - [ ] Desktop: side menu, two columns, important buttons (Save, Finish) visible without hunting.
 
 ## After a deploy
@@ -93,3 +93,7 @@ With the Claude in Chrome extension connected (`/chrome` in Claude Code), Claude
 | "Scan barcode" wrapped to two lines on iPhone SE, so "Add meal" looked padded differently | Two-button rows: one line, 8px side padding on small phones |
 | Swipe didn't work over the exercise demo, header or empty space | Listener on the whole page; demo's inner SVG ignores touches |
 | Custom "10" chip cut off at the row's right edge after Set | Row scrolls to the end after saving |
+| Cycle: with no data, the widgets button sat on top of the text (`button.ic` made it `position: relative`) | `button.wbtn { position: absolute }` |
+| Cycle: a late period silently wrapped into a new cycle ("Day 8, follicular") | Counts on and shows "Period is N days late" |
+| Looks: theme rules for `input` also restyled the tick boxes (Glow signal tick invisible) | Theme input rules skip `type=checkbox` |
+| "+ Add meal" had no outline in outlined themes while "Scan barcode" did | Removed the old `border: 0` from `button.lab2` |

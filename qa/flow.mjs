@@ -67,6 +67,16 @@ await $('input[aria-label="Amount in grams"]').fill("150");
 expect("macros scale with grams", (await $('input[aria-label="kcal"]').inputValue()) == "180", await $('input[aria-label="kcal"]').inputValue());
 await $("button:has-text('Add')").last().click(); await page.waitForTimeout(300);
 expect("food appears in today list", /Chicken breast/.test((await $(".li").allInnerTexts()).join(" ")), "missing");
+// Meal from photo (no AI connected): add ingredients, halve the whole meal, add it to today.
+const png = await page.evaluate(() => { const c = document.createElement("canvas"); c.width = 300; c.height = 200; const x = c.getContext("2d"); x.fillStyle = "#e9d8a6"; x.fillRect(0, 0, 300, 200); return c.toDataURL("image/png").split(",")[1]; });
+const [fc] = await Promise.all([page.waitForEvent("filechooser"), $(".mpb").click()]);
+await fc.setFiles({ name: "meal.png", mimeType: "image/png", buffer: Buffer.from(png, "base64") }); await page.waitForTimeout(400);
+for (const q of ["rice", "chicken"]) { await page.fill('.sh input[aria-label="Add ingredient"]', q); await page.waitForTimeout(150); await page.locator(".sh .sg button").first().click(); }
+await page.fill('.sh input[aria-label="Meal name"]', "Photo bowl");
+await page.locator('.sh button[aria-label="Scale whole meal by 0.5"]').click(); await page.waitForTimeout(150);
+expect("photo meal: whole meal scales all ingredients", (await page.inputValue('.sh input[aria-label="Whole meal in grams"]')) == "100", await page.inputValue('.sh input[aria-label="Whole meal in grams"]'));
+await page.locator(".sh button:has-text('Add to today')").click(); await page.waitForTimeout(300);
+expect("photo meal is logged", /Photo bowl/.test((await $(".li").allInnerTexts()).join(" ")), "missing");
 await $(".tabs button:has-text('Recipes')").click(); await page.waitForTimeout(800);
 const allN = parseInt(await $(".rcount").innerText());
 await $(".fic").click(); await page.waitForTimeout(300);
@@ -83,9 +93,10 @@ await $(".tabs button:has-text('Shopping')").click(); await page.waitForTimeout(
 expect("recipe fills shopping list", (await $(".li").count()) >= 3, await $(".li").count());
 
 await page.waitForTimeout(400);
-await $('button[aria-label="Style and data"]').click(); await page.waitForTimeout(300);
-await page.locator(".sh button:has-text('Bright pop')").click();
-expect("style switch", (await page.evaluate(() => document.documentElement.dataset.look)) == "p", "look not set");
+await $('button[aria-label="Style"]').click(); await page.waitForTimeout(300);
+await page.locator(".sh button:has-text('Mist')").click();
+expect("style switch", (await page.evaluate(() => document.documentElement.dataset.look)) == "mi", "look not set");
+expect("selected style is marked", (await page.locator(".sh .opt.on .lkc").count()) == 1 && /Mist/.test(await page.locator(".sh .opt.on").innerText()), "no mark");
 await page.keyboard.press("Escape");
 
 await page.goto(URL + "#/cycle"); await page.waitForTimeout(1200);

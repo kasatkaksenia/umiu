@@ -4,13 +4,14 @@ import { useIonAlert } from "@ionic/react";
 import { EX, FOC, MN, SPL } from "../data/exercises";
 import { EL, TL, WID } from "../data/cycle";
 import { figSvg } from "../lib/figures";
-import { S, Sheet, UI, commit, exportData, importData, openSheet, render, useStore } from "../lib/store";
+import { S, Sheet, UI, commit, openSheet, render, useStore } from "../lib/store";
 import { addEx, chWk, delWk, dr, ensureLib, eqOk, isCustom, planKeys, UNDO_MS, ewDo, ewLeave, ewRename, ewRm, ewUndo, ewUndoMsg, genWk, libOf, nameOf, exOrder, newWk, swapList, swapTo } from "../lib/train";
-import { RF, gPct, gpInfo, recipesShown, resizeImage, rfChips, rfReset } from "../lib/food";
-import { CATS } from "../data/foods";
+import { MealIng, RF, analyseMeal, gPct, gpInfo, recipesShown, resizeImage, rfChips, rfReset, searchIngredients } from "../lib/food";
+import { ai } from "../lib/ai";
+import { CATS, FD } from "../data/foods";
 import { phase, qClr, qList, qTog, wOn, wTog } from "../lib/cycle";
 import { PEND, PHOTOS, delPhoto, savePending, selCollage } from "../lib/photos";
-import { A_, dmy, download } from "../lib/util";
+import { A_, TODAY, dmy, download } from "../lib/util";
 import { Chip, ExOption, FileButton, Ico, Svg, exMatches } from "../components/ui";
 import { NT_TOPICS, ntList } from "../data/tips";
 
@@ -67,6 +68,7 @@ function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode }
     case "ai": return { title: "Generate a workout", body: <Generate s={s} /> };
     case "wid": return { title: "Widgets", body: <Widgets /> };
     case "cm": return { title: "Add your meal", body: <CustomMeal /> };
+    case "mp": return { title: "Meal from photo", body: <MealPhoto s={s} key={s.url} /> };
     case "pnd": return { title: "Which angle is each photo?", body: <Pending /> };
     case "col": return { title: "Your progress", body: <Collages s={s} /> };
     case "csel": return { title: "Choose photos", body: <ChoosePhotos s={s} /> };
@@ -75,7 +77,7 @@ function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode }
     case "rf": return { title: "Filter recipes", body: <RecipeFilter />, head: rfChips().length ? <button className="g s lnk" style={{ flex: "none" }} onClick={rfReset}>Reset</button> : null };
     case "gp": return { title: "Goal", body: <GoalPct /> };
     case "goals": return { title: "Set calorie goal manually", body: <ManualGoals /> };
-    case "look": case "data": return { title: "Style & data", body: <Look /> };
+    case "look": case "data": return { title: "Style", body: <Look /> };
     case "pho": {
       const p = PHOTOS.find(x => x.id == s.id);
       return { title: p ? dmy(p.d) + " · " + (p.lab || "Photo") : "Photo", body: <PhotoView s={s} /> };
@@ -353,6 +355,101 @@ function TipFilter() {
 }
 
 
+/**
+ * Meal from a photo. With AI connected, it names the meal and lists the ingredients; without it, the owner adds
+ * them from the food search. Grams per ingredient and for the whole meal stay editable until it's added.
+ */
+function MealPhoto({ s }: { s: Extract<Sheet, { t: "mp" }> }) {
+  const [name, setName] = useState("");
+  const [list, setList] = useState<MealIng[]>([]);
+  const [q, setQ] = useState("");
+  const [whole, setWhole] = useState<string | null>(null); // whole-meal grams while typing
+  const [msg, setMsg] = useState(ai ? "Recognising the meal…" : "Automatic recognition isn’t connected yet. Add what’s on the plate below.");
+  useEffect(() => {
+    let off = false;
+    if (ai) analyseMeal(s.file).then(r => {
+      if (off) return;
+      setName(r.n);
+      setList(r.items);
+      setMsg(r.items.length ? "Check the ingredients and amounts, then add the meal." : "Couldn’t recognise the meal. Add ingredients below.");
+    }).catch(() => !off && setMsg("Couldn’t analyse the photo. Add ingredients below."));
+    return () => {
+      off = true;
+      URL.revokeObjectURL(s.url);
+    };
+  }, [s.url]);
+  const sum = (k: "k" | "p" | "c" | "f") => Math.round(list.reduce((a, x) => a + (x[k] * x.g) / 100, 0));
+  const grams = Math.round(list.reduce((a, x) => a + x.g, 0));
+  const upd = (i: number, o: Partial<MealIng>) => setList(list.map((x, j) => (j == i ? { ...x, ...o } : x)));
+  // Whole meal: scale every ingredient by the same factor.
+  const scaleTo = (g: number) => {
+    if (!grams || !(g > 0)) return;
+    const f = g / grams;
+    setList(list.map(x => ({ ...x, g: Math.max(1, Math.round(x.g * f)) })));
+  };
+  const sugs = searchIngredients(q);
+  return (
+    <>
+      <img className="mpi" src={s.url} alt="Your meal" />
+      <p className="mu" role="status" style={{ margin: "8px 2px" }}>{msg}</p>
+      <input placeholder="Meal name" aria-label="Meal name" maxLength={40} value={name} onChange={e => setName(e.target.value)} />
+      <div className="mu rfl" style={{ marginTop: 12 }}>Ingredients</div>
+      {list.map((x, i) => (
+        <div className="mpr" key={i}>
+          <div className="mpn">
+            <input aria-label="Ingredient name" value={x.n} onChange={e => upd(i, { n: e.target.value })} />
+            <span className="mu">{Math.round((x.k * x.g) / 100)} kcal · P{Math.round((x.p * x.g) / 100)} C{Math.round((x.c * x.g) / 100)} F{Math.round((x.f * x.g) / 100)}</span>
+          </div>
+          <span className="mpg">
+            <input type="number" inputMode="numeric" min={0} aria-label={`Grams of ${x.n}`} value={x.g} onChange={e => upd(i, { g: Math.max(0, Math.round(+e.target.value || 0)) })} />
+            <span className="mu">g</span>
+          </span>
+          <button className="g s ic" aria-label={`Remove ${x.n}`} onClick={() => setList(list.filter((_, j) => j != i))}>✕</button>
+        </div>
+      ))}
+      {!list.length && <p className="mu" style={{ margin: "4px 2px 8px" }}>No ingredients yet.</p>}
+      <div style={{ position: "relative" }}>
+        <input autoComplete="off" placeholder="+ Add ingredient, e.g. rice" aria-label="Add ingredient" value={q} onChange={e => setQ(e.target.value)} />
+        {sugs.length > 0 && (
+          <div className="sg">
+            {sugs.map(k => (
+              <button key={k} onClick={() => {
+                const d = FD[k];
+                setList([...list, { n: d.n, g: 100, k: d.k, p: d.p, c: d.c, f: d.f }]);
+                setQ("");
+              }}>{FD[k].n}<span className="mu"> · per 100 g {Math.round(FD[k].k)} kcal</span></button>
+            ))}
+          </div>
+        )}
+      </div>
+      {list.length > 0 && (
+        <div className="mpt">
+          <div className="row">
+            <b>Whole meal</b>
+            <span className="mpg">
+              <input type="number" inputMode="numeric" min={1} aria-label="Whole meal in grams" value={whole ?? grams}
+                onChange={e => setWhole(e.target.value)} onBlur={() => { if (whole != null) scaleTo(+whole); setWhole(null); }}
+                onKeyDown={e => e.key == "Enter" && (e.target as HTMLInputElement).blur()} />
+              <span className="mu">g</span>
+            </span>
+          </div>
+          <div className="mps" role="group" aria-label="Portion size">
+            {([[0.5, "½"], [0.75, "¾"], [1.25, "1¼"], [1.5, "1½"], [2, "2×"]] as const).map(([f, l]) => (
+              <Chip key={f} label={`Scale whole meal by ${f}`} onClick={() => scaleTo(grams * f)}>{l}</Chip>
+            ))}
+          </div>
+          <p style={{ margin: "8px 2px 0" }}><b>{sum("k")} kcal</b> <span className="mu">· P{sum("p")} C{sum("c")} F{sum("f")}</span></p>
+        </div>
+      )}
+      <button style={{ width: "100%", marginTop: 12 }} disabled={!list.length} onClick={() => {
+        S.f.push({ d: TODAY(), n: (name.trim() || "Meal").slice(0, 40), k: sum("k"), p: sum("p"), c: sum("c"), f: sum("f") });
+        UI.sheet = null;
+        commit();
+      }}>{list.length ? "Add to today" : "Add ingredients first"}</button>
+    </>
+  );
+}
+
 function CustomMeal() {
   const [f, setF] = useState({ t: "", p: "", k: "", c: "", fat: "", m: "", ing: "", st: "" });
   const [img, setImg] = useState<string | null>(null);
@@ -514,62 +611,29 @@ function PhotoView({ s }: { s: Extract<Sheet, { t: "pho" }> }) {
 
 /* ---------- style and backup ---------- */
 const LOOKS: [string, string, string][] = [
-  ["b", "Cerulean & soil", "Sky blue, ivory and warm brown"],
   ["u", "Urban glow", "City dusk and soft bokeh in blush and mauve"],
-  ["p", "Bright pop", "Cerulean blue and soil brown, with cream and red accents"],
   ["w", "Clean white", "White and simple, like Apple Health"],
   // Extra looks (styles in theme/looks.css)
   ["gs", "Glow signal", "Black with a lime accent, magenta and sage glows, dot-matrix numbers"],
   ["sl", "Still life", "Lemon and leaf colours behind liquid-glass panels"],
   ["dh", "Desert HUD", "Crisp white tiles, black bars and a desert-dusk sky"],
   ["px", "Pixel", "White dot grid, pixel headings, black accents"],
-  ["gh", "Golden hour", "Grainy sunset sky over a pale sheet, typewriter labels"],
   ["em", "Ember", "Dark, lit by a warm amber glow, with frosted panels"],
   ["np", "Night planner", "Near-black with a moody glow, gold ticks and cream buttons"],
   ["ga", "Gallery", "Paper grain, poster colour bursts and bold tight headlines"],
   ["mi", "Mist", "Soft grey with sage glass and light, thin numbers"],
 ];
-export const lookOf = () => (LOOKS.some(l => l[0] == S.set.look) ? S.set.look : "b");
+// Default look: Urban glow (also used when a saved look was removed).
+export const lookOf = () => (LOOKS.some(l => l[0] == S.set.look) ? S.set.look : "u");
 function Look() {
-  const [msg, setMsg] = useState("");
-  const [alert] = useIonAlert();
   return (
     <>
       {LOOKS.map(([k, n, d]) => (
-        <button key={k} className={"opt" + (lookOf() == k ? " on" : "")} aria-pressed={lookOf() == k} onClick={() => {
+        <button key={k} className={"opt lko" + (lookOf() == k ? " on" : "")} aria-pressed={lookOf() == k} onClick={() => {
           S.set.look = k;
           commit();
-        }}><b>{n}</b><span className="mu">{d}</span></button>
+        }}><b>{n}</b><span className="mu">{d}</span>{lookOf() == k && <span className="lkc" aria-hidden="true">✓</span>}</button>
       ))}
-      <h3 className="sh-sub">Your data</h3>
-      <p className="mu" style={{ marginTop: 0 }}>
-        Everything is saved in this browser only. Download a backup to keep it safe or to move it to another device. Progress photos aren’t included.
-      </p>
-      <div className="row">
-        <button className="g" onClick={() => {
-          const url = URL.createObjectURL(new Blob([exportData()], { type: "application/json" }));
-          download(`umiu-backup-${new Date().toISOString().slice(0, 10)}.json`, url);
-          setTimeout(() => URL.revokeObjectURL(url), 2000);
-          setMsg("Backup downloaded.");
-        }}>Download backup</button>
-        <FileButton className="lab" accept="application/json,.json" onFiles={async f => {
-          const txt = await f[0].text();
-          alert({
-            header: "Restore this backup?",
-            message: "It replaces all workouts, food logs and cycle data in this browser.",
-            buttons: [{ text: "Cancel", role: "cancel" }, {
-              text: "Restore", role: "destructive", handler: () => {
-                try {
-                  importData(txt);
-                } catch {
-                  setMsg("That file isn’t a umiu backup.");
-                }
-              },
-            }],
-          });
-        }}>Restore backup</FileButton>
-      </div>
-      <p className="mu" role="status">{msg}</p>
     </>
   );
 }

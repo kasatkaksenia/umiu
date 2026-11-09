@@ -1,14 +1,11 @@
 import { useState } from "react";
-import { FD } from "../../data/foods";
 import { ai } from "../../lib/ai";
-import { Suggestion, eaten, localName, readBarcode, searchFoods, searchIngredients, shrinkBlob, todayLog } from "../../lib/food";
+import { Suggestion, eaten, localName, readBarcode, searchFoods, todayLog } from "../../lib/food";
 import { S, commit, openSheet } from "../../lib/store";
 import { TODAY } from "../../lib/util";
 import { FileButton, Ico } from "../../components/ui";
 
 type Macros = { k: number; p: number; c: number; f: number };
-/** One ingredient of a photographed meal, with nutrition per 100 g. */
-type Ing = Macros & { n: string; g: number };
 
 const r0 = (v: number) => Math.round(v || 0);
 
@@ -74,16 +71,9 @@ function AddFood() {
   const [mac, setMac] = useState<Record<keyof Macros, string>>(EMPTY);
   const [code, setCode] = useState("");
   const [status, setStatus] = useState("");
-  const [ings, setIngs] = useState<Ing[]>([]);
-  const [ingQ, setIngQ] = useState("");
 
   const fill = (o: Partial<Macros>) => setMac({ k: String(r0(o.k!)), p: String(r0(o.p!)), c: String(r0(o.c!)), f: String(r0(o.f!)) });
   const byGrams = (s: Suggestion, g: number) => fill({ k: (s.k * g) / 100, p: (s.p * g) / 100, c: (s.c * g) / 100, f: (s.f * g) / 100 });
-  const fromIngs = (list: Ing[]) => {
-    const tot = (k: keyof Macros) => list.reduce((a, x) => a + (x[k] * x.g) / 100, 0);
-    fill({ k: tot("k"), p: tot("p"), c: tot("c"), f: tot("f") });
-    setIngs(list);
-  };
   const reset = () => {
     setName("");
     setSugs([]);
@@ -91,8 +81,6 @@ function AddFood() {
     setGrams("100");
     setMac(EMPTY);
     setCode("");
-    setIngs([]);
-    setIngQ("");
   };
 
   const pick = (s: Suggestion) => {
@@ -138,24 +126,6 @@ function AddFood() {
     } else setStatus("New barcode " + c + ". Enter name and macros once and I’ll remember it.");
   };
 
-  const photo = async (file: File) => {
-    if (!ai) return;
-    setStatus("Analysing photo…");
-    try {
-      const r = await ai.json(
-        'Look at this food photo. List each visible ingredient or component with an estimated weight in grams and its nutrition PER 100 g. Reply ONLY JSON: {"n":"short dish name","items":[{"n":"ingredient","g":grams,"k":kcal per 100g,"p":protein per 100g,"c":carbs per 100g,"f":fat per 100g}]} (numbers).',
-        { images: [await shrinkBlob(file)] },
-      );
-      const it = Array.isArray(r.items) ? r.items.filter((x: any) => x && x.n && +x.g > 0) : [];
-      const list: Ing[] = it.slice(0, 12).map((x: any) => ({ n: String(x.n).slice(0, 40), g: Math.round(+x.g), k: +x.k || 0, p: +x.p || 0, c: +x.c || 0, f: +x.f || 0 }));
-      setName(String(r.n || "Meal").slice(0, 40));
-      fromIngs(list);
-      setStatus(list.length ? "Estimated ingredients below. Adjust grams, then tap Add." : "Couldn’t split the meal. Enter it manually.");
-    } catch (e: any) {
-      setStatus("Couldn’t analyse the photo (" + (e?.code || "error") + "). Enter manually.");
-    }
-  };
-
   const askAI = async () => {
     if (!ai) return;
     const q = name.trim();
@@ -174,52 +144,16 @@ function AddFood() {
     }
   };
 
-  const tot = (k: keyof Macros) => Math.round(ings.reduce((a, x) => a + (x[k] * x.g) / 100, 0));
-  const ingSugs = searchIngredients(ingQ);
 
   return (
     <div className="card">
+      {/* Meal from a photo gets its own full-width button so the row below keeps two equal buttons. */}
+      <FileButton className="lab2 mpb" accept="image/*" capture onFiles={f => openSheet({ t: "mp", url: URL.createObjectURL(f[0]), file: f[0] })}><Ico k="cam" /> Meal from photo</FileButton>
       <div className="row">
-        {ai && (
-          <FileButton className="lab2" accept="image/*" capture onFiles={f => photo(f[0])}><Ico k="cam" /> Photo</FileButton>
-        )}
         <FileButton className="lab2" accept="image/*" capture onFiles={f => scan(f[0])}>▮▮ Scan barcode</FileButton>
         <button className="lab2" onClick={() => openSheet({ t: "cm" })}>+ Add meal</button>
       </div>
       <p className="mu" role="status">{status}</p>
-
-      {ings.length > 0 && (
-        <div className="pib">
-          <b>Ingredients</b>
-          <p className="mu" style={{ margin: "2px 0 6px" }}>Adjust the grams or remove what isn’t on the plate.</p>
-          {ings.map((x, i) => (
-            <div className="pir" key={i}>
-              <input className="pn" aria-label="Ingredient name" value={x.n} onChange={e => setIngs(ings.map((y, j) => (j == i ? { ...y, n: e.target.value } : y)))} />
-              <input type="number" inputMode="decimal" aria-label={`Grams of ${x.n}`} value={x.g}
-                onChange={e => fromIngs(ings.map((y, j) => (j == i ? { ...y, g: Math.max(0, +e.target.value || 0) } : y)))} />
-              <span className="mu">g</span>
-              <button className="g s ic" aria-label={`Remove ${x.n}`} onClick={() => fromIngs(ings.filter((_, j) => j != i))}>✕</button>
-            </div>
-          ))}
-          <div style={{ position: "relative" }}>
-            <input autoComplete="off" placeholder="Add ingredient" value={ingQ} onChange={e => setIngQ(e.target.value)} />
-            {ingSugs.length > 0 && (
-              <div className="sg">
-                {ingSugs.map(k => (
-                  <button key={k} onClick={() => {
-                    const d = FD[k];
-                    fromIngs([...ings, { n: d.n, g: 100, k: d.k, p: d.p, c: d.c, f: d.f }]);
-                    setIngQ("");
-                  }}>{FD[k].n}</button>
-                ))}
-              </div>
-            )}
-          </div>
-          <p className="mu" style={{ margin: "6px 0 0" }}>
-            Total: {tot("k")} kcal · P{tot("p")} C{tot("c")} F{tot("f")} · {Math.round(ings.reduce((a, x) => a + x.g, 0))} g
-          </p>
-        </div>
-      )}
 
       <div style={{ position: "relative" }}>
         <input autoComplete="off" placeholder="Food – start typing" aria-label="Food name" value={name} onChange={e => {

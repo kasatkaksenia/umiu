@@ -7,13 +7,17 @@ import { A_, TODAY, dAdd, dDiff, mod } from "./util";
 /** Cycle length used until there are enough logged periods to average. */
 export const DEF_LEN = 26;
 
-export interface Phase { day: number; L: number; next: number; k: PhaseKey }
+/** late: days past the expected start of the next period (0 = due today); only set while overdue. */
+export interface Phase { day: number; L: number; next: number; k: PhaseKey; late?: number }
 
 export function phase(): Phase | null {
   const c = S.cyc;
   if (!c) return null;
   const L = c.len || DEF_LEN;
-  const day = ((Math.floor((new Date(TODAY()).getTime() - new Date(c.start).getTime()) / 864e5) % L) + L) % L + 1;
+  const raw = Math.floor((new Date(TODAY()).getTime() - new Date(c.start).getTime()) / 864e5);
+  // Next period not logged yet: count on and say it's late (up to one extra cycle) instead of silently starting a new cycle.
+  if (raw >= L && raw < 2 * L) return { day: raw + 1, L, next: 0, k: "luteal", late: raw - L };
+  const day = ((raw % L) + L) % L + 1;
   const ov = L - 14;
   return { day, L, next: L - day + 1, k: day <= (c.per || 5) ? "menstrual" : day < ov - 1 ? "follicular" : day <= ov + 1 ? "ovulation" : "luteal" };
 }

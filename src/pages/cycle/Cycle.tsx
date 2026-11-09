@@ -50,6 +50,8 @@ function WidgetsButton({ inline }: { inline?: boolean }) {
   );
 }
 
+const lateTxt = (n: number) => (n ? `Period is ${n} day${n == 1 ? "" : "s"} late.` : "Period is due today.");
+
 function Status({ p }: { p: Phase | null }) {
   if (!p)
     return (
@@ -66,8 +68,8 @@ function Status({ p }: { p: Phase | null }) {
         <span><span className="pill">{x.n} phase</span><span><b className="num">Day {p.day}</b> of {p.L}</span></span>
         <WidgetsButton inline />
       </div>
-      <div className="bar" style={{ margin: "10px 0" }}><i style={{ width: `${(p.day / p.L) * 100}%` }} /></div>
-      <p className="mu" style={{ margin: 0 }}>{x.d} Next period in ~{p.next} days.</p>
+      <div className="bar" style={{ margin: "10px 0" }}><i style={{ width: `${Math.min(1, p.day / p.L) * 100}%` }} /></div>
+      <p className="mu" style={{ margin: 0 }}>{p.late != null ? `${lateTxt(p.late)} Tap the day it starts in the period tracker below.` : `${x.d} Next period in ~${p.next} days.`}</p>
     </div>
   );
 }
@@ -134,6 +136,7 @@ function PeriodCard({ p }: { p: Phase | null }) {
       <div className="ch"><b className="wt"><Wico k="per" /> Period tracker</b></div>
       <p style={{ margin: "8px 0 2px" }}>
         {cur ? <>Period day <b>{dDiff(cur.s, t) + 1}</b></>
+          : p?.late != null ? <b>{lateTxt(p.late)}</b>
           : p ? <>Next period in about <b>{p.next} day{p.next == 1 ? "" : "s"}</b></>
             : "Tap the days of your last period to start tracking."}
       </p>
