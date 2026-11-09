@@ -63,7 +63,7 @@ function Status({ p }: { p: Phase | null }) {
     <div className="card">
       {/* Button sits in the first line so it never covers the progress bar. */}
       <div className="stl">
-        <span><span className="pill">{x.n} phase</span><span><b>Day {p.day}</b> of {p.L}</span></span>
+        <span><span className="pill">{x.n} phase</span><span><b className="num">Day {p.day}</b> of {p.L}</span></span>
         <WidgetsButton inline />
       </div>
       <div className="bar" style={{ margin: "10px 0" }}><i style={{ width: `${(p.day / p.L) * 100}%` }} /></div>

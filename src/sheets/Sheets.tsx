@@ -518,8 +518,18 @@ const LOOKS: [string, string, string][] = [
   ["u", "Urban glow", "City dusk and soft bokeh in blush and mauve"],
   ["p", "Bright pop", "Cerulean blue and soil brown, with cream and red accents"],
   ["w", "Clean white", "White and simple, like Apple Health"],
+  // Extra looks (styles in theme/looks.css)
+  ["gs", "Glow signal", "Black with a lime accent, magenta and sage glows, dot-matrix numbers"],
+  ["sl", "Still life", "Lemon and leaf colours behind liquid-glass panels"],
+  ["dh", "Desert HUD", "Crisp white tiles, black bars and a desert-dusk sky"],
+  ["px", "Pixel", "White dot grid, pixel headings, black accents"],
+  ["gh", "Golden hour", "Grainy sunset sky over a pale sheet, typewriter labels"],
+  ["em", "Ember", "Dark, lit by a warm amber glow, with frosted panels"],
+  ["np", "Night planner", "Near-black with a moody glow, gold ticks and cream buttons"],
+  ["ga", "Gallery", "Paper grain, poster colour bursts and bold tight headlines"],
+  ["mi", "Mist", "Soft grey with sage glass and light, thin numbers"],
 ];
-export const lookOf = () => (["u", "p", "w"].includes(S.set.look) ? S.set.look : "b");
+export const lookOf = () => (LOOKS.some(l => l[0] == S.set.look) ? S.set.look : "b");
 function Look() {
   const [msg, setMsg] = useState("");
   const [alert] = useIonAlert();

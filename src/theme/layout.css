@@ -184,6 +184,10 @@ input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 
 /* Logo: the name drawn as one wavy line (SVG, follows the text colour) */
 .logo { display: block; color: var(--tx); overflow: visible; }
+/* Logo: black in every look; light in dark mode, where black would disappear. */
+:root { --logo: #000; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --logo: #fff; } }
+:root[data-theme="dark"] { --logo: #fff; }
 .top .lk { margin-left: auto; }
 /* Banner with a single icon (Train): right side, vertically centred */
 .hero .dc.hico { left: auto; right: 7%; top: 50%; width: 92px; height: 92px; transform: translateY(-50%); }
