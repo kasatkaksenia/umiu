@@ -5,7 +5,7 @@ export type Ex = [string, string, string, string, string];
 // name, primary, secondary, rep range, cues  (gl glutes qd quads ha hamstrings ca calves ad abductors lb low back ba back de delts ch chest bi biceps tr triceps)
 export const EX: Record<string, Ex> = {
 mht:["Machine hip thrust","gl","ha,qd","8-12","Upper back on the pad, feet hip-width, shins near vertical at the top.|Chin tucked, ribs down; drive through the heels.|Full lockout, squeeze glutes 1 s, lower slowly."],
-hyp:["Hyperextension (hip extension)","gl,ha","lb","10-15","Pad at the hip crease so you hinge at the hips, not the waist.|Lower with a flat back to about 90°, then squeeze glutes until body is a straight line.|Don’t hyper-arch the lower back; hold a plate to progress."],
+hyp:["45° hyperextension","gl,ha","lb","10-15","Pad at the hip crease so you hinge at the hips, not the waist.|Lower with a flat back to about 90°, then squeeze glutes until body is a straight line.|Don’t hyper-arch the lower back; hold a plate to progress."],
 bss:["Bulgarian split squat","qd,gl","ha","8-12","Rear foot on a bench, front foot about 60–70 cm ahead.|Lean torso slightly forward to load glutes more; keep front heel planted.|Lower until the front thigh is parallel; do equal reps each leg."],
 sht:["Single-leg hip thrust","gl","ha","8-12","Shoulder blades on a bench, one foot flat, other knee up or leg extended.|Keep pelvis level, ribs down.|Drive through the heel, squeeze glute at the top, lower under control."],
 lp:["Leg press (high stance)","gl,qd","ha","8-12","Feet high and shoulder-width or slightly wider on the platform.|Lower until knees are ~90° without the tailbone lifting off the seat.|Push through mid-heel; don’t slam-lock the knees."],
@@ -16,12 +16,12 @@ bcm:["Biceps curl machine","bi","","10-15","Elbows on the pad, aligned with the 
 wrow:["Wide-grip row machine","ba,de","bi","8-12","Chest on the pad, shoulders down.|Pull elbows out wide to the sides to hit upper back and rear delts.|Pause and squeeze, control the return."],
 lpd:["Lat pulldown machine","ba","bi","8-12","Thighs locked under the pad, slight lean back, chest up.|Pull to the upper chest, driving elbows down and back.|Control the way up; don’t swing."],
 pd:["Triceps pushdown","tr","","10-15","Elbows pinned to your ribs.|Push to full extension and squeeze.|Return until forearms are ~90°; keep torso still."],
-kb:["Triceps kickback (dumbbell)","tr","","10-15","Hinge forward, upper arm parallel to the floor.|Extend only at the elbow; upper arm stays still.|Use light weight and strict form."],
-ote:["Overhead triceps extension (machine)","tr","","10-15","Upper arms fixed, elbows pointing forward.|Extend fully; get a deep stretch on the way back.|Don’t let elbows flare."],
-otd:["Overhead triceps extension (dumbbell)","tr","","10-15","Hold one dumbbell with both hands, elbows by your ears.|Lower behind the head to a deep stretch, then extend.|Ribs down; don’t arch."],
-ez:["Strict EZ-bar curl","bi","","8-12","Elbows at your sides, shoulders back.|Curl without swinging; no hip drive.|Lower fully over 2–3 s."],
-sbc:["Seated dumbbell curl (bench)","bi","","8-12","Sit with back supported on the bench.|Rotate palms up as you curl.|Full stretch at the bottom; alternate or both arms."],
-calf:["Calf raise (leg press)","ca","","12-20","Balls of feet on the lower platform edge, knees soft.|Lower heels for a full stretch, press up as high as possible.|Pause 1 s at the top; no bouncing."],
+kb:["Dumbbell triceps kickback","tr","","10-15","Hinge forward, upper arm parallel to the floor.|Extend only at the elbow; upper arm stays still.|Use light weight and strict form."],
+ote:["Overhead triceps extension machine","tr","","10-15","Upper arms fixed, elbows pointing forward.|Extend fully; get a deep stretch on the way back.|Don’t let elbows flare."],
+otd:["Dumbbell overhead triceps extension","tr","","10-15","Hold one dumbbell with both hands, elbows by your ears.|Lower behind the head to a deep stretch, then extend.|Ribs down; don’t arch."],
+ez:["EZ-bar curl","bi","","8-12","Elbows at your sides, shoulders back.|Curl without swinging; no hip drive.|Lower fully over 2–3 s."],
+sbc:["Seated dumbbell curl","bi","","8-12","Sit with back supported on the bench.|Rotate palms up as you curl.|Full stretch at the bottom; alternate or both arms."],
+calf:["Leg press calf raise","ca","","12-20","Balls of feet on the lower platform edge, knees soft.|Lower heels for a full stretch, press up as high as possible.|Pause 1 s at the top; no bouncing."],
 slc:["Seated leg curl","ha","","10-15","Pad just above the heels, back flat on the seat.|Curl fully and squeeze.|Return over 2–3 s; keep hips down."],
 le:["Leg extension","qd","","10-15","Knee joint aligned with the machine pivot.|Extend fully and squeeze the quads.|Lower slowly; avoid jerking."],
 sq:["Back squat","qd,gl","ha","6-10","Bar on upper back, feet shoulder-width, brace your core.|Sit down and back, knees track over toes.|Hips to parallel or below, drive through mid-foot."],
@@ -62,23 +62,23 @@ dsp:["Seated dumbbell shoulder press","de","tr","8-12","Sit with your back suppo
 smp:["Shoulder press machine","de","tr","8-12","Adjust the seat so the handles start at shoulder height.|Press up without shrugging or arching.|Lower slowly to a comfortable stretch."],
 dro:["One-arm dumbbell row","ba","bi","8-12","Hand and knee on a bench, back flat.|Pull the dumbbell toward your hip, elbow close to the body.|Pause, then lower fully without twisting."],
 dlr:["Dumbbell lateral raise","de","","12-20","Slight bend in the elbows, dumbbells at your sides.|Raise out to shoulder height, leading with the elbows.|Lower slowly; don’t swing or shrug."],
-gsq:["Goblet squat (dumbbell)","qd,gl","ha","10-15","Hold one dumbbell vertically at your chest.|Sit between your hips, chest tall, knees tracking over toes.|Drive up through the mid-foot."],
+gsq:["Goblet squat","qd,gl","ha","10-15","Hold one dumbbell vertically at your chest.|Sit between your hips, chest tall, knees tracking over toes.|Drive up through the mid-foot."],
 ddl:["Dumbbell Romanian deadlift","ha,gl","lb","8-12","Dumbbells close to your legs, soft knees.|Push hips back with a flat back until hamstrings stretch.|Squeeze glutes to stand tall."],
-rlg:["Reverse lunge (dumbbell)","gl,qd","ha","8-12","Hold dumbbells at your sides and stand tall.|Step back and lower until both knees are ~90°.|Push through the front heel to return."],
+rlg:["Dumbbell reverse lunge","gl,qd","ha","8-12","Hold dumbbells at your sides and stand tall.|Step back and lower until both knees are ~90°.|Push through the front heel to return."],
 dht:["Dumbbell hip thrust","gl","ha","10-15","Upper back on a bench, dumbbell resting on your hips.|Drive through your heels until shins are vertical.|Squeeze glutes, ribs down, lower slowly."],
-hmc:["Hammer curl (dumbbell)","bi","","8-12","Palms facing each other, elbows at your sides.|Curl without swinging the torso.|Lower slowly over 2–3 seconds."],
+hmc:["Dumbbell hammer curl","bi","","8-12","Palms facing each other, elbows at your sides.|Curl without swinging the torso.|Lower slowly over 2–3 seconds."],
 cp:["Chest press machine","ch","tr,de","8-12","Set the seat so the handles line up with mid-chest.|Press forward without hard lockout.|Return slowly with shoulder blades pinched back."],
 fp:["Cable face pull","de,ba","","12-20","Rope at upper-chest height, step back, arms extended.|Pull to your face, elbows high and wide.|Squeeze the rear delts, return slowly."],
 gkc:["Cable glute kickback","gl","ha","10-15","Ankle strap on, hold the frame, slight forward lean.|Kick straight back and squeeze the glute without arching your back.|Return under control."],
 hadd:["Hip adduction machine","ad","","12-20","Sit upright with pads on the inner thighs.|Squeeze your legs together and pause 1 s.|Open slowly; don’t slam the stack."],
-scr:["Standing calf raise (machine)","ca","","12-20","Balls of the feet on the platform, shoulders under the pads.|Rise as high as possible and pause 1 s.|Lower for a full stretch."],
+scr:["Standing calf raise machine","ca","","12-20","Balls of the feet on the platform, shoulders under the pads.|Rise as high as possible and pause 1 s.|Lower for a full stretch."],
 sms:["Smith machine squat","qd,gl","ha","8-12","Feet slightly forward of the bar, bar on the upper back.|Sit down to parallel or lower, chest tall.|Drive up through the mid-foot."],
 ccl:["Cable biceps curl","bi","","10-15","Stand close to the low pulley, elbows at your sides.|Curl to a full squeeze.|Lower slowly; the cable keeps tension throughout."],
 apu:["Assisted pull-up machine","ba","bi","6-12","Kneel on the pad, grip slightly wider than shoulders.|Pull your chest toward the bar, elbows down.|Lower with control to a full hang."],
 tbr:["T-bar row","ba","bi","8-12","Hinge to ~45°, chest up, neutral spine.|Pull the handles to your lower ribs, elbows close.|Squeeze, then lower under control."],
 cpt:["Cable pull-through","gl,ha","lb","10-15","Face away from the cable with the rope between your legs.|Push hips back with a flat spine.|Drive hips forward and squeeze the glutes."],
 skc:["Dumbbell skull crusher","tr","","10-15","Lie on a bench, dumbbells over chest, elbows pointing up.|Lower toward your temples bending only at the elbows.|Extend back to the top."],
-prc:["Preacher curl (EZ bar)","bi","","8-12","Armpits on the pad, grip shoulder-width.|Curl up and squeeze at the top.|Lower to near full extension slowly."]});
+prc:["EZ-bar preacher curl","bi","","8-12","Armpits on the pad, grip shoulder-width.|Curl up and squeeze at the top.|Lower to near full extension slowly."]});
 const cln = (id: string, o: any) => Object.assign({}, AN[id], o);
 Object.assign(AN, {
 dbp:cln("bp",{pr:[["wr","d"]]}),
@@ -106,11 +106,11 @@ AN.tbr = cln("dro",{st:[],pr:[["wr","o"]]});
 Object.assign(EX,{
 gbr:["Dumbbell glute bridge","gl","ha","10-15","Lie on your back, feet hip-width, dumbbell on your hips.|Tuck the ribs, press through the heels.|Squeeze glutes at the top for 1 s, lower slowly."],
 dnk:["Cable donkey kick","gl","ha","10-15","On hands and knees, ankle strap on, back flat.|Kick the heel up and back until the thigh is in line with the torso.|Squeeze, then return without arching your back."],
-sum:["Sumo squat (dumbbell)","gl,qd","ad","10-15","Wide stance, toes turned out, one dumbbell held low.|Sit straight down, knees tracking over toes.|Stand by squeezing the glutes and inner thighs."],
+sum:["Dumbbell sumo squat","gl,qd","ad","10-15","Wide stance, toes turned out, one dumbbell held low.|Sit straight down, knees tracking over toes.|Stand by squeezing the glutes and inner thighs."],
 stu:["Dumbbell step-up","gl,qd","ha","8-12","Place the whole foot on a knee-high box, dumbbells at your sides.|Drive through the heel of the top leg to stand.|Lower slowly; keep the top-leg work, not a push from the back foot."],
-cur:["Curtsy lunge (dumbbell)","gl","qd,ad","8-12","Step one leg back and across behind the other.|Lower until the front thigh is about parallel.|Drive through the front heel to return."],
+cur:["Dumbbell curtsy lunge","gl","qd,ad","8-12","Step one leg back and across behind the other.|Lower until the front thigh is about parallel.|Drive through the front heel to return."],
 ggm:["Glute kickback machine","gl","ha","10-15","Chest on the pad, working foot on the plate.|Press back until the hip is fully extended, squeeze.|Return slowly; don’t arch the lower back."],
-hpm:["Hip thrust (Smith machine)","gl","ha","8-12","Upper back on a bench, bar over the hips with a pad.|Feet hip-width, shins vertical at the top.|Lock out, squeeze glutes 1 s, lower under control."],
+hpm:["Smith machine hip thrust","gl","ha","8-12","Upper back on a bench, bar over the hips with a pad.|Feet hip-width, shins vertical at the top.|Lock out, squeeze glutes 1 s, lower under control."],
 fhy:["Cable fire hydrant","gl,ad","","12-20","On all fours, strap on the working ankle.|Lift the knee out to the side, hips square.|Pause at the top and lower slowly."],
 sap:["Straight-arm cable pulldown","ba","tr","10-15","Stand facing the high pulley, slight hip hinge, arms straight.|Sweep the bar down to your thighs, led by the lats.|Return slowly to a full stretch."],
 cdr:["Chest-supported dumbbell row","ba,de","bi","8-12","Chest on an incline bench, dumbbells hanging.|Row elbows back toward your hips and squeeze.|Lower fully without lifting your chest."],
@@ -123,7 +123,7 @@ ccu:["Concentration curl","bi","","10-15","Sit with the elbow braced against the
 icu:["Incline dumbbell curl","bi","","8-12","Sit back on a 45–60° bench, arms hanging behind the torso.|Curl without swinging the shoulders forward.|Lower fully for a deep biceps stretch."],
 rcu:["Reverse EZ-bar curl","bi","","10-15","Overhand grip on the EZ bar, elbows by your sides.|Curl up with wrists straight.|Lower under control; use lighter weight."],
 dip:["Triceps dip machine","tr","ch","8-12","Adjust the seat so the handles are at your sides.|Press down until arms are straight, shoulders away from ears.|Return slowly to about 90° at the elbow."],
-rpe:["Rope overhead triceps extension (cable)","tr","","10-15","Face away from the cable, rope held behind your head.|Extend your arms forward and up, elbows close to your ears.|Return slowly to a deep stretch."],
+rpe:["Cable overhead triceps extension","tr","","10-15","Face away from the cable, rope held behind your head.|Extend your arms forward and up, elbows close to your ears.|Return slowly to a deep stretch."],
 crh:["Cable rope hammer curl","bi","","10-15","Rope on the low pulley, palms facing each other.|Curl up, elbows pinned to your sides.|Squeeze and lower slowly."]});
 Object.assign(AN, {gbr:cln("mht",{}),dnk:cln("gkc",{}),sum:cln("gsq",{}),stu:cln("rlg",{}),cur:cln("rlg",{}),ggm:cln("gkc",{}),hpm:cln("mht",{}),fhy:cln("abd",{}),sap:cln("pd",{}),cdr:cln("dro",{}),dpo:cln("bp",{}),rfm:cln("lr",{}),dsh:cln("hmc",{}),scp:cln("lpd",{}),srw:cln("crow",{}),ccu:cln("bcm",{}),icu:cln("sbc",{}),rcu:cln("ez",{}),dip:cln("pd",{}),rpe:cln("ote",{}),crh:cln("ccl",{})});
 MN.ab = "Abs / core";
@@ -132,9 +132,9 @@ idp|Incline dumbbell press|ch|de,tr|8-12|ab|dsp|Set the bench to about 30° with
 idf|Incline dumbbell fly|ch|de|10-15|ab|dbp|Bench at about 30°, dumbbells over your upper chest.;Open your arms with a soft elbow bend until you feel a stretch.;Bring them back together in a wide arc.
 arn|Arnold press|de|tr|8-12|ab|dsp|Sit tall with dumbbells in front of your shoulders, palms facing you.;Rotate your palms outward as you press overhead.;Reverse the rotation as you lower under control.
 dfr|Dumbbell front raise|de|ch|10-15|db|dlr|Hold dumbbells in front of your thighs.;Raise your arms to shoulder height without swinging.;Lower slowly.
-rdf|Rear-delt fly (dumbbell)|de|ba|12-20|db|dlr|Hinge forward with a flat back and dumbbells hanging.;Lift your arms out to the sides, leading with the elbows.;Squeeze the rear delts, then lower slowly.
+rdf|Dumbbell rear delt fly|de|ba|12-20|db|dlr|Hinge forward with a flat back and dumbbells hanging.;Lift your arms out to the sides, leading with the elbows.;Squeeze the rear delts, then lower slowly.
 bdr|Bent-over dumbbell row|ba|bi|8-12|db|dro|Hinge to about 45° with a flat back, dumbbells hanging.;Pull both dumbbells to your lower ribs.;Squeeze your shoulder blades, then lower under control.
-dwl|Walking lunge (dumbbell)|qd,gl|ha|10-14|db|rlg|Hold dumbbells at your sides and stand tall.;Step forward and lower until both knees are about 90°.;Push through the front heel into the next step.
+dwl|Dumbbell walking lunge|qd,gl|ha|10-14|db|rlg|Hold dumbbells at your sides and stand tall.;Step forward and lower until both knees are about 90°.;Push through the front heel into the next step.
 dcr|Dumbbell calf raise|ca||12-20|db|scr|Hold dumbbells at your sides, balls of the feet on a step or floor.;Rise as high as you can and pause for a second.;Lower for a full stretch.
 adc|Alternating dumbbell curl|bi||10-15|db|hmc|Stand tall with dumbbells, palms facing forward.;Curl one arm at a time without swinging.;Lower slowly and alternate sides.
 bdp|Bench dip|tr|ch,de|8-15|fb|kb|Put your hands on the edge of a bench, legs straight or bent.;Lower until your elbows reach about 90°.;Press back up without shrugging.
@@ -154,7 +154,7 @@ cfl|Cable fly|ch|de|10-15|cm|fp|Set the pulleys at chest height and stand in a s
 clr|Cable lateral raise|de||12-20|cm|dlr|Stand side-on to the low pulley, handle in the far hand.;Raise your arm out to shoulder height.;Lower slowly; the cable keeps tension.
 ccr|Cable crunch|ab||10-15|cm|pd|Kneel facing the high pulley with the rope at your forehead.;Crunch your ribs toward your hips.;Return slowly without moving your hips.
 cwc|Cable woodchop|ab|de|10-15|cm|fp|Set the cable high, stand side-on with both hands on the handle.;Rotate and pull diagonally down across your body.;Return under control.
-crf|Cable rear-delt fly|de|ba|12-20|cm|fp|Cross the cables at shoulder height.;Pull the handles out and back with soft elbows.;Squeeze the rear delts and return slowly.
+crf|Cable rear delt fly|de|ba|12-20|cm|fp|Cross the cables at shoulder height.;Pull the handles out and back with soft elbows.;Squeeze the rear delts and return slowly.
 cup|Cable upright row|de|ba|10-15|cm|fp|Stand at a low pulley with a straight bar.;Pull to chest height with elbows leading.;Lower slowly.
 wcr|Wide-grip seated cable row|ba|de,bi|8-12|rcb|crow|Sit tall, feet braced, wide bar in hand.;Pull the bar to your upper abdomen with elbows out.;Squeeze, then return with a stretch.
 sar|Single-arm seated cable row|ba|bi|8-12|rcb|crow|Sit tall with a single handle, feet braced.;Pull to your ribs, elbow close to the body.;Return slowly without twisting.
@@ -192,12 +192,12 @@ tem|Triceps extension machine|tr||10-15|tm|ote|Set the seat so your elbows rest 
 sct|Seated calf raise machine|ca||12-20|crm|scr|Sit with your knees under the pad and the balls of your feet on the platform.;Rise as high as possible and pause.;Lower for a full stretch.
 gsl|Single-leg glute press machine|gl|qd|10-15|gm|ggm|Set your foot high on the platform.;Press through the heel and squeeze the glute.;Return slowly and swap legs.
 gdm|Glute drive machine|gl|ha|8-12|gm|mht|Sit with the belt across your hips and feet planted.;Drive your hips up and squeeze the glutes.;Lower slowly.
-cge|Cable glute extension (standing)|gl|ha|10-15|gc|gkc|Attach the ankle strap to the low pulley and hold the frame.;Extend your leg back, squeezing the glute.;Return slowly without arching your back.
+cge|Standing cable hip extension|gl|ha|10-15|gc|gkc|Attach the ankle strap to the low pulley and hold the frame.;Extend your leg back, squeezing the glute.;Return slowly without arching your back.
 cha|Cable hip abduction|ad,gl||12-20|gc|abd|Ankle strap on the leg closest to the machine.;Lift your leg out to the side with a tall torso.;Lower slowly.
-tmi|Treadmill (walk or run)|ca|qd,ha|cardio|tr|0|Start at an easy walking pace for 3–5 minutes.;Raise speed or incline to a steady effort you can sustain.;Finish with a few minutes of slow walking.
-stc|Climber machine (stair climber)|qd,gl|ca|cardio|cl|0|Stand tall and keep light hands on the rails.;Step at a steady pace through the full range.;Keep your weight on your legs, not your arms.
-orb|Orbitrack (elliptical)|qd|gl,ha|cardio|or|0|Stand tall and grip the handles lightly.;Push and pull smoothly through the full stride.;Keep a steady rhythm and breathe easily.
-ubk|Upright lifecycle bike|qd|gl,ca|cardio|ub|0|Set the saddle so your knee is slightly bent at the bottom.;Pedal at a steady cadence of about 70–90 rpm.;Add resistance gradually.
+tmi|Treadmill walk or run|ca|qd,ha|cardio|tr|0|Start at an easy walking pace for 3–5 minutes.;Raise speed or incline to a steady effort you can sustain.;Finish with a few minutes of slow walking.
+stc|Stair climber|qd,gl|ca|cardio|cl|0|Stand tall and keep light hands on the rails.;Step at a steady pace through the full range.;Keep your weight on your legs, not your arms.
+orb|Elliptical trainer (Orbitrack)|qd|gl,ha|cardio|or|0|Stand tall and grip the handles lightly.;Push and pull smoothly through the full stride.;Keep a steady rhythm and breathe easily.
+ubk|Upright bike|qd|gl,ca|cardio|ub|0|Set the saddle so your knee is slightly bent at the bottom.;Pedal at a steady cadence of about 70–90 rpm.;Add resistance gradually.
 exb|Exercise bike|qd|gl,ca|cardio|eb|0|Adjust the saddle and handlebars to a comfortable position.;Warm up for 3–5 minutes at low resistance.;Hold a steady effort, then cool down.`;
 export const EQ: Record<string, string> = {};
 NXD.split("\n").forEach(l=>{const[id,n,p,q,r,eq,from,st]=l.split("|");EX[id]=[n,p,q,r,st.split(";").join("|")];EQ[id]=eq;if(from!="0")AN[id]=cln(from,{})});
@@ -214,3 +214,32 @@ export const EQN: Record<string, string> = {};
 EQL.forEach(([, a]) => a.forEach(([k, l]) => (EQN[k] = l)));
 export const FOC: string[] = ["Lower body","Glutes","Hamstrings","Quads","Calves","Upper body","Back","Chest","Shoulders","Arms","Full body"];
 export const FM: Record<string, string[]> = {"Lower body":["gl","qd","ha","ca","ad"],Glutes:["gl"],Hamstrings:["ha"],Quads:["qd"],Calves:["ca"],"Upper body":["ba","ch","de","bi","tr"],Back:["ba"],Chest:["ch"],Shoulders:["de"],Arms:["bi","tr"],"Full body":["gl","qd","ha","ba","ch","de","bi","tr"]};
+
+// Redrawn animations (Nov 2026) for exercises that had borrowed another exercise's movement.
+// Side view: sh/hip/ank/wr points, ground at y 74.5; F:1 = front view. st = equipment lines.
+const BAR: number[][] = [[30, 3, 70, 3]], SEAT2: number[][] = [[34, 54, 54, 54], [44, 54, 44, 74]];
+const hang = (b: any) => ({ st: BAR, kh: [1, 0], eh: [1, 0], a: { sh: [50, 24], hip: [50, 44], ank: [46, 73], wr: [50, 3] }, b, pr: [["wr", "d"]] });
+const fours = { sh: [58, 51], hip: [36, 51], wr: [58, 74], a2: [20, 74] };
+const stand = { sh: [58, 26], sh2: [42, 26], hip: [50, 46], kn: [54, 60], kn2: [46, 60], ank: [55, 74], ank2: [45, 74] };
+const seatF = { sh: [58, 26], sh2: [42, 26], hip: [50, 52], kn: [56, 58], kn2: [44, 58], ank: [56, 73], ank2: [44, 73] };
+Object.assign(AN, {
+  pul: hang({ sh: [50, 11], hip: [50, 31], ank: [44, 60], wr: [50, 3] }),
+  chu: hang({ sh: [50, 11], hip: [50, 31], ank: [44, 60], wr: [50, 3] }),
+  apu: { ...hang({ sh: [50, 11], hip: [50, 31], ank: [36, 50], wr: [50, 3] }), a: { sh: [50, 24], hip: [50, 44], ank: [36, 62], wr: [50, 3] }, kh: [1, .6] },
+  hkr: { ...hang({ sh: [50, 24], hip: [50, 44], ank: [58, 60], wr: [50, 3] }), kh: [1, -.6] },
+  hlr: { ...hang({ sh: [51, 24], hip: [48, 44], ank: [80, 46], wr: [50, 3] }), kh: [-.2, 1] },
+  ccr: { st: [], kh: [.3, 1], eh: [-1, .6], a: { sh: [47, 38], hip: [46, 58], ank: [20, 74], wr: [53, 33] }, b: { sh: [60, 45], hip: [45, 57], ank: [20, 74], wr: [62, 50] }, pr: [["wr", "c", [60, -2]]] },
+  cwc: { F: 1, st: [], eh: [1, -.2], eh2: [-1, -.2], a: { ...stand, wr: [68, 12], wr2: [63, 14] }, b: { ...stand, wr: [40, 54], wr2: [35, 52] }, pr: [["wr", "c", [84, 2]]] },
+  cup: { st: [], kh: [1, 0], eh: [-1, -1], a: { sh: [46, 20], hip: [46, 40], ank: [46, 74], wr: [53, 42] }, b: { sh: [46, 20], hip: [46, 40], ank: [46, 74], wr: [53, 24] }, pr: [["wr", "c", [62, 74]]] },
+  abc: { st: [[38, 56, 54, 56], [46, 56, 46, 74], [36, 56, 38, 34]], kh: [1, -.2], eh: [1, 1], a: { sh: [44, 33], hip: [46, 55], ank: [56, 74], wr: [52, 37] }, b: { sh: [57, 39], hip: [46, 55], ank: [56, 74], wr: [62, 46] }, pr: [["wr", "d"]] },
+  abr: { F: 1, st: [[40, 58, 60, 58], [50, 58, 50, 74]], eh: [1, .5], eh2: [-1, .5], a: { ...seatF, wr: [52, 36], wr2: [48, 36] }, b: { ...seatF, sh: [54, 26], sh2: [45, 27], wr: [46, 36], wr2: [42, 36] } },
+  bex: { st: SEAT2, kh: [1, -.2], eh: [1, 1], a: { sh: [60, 40], hip: [46, 54], ank: [56, 74], wr: [58, 46] }, b: { sh: [41, 35], hip: [46, 54], ank: [56, 74], wr: [46, 42] } },
+  srm: cln("rwm", { pr: [["wr", "c", [84, 40]]] }),
+  dip: { st: SEAT2, kh: [1, -.2], eh: [-1, -.2], a: { sh: [45, 33], hip: [46, 54], ank: [56, 74], wr: [49, 36] }, b: { sh: [45, 33], hip: [46, 54], ank: [56, 74], wr: [47, 54] }, pr: [["wr", "d"]] },
+  cha: { F: 1, st: [], eh: [1, .3], eh2: [-1, .3], a: { ...stand, wr: [62, 46], wr2: [34, 40] }, b: { ...stand, kn: [60, 59], ank: [68, 71], wr: [62, 46], wr2: [34, 40] }, pr: [["ank", "c", [16, 74]]] },
+  fhy: { st: [], kh: [.3, 1], kh2: [.3, 1], eh: [1, 0], a: { ...fours, ank: [20, 74] }, b: { ...fours, ank: [22, 56] }, pr: [["ank", "c", [4, 74]]] },
+  dnk: { st: [], kh: [.3, 1], kh2: [.3, 1], eh: [1, 0], a: { ...fours, ank: [20, 74] }, b: { ...fours, ank: [20, 33] }, pr: [["ank", "c", [4, 74]]] },
+  sct: { st: [[30, 52, 48, 52], [40, 52, 40, 74], [55, 72, 70, 72], [54, 47, 68, 47]], kh: [1, -1], eh: [1, 1], a: { sh: [44, 32], hip: [44, 52], ank: [61, 70], wr: [60, 46] }, b: { sh: [44, 31], hip: [44, 51], ank: [61, 65], wr: [60, 42] } },
+  rsu: { st: [[40, 52, 40, 74], [33.6, 54.4, 43.8, 47.9]], kh: [0, 1], eh: [1, -1], a: { sh: [64, 52], hip: [46, 42], ank: [17, 60], wr: [58, 48] }, b: { sh: [38, 23], hip: [46, 42], ank: [17, 60], wr: [42, 30] } },
+  cdr: { st: [[26, 72, 58, 42], [32, 66, 32, 74]], kh: [1, 1], eh: [-1, 0], a: { sh: [53, 43], hip: [37, 56], ank: [24, 74], wr: [55, 64] }, b: { sh: [53, 43], hip: [37, 56], ank: [24, 74], wr: [46, 52] }, pr: [["wr", "d"]] },
+});

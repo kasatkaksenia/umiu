@@ -2,7 +2,7 @@ import { useState } from "react";
 import { FD } from "../../data/foods";
 import { ai } from "../../lib/ai";
 import { Suggestion, eaten, localName, readBarcode, searchFoods, searchIngredients, shrinkBlob, todayLog } from "../../lib/food";
-import { S, commit } from "../../lib/store";
+import { S, commit, openSheet } from "../../lib/store";
 import { TODAY } from "../../lib/util";
 import { FileButton, Ico } from "../../components/ui";
 
@@ -184,6 +184,7 @@ function AddFood() {
           <FileButton className="lab2" accept="image/*" capture onFiles={f => photo(f[0])}><Ico k="cam" /> Photo</FileButton>
         )}
         <FileButton className="lab2" accept="image/*" capture onFiles={f => scan(f[0])}>▮▮ Scan barcode</FileButton>
+        <button className="lab2" onClick={() => openSheet({ t: "cm" })}>+ Add meal</button>
       </div>
       <p className="mu" role="status">{status}</p>
 

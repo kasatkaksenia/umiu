@@ -1,9 +1,39 @@
 // Food logic: daily targets, body fat, food search, barcode reading, shopping list, recipes.
-import { ALI, FD, FSRC, REC, Recipe, nz, stem } from "../data/foods";
+import { ALI, CATS, FD, FSRC, REC, Recipe, catOf, nz, stem } from "../data/foods";
 import { S, ShopItem, commit } from "./store";
 import { TODAY } from "./util";
 
 export const allRecipes = (): Recipe[] => REC.concat(S.rec);
+
+/* ---------- recipe filters (Food › Recipes, the filter pop-up) ---------- */
+/** [setting key, row label, options as [value, segment label, chip label]] */
+export const RF: [string, string, [number, string, string][]][] = [
+  ["rt", "Time, min", [[0, "Any", ""], [15, "≤15", "≤15 min"], [30, "≤30", "≤30 min"], [45, "≤45", "≤45 min"]]],
+  ["rk", "Calories", [[0, "Any", ""], [450, "≤450", "≤450 kcal"], [600, "≤600", "≤600 kcal"], [750, "≤750", "≤750 kcal"]]],
+  ["rp", "Protein, g", [[0, "Any", ""], [45, "45+", "45 g+ protein"], [50, "50+", "50 g+ protein"], [55, "55+", "55 g+ protein"]]],
+  ["ri", "Ingredients", [[0, "Any", ""], [4, "≤4", "≤4 ingredients"], [6, "≤6", "≤6 ingredients"], [8, "≤8", "≤8 ingredients"]]],
+];
+/** Recipes that pass the saved filters, with their index in allRecipes(). */
+export function recipesShown() {
+  const st = S.set, mt = st.rt || 0, mk = st.rk || 0, mp = st.rp || 0, mi = st.ri || 0, fv = !!st.rf, rc = st.rc || "", fav = S.fav || [];
+  return allRecipes()
+    .map((r, i) => ({ r, i }))
+    .filter(({ r }) => (!mt || (r.m || 99) <= mt) && (!mk || r.k <= mk) && (!mp || r.p >= mp) && (!mi || r.ing.length <= mi) && (!fv || fav.includes(r.t)) && (!rc || catOf(r) == rc));
+}
+/** Active filters as removable chips: [label, clear]. */
+export function rfChips(): [string, () => void][] {
+  const st = S.set, out: [string, () => void][] = [];
+  const clr = (k: string) => () => { S.set[k] = k == "rc" ? "" : 0; commit(); };
+  if (st.rc) out.push([CATS.find(c => c[0] == st.rc)?.[1] || st.rc, clr("rc")]);
+  RF.forEach(([k, , o]) => { const x = o.find(y => y[0] == (st[k] || 0)); if (x && x[0]) out.push([x[2], clr(k)]); });
+  if (st.rf) out.push(["Favourites", clr("rf")]);
+  return out;
+}
+export function rfReset() {
+  S.set.rt = S.set.rk = S.set.rp = S.set.ri = S.set.rf = 0;
+  S.set.rc = "";
+  commit();
+}
 
 /* ---------- targets ---------- */
 export function calc() {

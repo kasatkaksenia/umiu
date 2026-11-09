@@ -2,30 +2,14 @@ import { useState } from "react";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { REC, Recipe } from "../../data/foods";
 import { ai } from "../../lib/ai";
-import { allRecipes, favTog, inShop, logRecipe, toShop } from "../../lib/food";
+import { allRecipes, favTog, inShop, logRecipe, recipesShown, rfChips, toShop } from "../../lib/food";
 import { dish } from "../../lib/figures";
 import { S, commit, openSheet } from "../../lib/store";
-import { Chip, Ico, Svg } from "../../components/ui";
-
-type Opt = [number, string];
-const FILTERS: [string, string, Opt[]][] = [
-  ["rt", "Time", [[0, "Any"], [15, "≤15"], [30, "≤30"], [45, "≤45 min"]]],
-  ["rk", "Calories", [[0, "Any"], [450, "≤450"], [600, "≤600"], [750, "≤750"]]],
-  ["rp", "Protein", [[0, "Any"], [45, "45 g+"], [50, "50 g+"], [55, "55 g+"]]],
-  ["ri", "Ingredients", [[0, "Any"], [4, "≤4"], [6, "≤6"], [8, "≤8"]]],
-];
+import { Ico, Svg } from "../../components/ui";
 
 export function Recipes() {
-  const st = S.set, mt = st.rt || 0, mk = st.rk || 0, mp = st.rp || 0, mi = st.ri || 0, fv = !!st.rf, fo = !!st.fo, fav = S.fav || [];
+  const fav = S.fav || [], all = recipesShown(), chips = rfChips();
   const [msg, setMsg] = useState("");
-  const all = allRecipes()
-    .map((r, i) => ({ r, i }))
-    .filter(({ r }) => (!mt || (r.m || 99) <= mt) && (!mk || r.k <= mk) && (!mp || r.p >= mp) && (!mi || r.ing.length <= mi) && (!fv || fav.includes(r.t)));
-  const act = (mt ? 1 : 0) + (mk ? 1 : 0) + (mp ? 1 : 0) + (mi ? 1 : 0) + (fv ? 1 : 0);
-  const set = (k: string, v: any) => {
-    S.set[k] = v;
-    commit();
-  };
 
   const moreIdeas = async () => {
     if (!ai) return;
@@ -45,35 +29,22 @@ export function Recipes() {
 
   return (
     <>
-      <div className="card slim">
-        <button className="fbtn" aria-expanded={fo} onClick={() => set("fo", fo ? 0 : 1)}>
-          <span><Ico k="sliders" s={18} /> Filter{act ? ` · ${act} active` : ""}</span>
-          <span>{fo ? "▴" : "▾"}</span>
+      {/* Count and the filter button; the filters themselves live in a pop-up. */}
+      <div className="rbar">
+        <b className="rcount">{all.length} recipe{all.length == 1 ? "" : "s"}</b>
+        {ai && <button className="g s ibtn" onClick={moreIdeas}><Ico k="spark" s={16} /> New ideas</button>}
+        <button className={"g s fic" + (chips.length ? " on" : "")} aria-label={`Filters${chips.length ? `, ${chips.length} active` : ""}`} onClick={() => openSheet({ t: "rf" })}>
+          <Ico k="sliders" s={18} />
+          {chips.length > 0 && <span className="fbadge" aria-hidden="true">{chips.length}</span>}
         </button>
-        {fo && (
-          <div className="fgrp">
-            {FILTERS.map(([k, l, opts]) => (
-              <div key={k}>
-                <span className="mu">{l}</span>
-                <div className="hs">{opts.map(([v, t]) => <Chip key={v} on={(st[k] || 0) == v} onClick={() => set(k, v)}>{t}</Chip>)}</div>
-              </div>
-            ))}
-            <span className="mu">Favourites</span>
-            <div className="hs"><Chip on={fv} onClick={() => set("rf", fv ? 0 : 1)}>Favourites only</Chip></div>
-            {act > 0 && (
-              <button className="g s" style={{ alignSelf: "flex-start" }} onClick={() => {
-                S.set.rt = S.set.rk = S.set.rp = S.set.ri = S.set.rf = 0;
-                commit();
-              }}>Clear filters</button>
-            )}
-          </div>
-        )}
-        <div className="row" style={{ marginTop: 8 }}>
-          <button className="s" onClick={() => openSheet({ t: "cm" })}>+ Add meal</button>
-          {ai && <button className="g s" onClick={moreIdeas}><Ico k="spark" s={16} /> New ideas</button>}
-        </div>
-        {msg && <p className="mu" role="status" style={{ margin: "4px 0 0" }}>{msg}</p>}
       </div>
+      {/* Active filters: tap one to remove it without opening the pop-up. */}
+      {chips.length > 0 && (
+        <div className="rchips" role="group" aria-label="Active filters">
+          {chips.map(([l, clr]) => <button key={l} className="rchip" aria-label={`Remove filter: ${l}`} onClick={clr}>{l}<span aria-hidden="true">✕</span></button>)}
+        </div>
+      )}
+      {msg && <p className="mu" role="status" style={{ margin: "0 4px 10px" }}>{msg}</p>}
       <div className="grid-cards">
         {all.length ? all.map(({ r, i }) => <RecipeCard key={i} r={r} i={i} fav={fav.includes(r.t)} />) : <p className="mu">No recipes match these filters.</p>}
       </div>

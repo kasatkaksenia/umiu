@@ -50,6 +50,9 @@ CSS variables on `:root`, redefined per look (`data-look` on `<html>`: `b` Cerul
 | `--h1`, `--h2`, `--h3` | hormone chart and widget icon colours |
 | `--sh` | shadow |
 | `--ff` | font stack: Urbanist, Manrope (bundled with `@fontsource`) |
+| `--vgap` | space between widgets (cards, banner, tabs, grids): 12px, 16px from 900px. Don't add other card margins |
+
+The logo (`<Logo>`) is "umiu" in Gluten 400, converted to SVG shapes with each letter riding a gentle wave, text colour on top of a `--pk` offset layer. Brand marks: `BRAND.wave` (Cycle banner, `Hero icon="wave"`) and `BRAND.moon`, drawn with `<BrandMark k="moon" />` in the current colour. Icons inside buttons: just put `<Ico>` before the text; the 5px gap and centring come from CSS.
 
 Always use tokens, never raw colours, so all looks and dark mode keep working. Check new UI in at least the default look, Bright pop and dark mode (`QA_DARK=1`).
 
@@ -61,7 +64,12 @@ Always use tokens, never raw colours, so all looks and dark mode keep working. C
 - Options in sheets: `.opt` (selected `.on`); exercise options `<ExOption>`.
 - Section tabs: `<Tabs>`. Banners: `<Hero kind seed>` (generated art). Quote picture: `.qc`.
 - Bottom sheet: `UI.sheet` + `Sheets.tsx`; header fixed, body scrolls (`.sh-head`, `.sh-body`).
-- Confirmations: `useIonAlert`. Never `window.confirm` / `alert`.
+- Confirmations: `useIonAlert` (shows on top, nothing in the list moves). Never `window.confirm` / `alert`, never inline confirm boxes.
+- Multi-select pick lists: `AddMany` in `Sheets.tsx` (tap to tick, sticky "Add N" button).
+- Mood: `<MoodIcon>` draws the fluffy-character emojis from `src/lib/moods.ts`.
+- Small round icon buttons: `className="g s ic"` (32px, 44px tap area). Button with a leading icon: add `ibtn`.
+- Drop-downs: plain `<select>`; the arrow is drawn by CSS, inset 16px from the right.
+- Confirmations: `useIonAlert`; the app styles it in `layout.css` (font, colours, pill buttons).
 
 ## iOS rules (don't break these)
 

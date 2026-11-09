@@ -1,24 +1,33 @@
 // Every pop-up sheet in the app. The open sheet lives in UI.sheet; SheetHost draws it.
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { useIonAlert } from "@ionic/react";
-import { EX, FOC, MN } from "../data/exercises";
+import { EX, FOC, MN, SPL } from "../data/exercises";
 import { EL, TL, WID } from "../data/cycle";
 import { figSvg } from "../lib/figures";
 import { S, Sheet, UI, commit, exportData, importData, openSheet, render, useStore } from "../lib/store";
-import { addEx, chWk, delWk, dr, ensureLib, eqOk, ewDo, ewName, ewRm, genWk, libOf, newWk, swapList, swapTo } from "../lib/train";
-import { gPct, gpInfo, resizeImage } from "../lib/food";
+import { addEx, chWk, delWk, dr, ensureLib, eqOk, isCustom, planKeys, UNDO_MS, ewDo, ewLeave, ewRename, ewRm, ewUndo, ewUndoMsg, genWk, libOf, nameOf, exOrder, newWk, swapList, swapTo } from "../lib/train";
+import { RF, gPct, gpInfo, recipesShown, resizeImage, rfChips, rfReset } from "../lib/food";
+import { CATS } from "../data/foods";
 import { phase, qClr, qList, qTog, wOn, wTog } from "../lib/cycle";
 import { PEND, PHOTOS, delPhoto, savePending, selCollage } from "../lib/photos";
-import { A_, download } from "../lib/util";
+import { A_, dmy, download } from "../lib/util";
 import { Chip, ExOption, FileButton, Ico, Svg, exMatches } from "../components/ui";
+import { NT_TOPICS, ntList } from "../data/tips";
 
 export function SheetHost() {
   useStore();
   const s = UI.sheet;
   const box = useRef<HTMLDivElement>(null);
+  // Closing: the add/swap list goes back to the workout editor. The editor saves as you go, so it just closes.
+  const close = () => {
+    const c = UI.sheet;
+    if (c?.t == "ewp") return openSheet({ t: "ew", k: c.k });
+    if (c?.t == "ew") ewLeave(c.k);
+    openSheet(null);
+  };
   useEffect(() => {
     if (!s) return;
-    const k = (e: KeyboardEvent) => e.key == "Escape" && openSheet(null);
+    const k = (e: KeyboardEvent) => e.key == "Escape" && !document.querySelector("ion-alert") && close();
     document.addEventListener("keydown", k);
     return () => document.removeEventListener("keydown", k);
   }, [s]);
@@ -26,13 +35,13 @@ export function SheetHost() {
     if (s && box.current && !box.current.contains(document.activeElement)) box.current.focus();
   }, [s?.t]);
   if (!s) return null;
-  const { title, body } = content(s);
+  const { title, body, head } = content(s);
   return (
-    <div className="ov" onClick={() => openSheet(null)}>
+    <div className="ov" onClick={close}>
       <div className="sh" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={box} onClick={e => e.stopPropagation()}>
         <div className="row sh-head">
           <b style={{ fontSize: 18 }}>{title}</b>
-          <button className="g s" style={{ flex: "none" }} onClick={() => openSheet(null)}>Close</button>
+          {head !== undefined ? head : <button className="g s" style={{ flex: "none" }} onClick={close}>{s.t == "ewp" ? "Back" : "Close"}</button>}
         </div>
         <div className="sh-body">{body}</div>
       </div>
@@ -40,17 +49,20 @@ export function SheetHost() {
   );
 }
 
-function content(s: Sheet): { title: string; body: ReactNode } {
+/** head: replaces the header's Close button (null = no button; the sheet closes from its own button or a tap outside). */
+function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode } {
   switch (s.t) {
     case "swap": return { title: "Swap " + EX[s.id][0], body: <SwapList id={s.id} ok={k => !dr().ids.includes(k)} pick={k => swapTo(s.id, k)} key={s.id} /> };
-    case "add": return { title: "Add exercise", body: <AddList ok={k => !dr().ids.includes(k)} pick={addEx} /> };
-    case "wk": return { title: "Choose workout", body: <ChooseWorkout del={s.del || null} /> };
-    case "ew": return libOf(s.k) ? { title: "Edit workout", body: <EditWorkout k={s.k} key={s.k} /> } : { title: "Choose workout", body: <ChooseWorkout del={null} /> };
+    case "add": return { title: "Add exercises", body: <AddMany ok={k => !dr().ids.includes(k)} done={addEx} name={nameOf(dr().n)} /> };
+    case "wk": return { title: "Choose workout", body: <ChooseWorkout /> };
+    case "ew": return libOf(s.k)
+      ? { title: "Edit workout", body: <EditWorkout k={s.k} key={s.k} />, head: <button className="g s" style={{ flex: "none" }} onClick={() => { ewLeave(s.k); openSheet({ t: "wk" }); }}>‹ Back</button> }
+      : { title: "Choose workout", body: <ChooseWorkout /> };
     case "ewp": {
-      const L = libOf(s.k) || { ids: [] as string[] };
+      const L = libOf(s.k) || { ids: [] as string[], n: "" };
       return s.m == "swap"
         ? { title: "Swap " + EX[s.id!][0], body: <SwapList id={s.id!} ok={k => !L.ids.includes(k)} pick={k => ewDo(s.k, "swap", s.id!, k)} /> }
-        : { title: "Add exercise", body: <AddList ok={k => !L.ids.includes(k)} pick={k => ewDo(s.k, "add", "", k)} /> };
+        : { title: "Add exercises", body: <AddMany ok={k => !L.ids.includes(k)} done={ks => ewDo(s.k, "add", "", ks)} name={L.n} /> };
     }
     case "ai": return { title: "Generate a workout", body: <Generate s={s} /> };
     case "wid": return { title: "Widgets", body: <Widgets /> };
@@ -59,12 +71,14 @@ function content(s: Sheet): { title: string; body: ReactNode } {
     case "col": return { title: "Your progress", body: <Collages s={s} /> };
     case "csel": return { title: "Choose photos", body: <ChoosePhotos s={s} /> };
     case "qf": return { title: "Choose quotes", body: <QuoteFilter /> };
+    case "ntf": return { title: "Nutrition tip topics", body: <TipFilter /> };
+    case "rf": return { title: "Filter recipes", body: <RecipeFilter />, head: rfChips().length ? <button className="g s lnk" style={{ flex: "none" }} onClick={rfReset}>Reset</button> : null };
     case "gp": return { title: "Goal", body: <GoalPct /> };
     case "goals": return { title: "Set calorie goal manually", body: <ManualGoals /> };
     case "look": case "data": return { title: "Style & data", body: <Look /> };
     case "pho": {
       const p = PHOTOS.find(x => x.id == s.id);
-      return { title: p ? p.d + " · " + (p.lab || "Photo") : "Photo", body: <PhotoView s={s} /> };
+      return { title: p ? dmy(p.d) + " · " + (p.lab || "Photo") : "Photo", body: <PhotoView s={s} /> };
     }
   }
 }
@@ -86,54 +100,101 @@ function SwapList({ id, ok, pick }: { id: string; ok: (k: string) => boolean; pi
     </>
   );
 }
-function AddList({ ok, pick }: { ok: (k: string) => boolean; pick: (k: string) => void }) {
+/**
+ * Exercises to add: ones that fit the workout name first (e.g. "Glute focus"), otherwise A–Z.
+ * While searching, matches that need equipment the owner hasn't ticked show in a second group,
+ * so a search never comes back empty just because of the equipment list.
+ */
+function addKs(ok: (k: string) => boolean, q: string, name: string) {
+  const ks = Object.keys(EX).filter(k => ok(k) && exMatches(k, q)), srch = !!q.trim();
+  return {
+    main: exOrder(ks.filter(eqOk), name),
+    more: srch ? exOrder(ks.filter(k => !eqOk(k)), name) : [],
+    has: srch ? Object.keys(EX).filter(k => !ok(k) && exMatches(k, q)) : [],
+  };
+}
+const MORE = "Needs equipment you haven’t ticked";
+/** While searching, exercises already in the workout show greyed out instead of silently missing. */
+const Has = ({ ks }: { ks: string[] }) => ks.length ? <><div className="mu grp">Already in this workout</div>{ks.map(k => <ExOption key={k} k={k} off badge="Added" onPick={() => {}} />)}</> : null;
+/** Pick several exercises, then add them in one go. */
+function AddMany({ ok, done, name }: { ok: (k: string) => boolean; done: (ks: string[]) => void; name: string }) {
   const [q, setQ] = useState("");
-  const ks = Object.keys(EX).filter(k => ok(k) && eqOk(k) && exMatches(k, q));
+  const [sel, setSel] = useState<string[]>([]);
+  const { main, more, has } = addKs(ok, q, name);
+  const tog = (k: string) => setSel(sel.includes(k) ? sel.filter(x => x != k) : [...sel, k]);
+  const opt = (k: string) => <ExOption key={k} k={k} on={sel.includes(k)} badge={sel.includes(k) ? "✓" : undefined} onPick={() => tog(k)} />;
   return (
     <>
       <Search q={q} setQ={setQ} />
-      {ks.map(k => <ExOption key={k} k={k} onPick={() => pick(k)} />)}
-    </>
-  );
-}
-
-function ChooseWorkout({ del }: { del: string | null }) {
-  ensureLib();
-  const cur = dr().n;
-  return (
-    <>
-      {S.lib!.map(w => del == w.k ? (
-        <div className="dlg" role="alertdialog" aria-label="Delete workout" key={w.k}>
-          <b>Delete “{w.n}”?</b>
-          <p className="mu">This removes it from your workout list. Your logged history stays.</p>
-          <div className="row">
-            <button className="g" onClick={() => openSheet({ t: "wk", del: null })}>Cancel</button>
-            <button className="dg" onClick={() => delWk(w.k)}>Delete</button>
-          </div>
-        </div>
-      ) : (
-        <div className="row wr" key={w.k}>
-          <button className={"opt" + (w.k == cur ? " on" : "")} aria-pressed={w.k == cur} onClick={() => chWk(w.k)}>
-            <b>{w.n}</b><span className="mu">{w.ids.length ? w.ids.length + " exercises" : "Empty"}</span>
-          </button>
-          <button className="g s ic" aria-label={`Edit ${w.n}`} onClick={() => openSheet({ t: "ew", k: w.k })}>✎</button>
-          <button className="g s ic" aria-label={`Delete ${w.n}`} onClick={() => openSheet({ t: "wk", del: w.k })}>✕</button>
-        </div>
-      ))}
-      <div className="row" style={{ marginTop: 12 }}>
-        <button className="g" onClick={newWk}>+ New workout</button>
-        <button onClick={() => openSheet({ t: "ai", f: [] })}>Generate a workout</button>
+      {main.map(opt)}
+      {more.length > 0 && <><div className="mu grp">{MORE}</div>{more.map(opt)}</>}
+      <Has ks={has} />
+      {!main.length && !more.length && !has.length && <p className="mu">No exercises match “{q}”.</p>}
+      <div className="addbar">
+        <button style={{ width: "100%" }} disabled={!sel.length} onClick={() => done(sel)}>
+          {sel.length ? `Add ${sel.length} exercise${sel.length > 1 ? "s" : ""}` : "Tap exercises to select"}
+        </button>
       </div>
     </>
   );
 }
 
-function EditWorkout({ k }: { k: string }) {
-  const L = libOf(k)!;
-  const [name, setName] = useState(L.n);
+function ChooseWorkout() {
+  const [alert] = useIonAlert();
+  ensureLib();
+  const cur = dr().n, pk = planKeys();
+  // Only the workouts of the current plan (split × workouts per week), plus the ones the owner made.
+  const list = [...pk.map(k => libOf(k)).filter(Boolean), ...S.lib!.filter(w => isCustom(w.k))] as NonNullable<ReturnType<typeof libOf>>[];
+  const ask = (w: (typeof list)[number]) => alert({
+    header: `Delete “${w.n}”?`,
+    message: "This removes it from your workout list. Your logged history stays.",
+    buttons: [{ text: "Cancel", role: "cancel" }, { text: "Delete", role: "destructive", handler: () => delWk(w.k) }],
+  });
   return (
     <>
-      <input maxLength={32} value={name} aria-label="Workout name" onChange={e => setName(e.target.value)} onBlur={() => ewName(k, name)} style={{ margin: "10px 0" }} />
+      <p className="mu" style={{ margin: "4px 0 6px" }}>{SPL[S.plan.split].n} · {S.plan.days}× per week</p>
+      <p className="mu" style={{ margin: "0 0 8px", fontSize: 13 }}>Tap a workout to edit it. “Do next” picks the one you train next.</p>
+      {list.map(w => (
+        <div className="row wr" key={w.k}>
+          {/* The card opens the editor; the pill picks the next workout. */}
+          <button className={"opt" + (w.k == cur ? " on" : "")} aria-label={`Edit ${w.n}`} onClick={() => openSheet({ t: "ew", k: w.k })}>
+            <b>{w.n}</b><span className="mu">{w.ids.length ? w.ids.length + " exercises" : "Empty"}</span>
+          </button>
+          {w.k == cur
+            ? <span className="nxt on" aria-label={`${w.n} is next`}>✓ Next</span>
+            : <button className="nxt" aria-label={`Do ${w.n} next`} onClick={() => chWk(w.k)}>Do next</button>}
+          <button className="g s ic" aria-label={`Delete ${w.n}`} onClick={() => ask(w)}>✕</button>
+        </div>
+      ))}
+      <div className="row" style={{ marginTop: 12 }}>
+        <button className="g" onClick={newWk}>+ New workout</button>
+        <button onClick={() => openSheet({ t: "ai", f: [] })}><Ico k="magic" s={18} /> Generate</button>
+      </div>
+    </>
+  )
+}
+
+/** Edit a workout. Every change saves at once; an Undo bar shows for a few seconds after each one. */
+function EditWorkout({ k }: { k: string }) {
+  const [alert] = useIonAlert();
+  const L = libOf(k)!;
+  const [name, setName] = useState(L.n);
+  const [, tick] = useState(0);
+  const um = ewUndoMsg(k);
+  useEffect(() => {
+    if (!um) return;
+    const t = setTimeout(() => tick(x => x + 1), UNDO_MS + 50);
+    return () => clearTimeout(t);
+  }, [um, L.ids.join(), L.n]);
+  const askRm = (id: string) => alert({
+    header: `Remove “${EX[id][0]}”?`,
+    message: "It comes off this workout. You can add it back any time.",
+    buttons: [{ text: "Cancel", role: "cancel" }, { text: "Remove", role: "destructive", handler: () => ewRm(k, id) }],
+  });
+  return (
+    <>
+      <input maxLength={32} value={name} aria-label="Workout name" onChange={e => setName(e.target.value)} onBlur={() => ewRename(k, name)}
+        onKeyDown={e => e.key == "Enter" && (e.target as HTMLInputElement).blur()} style={{ margin: "10px 0" }} />
       {L.ids.length ? L.ids.map(id => (
         <div className="row wr" key={id}>
           <Svg as="span" className="oth" style={{ flex: "none", width: 64 }} html={figSvg(id, 1)} />
@@ -142,19 +203,20 @@ function EditWorkout({ k }: { k: string }) {
             <div className="mu">{EX[id][1].split(",").map(m => MN[m]).join(", ")}</div>
           </div>
           <button className="g s ic" aria-label={`Swap ${EX[id][0]}`} onClick={() => openSheet({ t: "ewp", k, m: "swap", id })}>⇄</button>
-          <button className="g s ic" aria-label={`Remove ${EX[id][0]}`} onClick={() => ewRm(k, id)}>✕</button>
+          <button className="g s ic" aria-label={`Remove ${EX[id][0]}`} onClick={() => askRm(id)}>✕</button>
         </div>
       )) : <p className="mu">No exercises yet. Add one below.</p>}
-      <div className="row" style={{ marginTop: 12 }}>
-        <button className="g" onClick={() => {
-          ewName(k, name);
-          openSheet({ t: "ewp", k, m: "add" });
-        }}>+ Add exercise</button>
-        <button onClick={() => {
-          ewName(k, name);
-          openSheet({ t: "wk" });
-        }}>Done</button>
-      </div>
+      <button className="g" style={{ width: "100%", marginTop: 12 }} onClick={() => openSheet({ t: "ewp", k, m: "add" })}>+ Add exercise</button>
+      <p className="mu" style={{ margin: "10px 2px 0", fontSize: 13 }}>Changes save automatically.</p>
+      {um && (
+        <div className="undo" role="status">
+          <span>{um}</span>
+          <button onClick={() => {
+            ewUndo();
+            setName(libOf(k)?.n || name);
+          }}>Undo</button>
+        </div>
+      )}
     </>
   );
 }
@@ -192,7 +254,7 @@ function Generate({ s }: { s: Extract<Sheet, { t: "ai" }> }) {
         setBusy(true);
         setSt("Designing your workout…");
         await genWk(s.f, n, eq);
-      }}>Generate</button>
+      }}><Ico k="magic" s={18} /> Generate</button>
       <p className="mu" role="status">{st}</p>
     </>
   );
@@ -237,6 +299,60 @@ function QuoteFilter() {
 }
 
 /* ---------- food ---------- */
+/** Recipe filters: meal type, four limits as segmented rows, favourites switch. Changes apply at once. */
+function RecipeFilter() {
+  const st = S.set, rc = st.rc || "", fv = !!st.rf, n = recipesShown().length;
+  const set = (k: string, v: any) => {
+    S.set[k] = v;
+    commit();
+  };
+  return (
+    <>
+      <div className="mu rfl">Meal</div>
+      <div className="hs rfm" role="group" aria-label="Meal">
+        <Chip on={!rc} onClick={() => set("rc", "")}>All</Chip>
+        {CATS.map(([k, l]) => <Chip key={k} on={rc == k} onClick={() => set("rc", rc == k ? "" : k)}>{l}</Chip>)}
+      </div>
+      <div className="mu rfl">Limits</div>
+      <div className="rfg">
+        {RF.map(([k, l, o]) => (
+          <div className="rfr" key={k} role="radiogroup" aria-label={l}>
+            <span>{l}</span>
+            <div className="seg">
+              {o.map(([v, t, c]) => <button key={v} role="radio" aria-checked={(st[k] || 0) == v} aria-label={c || "Any " + l.toLowerCase()} className={(st[k] || 0) == v ? "on" : ""} onClick={() => set(k, v)}>{t}</button>)}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button className="swr" role="switch" aria-checked={fv} onClick={() => set("rf", fv ? 0 : 1)}>
+        <b>Favourites only</b><i aria-hidden="true" />
+      </button>
+      <button style={{ width: "100%", marginTop: 12 }} disabled={!n} onClick={() => openSheet(null)}>
+        {n ? `Show ${n} recipe${n == 1 ? "" : "s"}` : "No recipes match"}
+      </button>
+    </>
+  );
+}
+function TipFilter() {
+  const t = A_<string>(S.set.ntf);
+  const tog = (v: string) => {
+    S.set.ntf = t.includes(v) ? t.filter(x => x != v) : t.concat(v);
+    S.set.nti = 0;
+    commit();
+  };
+  return (
+    <>
+      <p className="mu">{ntList(t).length} tips match.</p>
+      <div className="hs wrapc" style={{ marginTop: 8 }}>
+        <Chip on={!t.length} onClick={() => { S.set.ntf = []; S.set.nti = 0; commit(); }}>All</Chip>
+        {NT_TOPICS.map(([v, x]) => <Chip key={v} on={t.includes(v)} onClick={() => tog(v)}>{x}</Chip>)}
+      </div>
+      <button style={{ width: "100%", marginTop: 12 }} onClick={() => openSheet(null)}>Done</button>
+    </>
+  );
+}
+
+
 function CustomMeal() {
   const [f, setF] = useState({ t: "", p: "", k: "", c: "", fat: "", m: "", ing: "", st: "" });
   const [img, setImg] = useState<string | null>(null);
@@ -303,11 +419,12 @@ function ManualGoals() {
     <>
       <div className="row" style={{ marginTop: 10 }}>
         {([["k", "kcal"], ["p", "protein g"], ["c", "carbs g"], ["f", "fat g"]] as const).map(([x, l]) => (
-          <div key={x}><span className="mu">{l}</span><input type="number" inputMode="numeric" aria-label={l} value={g[x]} onChange={e => setG({ ...g, [x]: e.target.value })} /></div>
+          <div key={x}><span className="mu">{l}</span><input type="number" inputMode="numeric" min={0} aria-label={l} value={g[x]}
+            onKeyDown={e => e.key == "-" && e.preventDefault()} onChange={e => setG({ ...g, [x]: e.target.value.replace(/-/g, "") })} /></div>
         ))}
       </div>
       <button style={{ width: "100%", marginTop: 12 }} onClick={() => {
-        S.goal = { k: +g.k || 0, p: +g.p || 0, c: +g.c || 0, f: +g.f || 0 };
+        S.goal = { k: Math.max(0, +g.k || 0), p: Math.max(0, +g.p || 0), c: Math.max(0, +g.c || 0), f: Math.max(0, +g.f || 0) };
         UI.sheet = null;
         commit();
       }}>Save goals</button>
@@ -369,7 +486,7 @@ function ChoosePhotos({ s }: { s: Extract<Sheet, { t: "csel" }> }) {
               i < 0 ? s.sel.length < 4 && s.sel.push(p.id) : s.sel.splice(i, 1);
               render();
             }}>
-              <img alt="" src={p.img} /><span>{p.d.slice(5)} · {p.lab || ""}</span>
+              <img alt="" src={p.img} /><span>{dmy(p.d)} · {p.lab || ""}</span>
             </button>
           );
         })}

@@ -18,6 +18,6 @@ Back to [AGENTS.md](../AGENTS.md). Suggest these to the owner; don't start them 
 - Bulgarian brand nutrition values are typical figures; no external food database.
 - Exercise figures and recipe images are schematic.
 - Cycle content is educational, not medical advice.
-- Apple Health: import of an export file only (zip64 exports unsupported); live HealthKit needs the native app.
-- The equipment filter lives on the Training plan screen, not in settings.
+- Apple Health: the import button was removed from Cycle (owner's request); the importer code is still in `lib/cycle.ts`. Live HealthKit needs the native app.
+- The equipment filter lives on the Training plan screen (collapsible card with pictures), not in settings.
 - Chrome imitates iPhone sizes only; Safari-engine bugs need a real iPhone or the iOS Simulator.

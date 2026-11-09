@@ -2,14 +2,17 @@
 // Apple Health import.
 import { PE, PhaseKey, QX, SYM } from "../data/cycle";
 import { S, commit, migV12, save } from "./store";
-import { A_, TODAY, dAdd, dDiff } from "./util";
+import { A_, TODAY, dAdd, dDiff, mod } from "./util";
+
+/** Cycle length used until there are enough logged periods to average. */
+export const DEF_LEN = 26;
 
 export interface Phase { day: number; L: number; next: number; k: PhaseKey }
 
 export function phase(): Phase | null {
   const c = S.cyc;
   if (!c) return null;
-  const L = c.len || 28;
+  const L = c.len || DEF_LEN;
   const day = ((Math.floor((new Date(TODAY()).getTime() - new Date(c.start).getTime()) / 864e5) % L) + L) % L + 1;
   const ov = L - 14;
   return { day, L, next: L - day + 1, k: day <= (c.per || 5) ? "menstrual" : day < ov - 1 ? "follicular" : day <= ov + 1 ? "ovulation" : "luteal" };
@@ -78,21 +81,38 @@ export function wTog(k: string) {
 
 /* ---------- period tracker ---------- */
 export const perSort = () => (S.per || []).slice().sort((a, b) => (a.s < b.s ? 1 : -1));
-/** Recalculate average cycle and period length from the logged periods. */
-function perSync() {
-  const L = perSort();
-  if (!L.length) return;
-  const st = L.map(x => x.s).reverse(), gaps: number[] = [];
-  for (let i = 1; i < st.length; i++) {
-    const g = dDiff(st[i - 1], st[i]);
+/**
+ * Recalculate average cycle and period length from the logged periods.
+ * Period days less than a week apart count as one period, so unmarking a day in the middle
+ * doesn't create a "new cycle". Cycle length = average gap between the last 6 period starts
+ * (gaps of 20–45 days only); with fewer than two periods it stays as set, 26 days by default.
+ */
+function episodes() {
+  const L = (S.per || []).slice().sort((a, b) => (a.s < b.s ? -1 : 1));
+  const ep: { s: string; e: string }[] = [];
+  L.forEach(x => {
+    const l = ep[ep.length - 1], e = perEndOf(x);
+    if (l && dDiff(l.e, x.s) <= 7) l.e = e > l.e ? e : l.e;
+    else ep.push({ s: x.s, e });
+  });
+  const gaps: number[] = [];
+  for (let i = 1; i < ep.length; i++) {
+    const g = dDiff(ep[i - 1].s, ep[i].s);
     if (g >= 20 && g <= 45) gaps.push(g);
   }
-  const g6 = gaps.slice(-6);
-  const len = g6.length ? Math.round(g6.reduce((a, b) => a + b, 0) / g6.length) : (S.cyc && S.cyc.len) || 28;
-  const ds = L.filter(x => x.e).map(x => dDiff(x.s, x.e!) + 1).filter(n => n >= 2 && n <= 10).slice(0, 6);
-  const per = ds.length ? Math.round(ds.reduce((a, b) => a + b, 0) / ds.length) : (S.cyc && S.cyc.per) || 5;
-  S.cyc = { start: L[0].s, len, per };
+  return { ep, gaps: gaps.slice(-6) };
 }
+const avg = (a: number[]) => Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+function perSync() {
+  const { ep, gaps } = episodes();
+  if (!ep.length) return;
+  const len = gaps.length ? avg(gaps) : (S.cyc && S.cyc.len) || DEF_LEN;
+  const ds = ep.filter(x => x.e < TODAY()).map(x => dDiff(x.s, x.e) + 1).filter(n => n >= 2 && n <= 10).slice(-6);
+  const per = ds.length ? avg(ds) : (S.cyc && S.cyc.per) || 5;
+  S.cyc = { start: ep[ep.length - 1].s, len, per };
+}
+/** How many cycles the average length is based on (0 = not enough logged periods yet). */
+export const avgOf = () => episodes().gaps.length;
 export function perStart(d = TODAY()) {
   migV12();
   const o = perSort()[0];
@@ -123,13 +143,90 @@ export function perAdd(s: string, e: string) {
   return true;
 }
 export function perDel(s: string) {
+  const x = S.per.find(y => y.s == s);
+  if (x && S.flow) for (let d = x.s, e = perEndOf(x); d <= e; d = dAdd(d, 1)) delete S.flow[d];
   S.per = S.per.filter(x => x.s != s);
   if (!S.per.length) S.cyc = null;
   else perSync();
   commit();
 }
+/* ---------- flow tracking (Apple Health style: log each day) ---------- */
+/** Last day of a period; an open period runs until today (at most 10 days). */
+const perEndOf = (x: { s: string; e: string | null }) => {
+  if (x.e) return x.e;
+  const t = TODAY(), cap = dAdd(x.s, 9);
+  return x.s > t ? x.s : t < cap ? t : cap;
+};
+/** The logged period that contains day d, if any. */
+export const perOn = (d: string) => (S.per || []).find(x => x.s <= d && d <= perEndOf(x)) || null;
+/** Flow for a day: null = no period, 0 = period without a flow level, 1–3 = light / medium / heavy. */
+export function flowOf(d: string): number | null {
+  if (!perOn(d)) return null;
+  return (S.flow && S.flow[d]) || 0;
+}
+/** Merge periods that overlap or touch (next day). */
+function perMerge() {
+  const L = (S.per || []).slice().sort((a, b) => (a.s < b.s ? -1 : 1));
+  const out: typeof L = [];
+  L.forEach(x => {
+    const l = out[out.length - 1];
+    if (l && dDiff(perEndOf(l), x.s) <= 1) {
+      const a = perEndOf(l), b = perEndOf(x);
+      l.e = a > b ? a : b;
+    } else out.push({ ...x });
+  });
+  S.per = out;
+}
+/** Log flow for a day (0 = none, or with keep = no level). Days next to a period extend it; a day in the middle of one can be cleared. */
+export function setFlow(d: string, v: number, keep = false) {
+  migV12();
+  if (d > TODAY()) return;
+  S.flow = S.flow || {};
+  // keep: clear only the flow level, the day stays a period day.
+  if (keep && v == 0) {
+    delete S.flow[d];
+    return commit();
+  }
+  if (v > 0) {
+    S.flow[d] = v;
+    if (!perOn(d)) S.per.push({ s: d, e: d });
+    perMerge();
+  } else {
+    delete S.flow[d];
+    const x = perOn(d);
+    if (x) {
+      const e = perEndOf(x);
+      S.per = S.per.filter(y => y != x);
+      if (x.s < d) S.per.push({ s: x.s, e: dAdd(d, -1) });
+      if (d < e) S.per.push({ s: dAdd(d, 1), e });
+    }
+  }
+  if (!S.per.length) S.cyc = null;
+  else perSync();
+  commit();
+}
+/** Tap on a day: mark it as a period day, or unmark it if it already is one. Future days can't be logged. */
+export function perTog(d: string) {
+  migV12();
+  if (d > TODAY()) return;
+  if (perOn(d)) return setFlow(d, 0);
+  S.per.push({ s: d, e: d });
+  perMerge();
+  perSync();
+  commit();
+}
+/** Estimated period and fertile days from the average cycle (for future days). */
+export function predOf(d: string): "per" | "fert" | null {
+  const c = S.cyc;
+  if (!c) return null;
+  const L = c.len || DEF_LEN, cd = mod(dDiff(c.start, d), L) + 1, ov = L - 14;
+  if (cd <= (c.per || 5)) return "per";
+  if (cd >= ov - 4 && cd <= ov + 1) return "fert";
+  return null;
+}
+
 export function setCycle(start: string, len: number) {
-  S.cyc = start ? { start, len: len || 28, per: 5 } : null;
+  S.cyc = start ? { start, len: len || DEF_LEN, per: (S.cyc && S.cyc.per) || 5 } : null;
   commit();
 }
 

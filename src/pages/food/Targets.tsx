@@ -1,5 +1,5 @@
 import { useIonRouter } from "@ionic/react";
-import { TIPS } from "../../data/foods";
+import { NT, NT_TOPICS, ntList } from "../../data/tips";
 import { AC, bfCat, calc, gTxt, navy } from "../../lib/food";
 import { PHOTOS, setPending } from "../../lib/photos";
 import { resizeImage } from "../../lib/food";
@@ -7,25 +7,27 @@ import { Profile, S, commit, openSheet } from "../../lib/store";
 import { FileButton, Ico, NumField } from "../../components/ui";
 import { showChanges } from "../../lib/photos";
 import { useState } from "react";
+import { A_, dayNo, dmy, mod } from "../../lib/util";
 
 export function Targets() {
   const r = useIonRouter();
   const p = S.prof, c = calc();
   const F = (l: string, k: keyof Profile, step?: string) => (
-    <NumField label={l} value={(p[k] as number) || ""} step={step} onChange={v => {
-      (S.prof as any)[k] = v;
+    <NumField label={l} value={(p[k] as number) || ""} step={step} min={0} onChange={v => {
+      (S.prof as any)[k] = Math.max(0, v || 0);
       commit();
     }} />
   );
-  const isC = !AC.some(a => a[0] == p.act);
+  // The multiplier field only shows when "Custom" is chosen.
+  const [isC, setC] = useState(!AC.some(a => a[0] == p.act));
   return (
     <div className="cols c-even">
       <div className="col">
         <div className="card">
           <div className="row" style={{ alignItems: "center" }}>
             <b>Mifflin–St Jeor formula</b>
-            <button className="g s" style={{ flex: "none" }} aria-label="Set calorie and macro goals manually" onClick={() => openSheet({ t: "goals" })}>
-              <Ico k="flame" s={16} /> Manual <Ico k="pen" s={14} />
+            <button className="g s ibtn" style={{ flex: "none" }} aria-label="Set calorie and macro goals manually" onClick={() => openSheet({ t: "goals" })}>
+              <Ico k="flame" s={16} /><span className="ibl">Manual</span>
             </button>
           </div>
           <p className="mu" style={{ margin: "4px 0" }}>BMR = 10 × kg + 6.25 × cm − 5 × age + 5 (men) or − 161 (women), then × activity multiplier.</p>
@@ -46,6 +48,7 @@ export function Targets() {
           <div style={{ marginTop: 8 }}>
             <span className="mu">Activity level</span>
             <select aria-label="Activity level" value={isC ? "c" : String(p.act)} onChange={e => {
+              setC(e.target.value == "c");
               if (e.target.value != "c") {
                 S.prof.act = +e.target.value;
                 commit();
@@ -55,12 +58,12 @@ export function Targets() {
               <option value="c">Custom</option>
             </select>
           </div>
-          <div style={{ marginTop: 8 }}>
+          {isC && <div style={{ marginTop: 8 }}>
             <NumField label="Multiplier (calories burned vs. at rest)" value={p.act} step="0.01" min={1} max={2.4} onChange={v => {
               S.prof.act = Math.min(2.4, Math.max(1, v || 1.2));
               commit();
             }} />
-          </div>
+          </div>}
           <div style={{ marginTop: 8 }}>
             <span className="mu">Goal</span>
             <button className="fldb" aria-haspopup="dialog" onClick={() => openSheet({ t: "gp" })}>
@@ -87,12 +90,7 @@ export function Targets() {
       </div>
       <div className="col">
         <BodyFat F={F} />
-        <details className="card">
-          <summary><b>Nutrition tips for lifters</b></summary>
-          <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
-            {TIPS.map(([a, b]) => <li key={a} style={{ marginBottom: 6 }}><b>{a}.</b> {b.replace(/&amp;/g, "&")}</li>)}
-          </ul>
-        </details>
+        <TipCard />
         <PhotosCard />
       </div>
     </div>
@@ -151,9 +149,9 @@ function PhotosCard() {
       </p>
       <div className="pg">
         {PHOTOS.map(p => (
-          <button key={p.id} className="pt" aria-label={`${p.d} ${p.lab || ""}`} onClick={() => openSheet({ t: "pho", id: p.id })}>
+          <button key={p.id} className="pt" aria-label={`${dmy(p.d)} ${p.lab || ""}`} onClick={() => openSheet({ t: "pho", id: p.id })}>
             <img alt="" src={p.img} />
-            <span>{p.d.slice(5)} · {p.lab || ""}</span>
+            <span>{dmy(p.d)} · {p.lab || ""}</span>
           </button>
         ))}
       </div>
@@ -175,6 +173,45 @@ function PhotosCard() {
         </div>
       )}
       <p className="mu" role="status" style={{ marginBottom: 0 }}>{st}</p>
+    </div>
+  );
+}
+
+/**
+ * Nutrition tips: one at a time with topic, source, ‹ › and Shuffle; a filter picks topics (like the quotes).
+ * Starts on a different tip each day. All tips of the list share one grid cell, so the card never changes size.
+ */
+function TipCard() {
+  const tp = A_<string>(S.set.ntf), L = ntList(tp), n = L.length;
+  const i = mod(dayNo() + (S.set.nti || 0), n), x = L[i];
+  const go = (d: number) => {
+    S.set.nti = (S.set.nti || 0) + d;
+    commit();
+  };
+  const name = (k: string) => NT_TOPICS.find(y => y[0] == k)?.[1] || "";
+  return (
+    <div className="card tipc">
+      <div className="tipt">
+        <span className="eyebrow mu">Tip · {name(x.t)}</span>
+        <button className={"g s ic" + (tp.length ? " on" : "")} aria-label={`Choose tip topics${tp.length ? " (filtered)" : ""}`} onClick={() => openSheet({ t: "ntf" })}>
+          <Ico k="sliders" s={16} />
+        </button>
+      </div>
+      <div className="tips">
+        {L.map((y, j) => (
+          <div key={y.h} className={j == i ? "on" : ""} aria-hidden={j != i}>
+            <span className="tipn" aria-hidden="true">{String(NT.indexOf(y) + 1).padStart(2, "0")}</span>
+            <b className="tiph">{y.h}</b>
+            <p>{y.b}</p>
+          </div>
+        ))}
+      </div>
+      <div className="tipf">
+        <span className="mu tipc-n">{i + 1} of {n}</span>
+        <button className="g s ic" aria-label="Previous tip" onClick={() => go(-1)}>‹</button>
+        <button className="g s ic" aria-label="Next tip" onClick={() => go(1)}>›</button>
+        <button className="g s" onClick={() => go(1 + Math.floor(Math.random() * Math.max(1, n - 1)))}>Shuffle</button>
+      </div>
     </div>
   );
 }

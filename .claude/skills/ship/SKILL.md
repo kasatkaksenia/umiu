@@ -5,7 +5,7 @@ description: Release umiu: type-check, QA, build, deploy to GitHub Pages, or pre
 
 # Shipping umiu
 
-Ask before pushing, since a push to `main` deploys the public site.
+Never commit, push or create branches: the owner commits and pushes `main` by hand, and a push deploys the public site. Your job is to get the working tree release-ready and tell the owner what to commit.
 
 ## Before any release
 

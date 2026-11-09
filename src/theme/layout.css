@@ -21,6 +21,8 @@ button.card.li { display: flex; }
 .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
 .card-t { display: block; margin-bottom: 4px; }
 .anim { cursor: pointer; }
+/* The demo redraws every frame; touches land on the stable frame so swipes over it still finish. */
+.anim > * { pointer-events: none; }
 /* Sheet: fixed header, scrolling body. */
 .sh { display: flex; flex-direction: column; overflow: hidden !important; }
 .sh-head { align-items: center; flex: none; padding-bottom: 6px; }
@@ -65,7 +67,11 @@ ion-split-pane { --side-width: var(--side-w); --side-min-width: var(--side-w); -
 @media (prefers-reduced-motion: reduce) { .ov, .sh { animation: none; } }
 
 /* ---------- content layouts ---------- */
-.cols { display: flex; flex-direction: column; }
+/* One vertical gap between widgets everywhere: --vgap (12px phones, 16px wide). */
+:root { --vgap: 12px; }
+.card, .qc, .tabs { margin-top: var(--vgap); margin-bottom: var(--vgap); }
+.wrap .hero { margin-bottom: var(--vgap); }
+.cols { display: block; }
 .cols > .col { min-width: 0; }
 .grid-cards { display: block; }
 .masonry > * { break-inside: avoid; }
@@ -74,12 +80,13 @@ ion-split-pane { --side-width: var(--side-w); --side-min-width: var(--side-w); -
 /* Tablets: a bit more room, still one column with the bottom bar. */
 @media (min-width: 640px) {
   .wrap { max-width: 720px; }
-  .grid-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
-  .grid-cards > .card { margin: 12px 0; }
+  .grid-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--vgap) 16px; margin: var(--vgap) 0; }
+  .grid-cards > .card { margin: 0; }
 }
 
 /* Wide screens: side menu, two columns, dialogs in the centre. */
 @media (min-width: 900px) {
+  :root { --vgap: 16px; }
   .bnav { display: none; }
   .top .brand { display: none; }
   .wrap { max-width: 1120px; padding: 28px 32px 48px; }
@@ -95,7 +102,8 @@ ion-split-pane { --side-width: var(--side-w); --side-min-width: var(--side-w); -
   .sticky { position: sticky; top: 12px; }
 
   .masonry { columns: 2; column-gap: 24px; }
-  .masonry > .card, .masonry > .qc { display: block; margin-top: 0; margin-bottom: 20px; }
+  .masonry { margin-top: var(--vgap); }
+  .masonry > .card, .masonry > .qc { display: block; margin-top: 0; margin-bottom: var(--vgap); }
 
   .ov { align-items: center; }
   .sh { max-width: 620px; max-height: 86%; border-radius: 30px; border-bottom: 1px solid var(--ln); padding: 20px 24px 24px; }
@@ -126,7 +134,7 @@ input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 
 /* Comfortable touch targets on phones and tablets (Apple suggests at least 44 pt). */
 @media (pointer: coarse) {
-  button.s, .bm, .ic, .lk { min-height: 40px; }
+  button.s, .bm, .lk { min-height: 40px; }
   .lk { min-width: 40px; }
   .chip { min-height: 38px; }
   .ck { width: 28px; height: 28px; }
@@ -135,7 +143,7 @@ input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 /* Small phones (iPhone SE, mini): smaller banner so content starts higher. */
 @media (max-width: 400px) {
   .wrap { padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); }
-  .hero { min-height: 132px; padding: 16px; border-radius: 28px; margin-bottom: 10px; }
+  .hero { min-height: 132px; padding: 16px; border-radius: 28px; }
   .hero h1 { font-size: 28px; }
   .tag { top: 12px; left: 16px; font-size: 11px; }
   .tabs button { font-size: 13px; padding: 8px 8px; }
@@ -165,9 +173,203 @@ input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 @media (max-width: 400px) {
   .dsh { width: 84px; height: 84px; border-radius: 22px; }
   .dsh svg { width: 76px !important; }
-  .card > .row > button { font-size: 14px; line-height: 1.2; }
+  .card > .row > button, .card > .row > :is(.lab, .lab2) { font-size: 14px; line-height: 1.2; }
+  /* Scan barcode / Add meal: one line each so both buttons have the same inner spacing. */
+  .card > .row:not(:has(> :nth-child(3))) > .lab2 { white-space: nowrap; padding-inline: 8px; }
   .hrt { width: 36px; height: 36px; }
 }
 /* Show a control only on phones/tablets or only on wide screens. */
 .only-wide { display: none; }
 @media (min-width: 900px) { .only-wide { display: block; } .only-narrow { display: none !important; } }
+
+/* Logo: the name drawn as one wavy line (SVG, follows the text colour) */
+.logo { display: block; color: var(--tx); overflow: visible; }
+.top .lk { margin-left: auto; }
+/* Banner with a single icon (Train): right side, vertically centred */
+.hero .dc.hico { left: auto; right: 7%; top: 50%; width: 92px; height: 92px; transform: translateY(-50%); }
+@media (max-width: 400px) { .hero .dc.hico { width: 72px; height: 72px; } }
+
+/* Training plan: collapsible equipment card with pictures */
+.eqh { background: none; color: var(--tx); border: 0; padding: 0; min-height: 44px; box-shadow: none; text-align: left; font-weight: inherit; }
+.eqh > span:first-child { display: flex; flex-direction: column; gap: 2px; }
+.eqh > span:first-child { align-items: flex-start; }
+/* Three kinds of text: count = small pill, info = soft note with an "i", group = uppercase label, item names = plain. */
+.eqc { display: inline-block; font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: var(--ac2); color: var(--mu); }
+.eqc.on { background: var(--btn); color: var(--btnt); }
+.eqn { display: flex; align-items: center; gap: 10px; margin-top: 8px; padding: 9px 10px 9px 12px; border-radius: 14px; background: rgba(127,127,127,.08); }
+.eqn p { flex: 1; margin: 0; font-size: 14px; line-height: 1.4; color: var(--mu); }
+.eqn p::before { content: "i"; display: inline-grid; place-items: center; width: 17px; height: 17px; margin-right: 7px; border-radius: 50%; border: 1.4px solid currentColor; font: 600 11px/1 var(--ff); font-style: normal; vertical-align: 1px; }
+.eqg > .eyebrow { display: block; margin: 14px 2px 8px; font-size: 11.5px; font-weight: 700; }
+.eqi > span:last-child { font-weight: 500; }
+.eqt { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.eqi { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px; padding: 10px 4px; min-height: 96px; border-radius: 18px; border: 1px solid var(--ln); background: rgba(127,127,127,.08); color: var(--tx); font-size: 12.5px; font-weight: 500; line-height: 1.2; text-align: center; box-shadow: none; }
+.eqi.on { background: var(--btn); color: var(--btnt); border-color: transparent; }
+.eqp { display: grid; place-items: center; color: var(--ac); }
+.eqi.on .eqp { color: inherit; }
+/* Multi-select add: the Add button stays visible at the bottom of the sheet */
+.addbar { position: sticky; bottom: 0; padding: 10px 0 calc(4px + env(safe-area-inset-bottom, 0px)); }
+.addbar > button { box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+/* Workout name with rename button */
+.wkn { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.wkn h2 { margin: 0; font-size: 22px; min-width: 0; overflow-wrap: anywhere; }
+.wkn input { font-size: 18px; font-weight: 700; padding: 8px 12px; }
+/* Recipes: action row with a small filter icon button */
+.rbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: var(--vgap) 2px; }
+.rbar > * { flex: none; }
+.rbar > .rcount { flex: 1; min-width: 0; font-size: 17px; }
+.rbar > .fic { position: relative; width: 40px; height: 40px; min-height: 40px; padding: 0; border-radius: 50%; display: inline-grid; place-items: center; }
+.rbar > button.s:not(.ic):not(.fic) { min-height: 40px; }
+.rbar > .fic.on { background: var(--btn); color: var(--btnt); }
+.fbadge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--ac); color: var(--btnt); font-size: 11px; font-weight: 700; line-height: 18px; }
+/* Cycle: phase card first line with the widgets button inline */
+.stl { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.stl > span { min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px; line-height: 1.3; }
+.stl .pill { padding: 4px 12px; }
+.wbi { flex: none; }
+/* Quote banner: shorter */
+.qc { min-height: 0; padding: 16px 18px; }
+.qc p { font-size: 20px; margin: 30px 0 6px; }
+@media (max-width: 400px) { .qc p { font-size: 18px; } }
+/* Mood emojis */
+.mood { padding: 6px 0; }
+.moji { display: block; }
+
+
+/* Small round icon buttons (rename ✎, delete ✕, swap ⇄, widgets): 32px to see, a 44px area to tap. */
+button.ic { position: relative; flex: none; width: 32px; height: 32px; min-height: 32px; padding: 0; border-radius: 50%; display: inline-grid; place-items: center; font-size: 14px; line-height: 1; }
+button.ic::after { content: ""; position: absolute; inset: -6px; }
+button.ic svg { width: 16px; height: 16px; }
+/* Ionic alerts (delete confirmations): app font, sizes and colours instead of the stock iOS look. */
+ion-alert.sc-ion-alert-ios-h { --ion-font-family: var(--ff); font-family: var(--ff); --background: var(--solid); --max-width: 300px; }
+ion-alert .alert-wrapper.sc-ion-alert-ios { border-radius: 24px; background: var(--solid); box-shadow: var(--sh); }
+ion-alert .alert-head.sc-ion-alert-ios { padding: 18px 20px 6px; }
+ion-alert .alert-title.sc-ion-alert-ios { margin: 0; font-family: var(--ff); font-size: 19px; font-weight: 700; color: var(--tx); }
+ion-alert .alert-message.sc-ion-alert-ios { font-family: var(--ff); font-size: 15px; color: var(--mu); padding: 0 20px 18px; }
+ion-alert .alert-button-group.sc-ion-alert-ios { gap: 8px; padding: 0 16px 16px; flex-wrap: nowrap; }
+ion-alert .alert-button.sc-ion-alert-ios { font-family: var(--ff); font-size: 16px; font-weight: 600; color: var(--tx); border: 0; border-radius: 999px; background: var(--ac2); height: 44px; min-height: 44px; padding: 0 12px; margin: 0; flex: 1; }
+ion-alert .alert-button.sc-ion-alert-ios .alert-button-inner { height: 100%; min-height: 0; justify-content: center; align-items: center; }
+ion-alert .alert-button.sc-ion-alert-ios.alert-button-role-destructive { background: var(--pk); color: #fff; }
+/* Icons inside buttons: no stray margin (icon-only buttons stay centred), one even gap before the text. */
+:is(button, .lab, .lab2) > .ci { margin: 0; flex: none; }
+.ibtn, button:has(> .ci) { display: inline-flex; align-items: center; justify-content: center; gap: 5px; }
+:is(.lab, .lab2):has(> .ci) { display: flex; align-items: center; justify-content: center; gap: 5px; }
+.pop button:has(> .ci) { justify-content: flex-start; gap: 10px; }
+/* Drop-downs: own arrow, inset from the right edge so it never touches the border. */
+select { -webkit-appearance: none; appearance: none; padding-right: 40px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.5 6 6l4.5-4.5' fill='none' stroke='%23888' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 12px 8px; }
+.fldb > span[aria-hidden] { margin-right: 4px; }
+/* Nutrition tip card (Food › My targets): numbered, paged, no art background */
+.tipc { position: relative; width: 100%; border-left: 4px solid var(--ac); }
+.tipt { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tipt .ic.on { background: var(--btn); color: var(--btnt); }
+.tipt .eyebrow { margin-top: 0; }
+.tips .tipn { float: right; margin: 4px 0 0 10px; }
+.tipn { font-size: 40px; font-weight: 700; line-height: 1; color: var(--ac); opacity: .35; letter-spacing: -.02em; }
+.tiph { display: block; font-size: 19px; margin-top: 2px; }
+.tipc p { margin: 6px 0 10px; }
+.tips { display: grid; }
+.tips > div { grid-area: 1 / 1; visibility: hidden; }
+.tips > div.on { visibility: visible; }
+.tipf { display: flex; align-items: center; gap: 8px; }
+.tipd { flex: 1; display: flex; flex-wrap: wrap; gap: 5px; }
+.tipd i { width: 6px; height: 6px; border-radius: 3px; background: var(--ln); transition: width .2s; }
+.tipd i.on { width: 16px; background: var(--ac); }
+.tipf .ic { font-size: 20px; }
+/* Breathing widget: title, practice picker, then a fixed stage with the orb in the centre */
+.brw select { margin: 8px 0 0; padding: 10px 40px 10px 14px; }
+.brs { position: relative; height: 196px; display: grid; place-items: center; margin: 6px 0; }
+.brs .brc { width: 176px; height: 176px; margin: 0; transform: scale(.62); transition: transform .1s linear; }
+.brt { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 4px 12px; border-radius: 999px; background: rgba(0,0,0,.32); color: #fff; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; pointer-events: none; }
+/* Instruction / description: room for three lines (longest text on iPhone SE) so nothing moves while it changes. */
+.brp { margin: 0 0 8px; min-height: calc(1.45em * 3); line-height: 1.45; text-align: center; color: var(--mu); font-size: 15px; }
+@media (prefers-reduced-motion: reduce) { .brs .brc { transition: none; } }
+/* Period tracker (Apple Health style): day strip, flow buttons, legend */
+.pstrip { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 8px -6px 0; padding: 4px 6px 6px; scroll-snap-type: x proximity; }
+.pstrip::-webkit-scrollbar { display: none; }
+.pday { flex: none; width: 40px; padding: 0; background: none; border: 0; box-shadow: none; color: var(--tx); display: flex; flex-direction: column; align-items: center; gap: 4px; scroll-snap-align: center; min-height: 0; font-weight: 500; }
+.pday .pw { font-size: 11px; color: var(--mu); line-height: 1; }
+.pday .pc { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; line-height: 1; border: 1.5px solid transparent; }
+.pday.today .pw { color: var(--tx); font-weight: 700; }
+.pday.today .pc { font-weight: 700; border-color: var(--ln); }
+.pday.sel .pc { outline: 2px solid var(--tx); outline-offset: 2px; }
+.pday.fl .pc { background: var(--pk); color: #fff; border-color: transparent; }
+.pday.fl.f1 .pc { background: color-mix(in srgb, var(--pk) 55%, transparent); }
+.pday.fl.f2 .pc, .pday.fl.f0 .pc { background: color-mix(in srgb, var(--pk) 80%, transparent); }
+.pday.per .pc { border: 1.5px dashed var(--pk); color: var(--pk); }
+.pday.fert .pc { background: color-mix(in srgb, var(--h2) 20%, transparent); }
+.pflow { margin-top: 8px; padding: 12px; border-radius: 18px; background: rgba(127,127,127,.08); }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 8px; padding: 3px; border-radius: 14px; background: rgba(127,127,127,.12); }
+.seg button { padding: 8px 2px; min-height: 36px; border-radius: 11px; background: none; color: var(--tx); border: 0; box-shadow: none; font-size: 14px; font-weight: 600; }
+.seg button.on { background: var(--solid); box-shadow: 0 1px 4px rgba(0,0,0,.12); }
+.plg { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 10px; font-size: 12px; }
+.plg span { display: inline-flex; align-items: center; gap: 6px; }
+.plg i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.plg .lg-p { background: var(--pk); }
+.plg .lg-pr { border: 1.5px dashed var(--pk); }
+.plg .lg-f { background: color-mix(in srgb, var(--h2) 35%, transparent); }
+.pavg { margin: 0; font-size: 13px; }
+.pmon { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; margin-top: 10px; }
+.pmon b { font-size: 15px; }
+.pmon button { min-height: 30px; padding: 4px 12px; }
+.pday:disabled { opacity: 1; cursor: default; }
+.pday.fut:not(.per):not(.fert) .pc { color: var(--mu); }
+.pday.m1 .pw { color: var(--tx); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: .04em; }
+.phint { margin: 8px 0 0; font-size: 13px; }
+.bmark { display: inline-block; flex: none; background: currentColor; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+
+.opt.ox:disabled { opacity: .55; cursor: default; }
+/* Log tab: "Scan barcode" and "+ Add meal" side by side, same height and look. */
+.row > .lab2 { display: flex; align-items: center; justify-content: center; align-self: stretch; }
+button.lab2 { border: 0; border-radius: 10px; padding: 11px; min-height: 0; }
+/* Same text size for every full-size action button, whether it is a <button> or a file-picker <label>. */
+.lab, .lab2 { font-size: 16px; }
+.ibtn { white-space: nowrap; }
+/* Exercise menu button: round, icon in the exact centre. */
+button.bm { width: 40px; height: 40px; min-height: 40px; padding: 0; border-radius: 50%; display: inline-grid; place-items: center; }
+/* Exercise screen: workout strip + previous / next */
+.exs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 12px; padding: 4px 16px 6px; }
+.exs::-webkit-scrollbar { display: none; }
+.exs button { position: relative; flex: none; width: 58px; height: 58px; padding: 0; border-radius: 16px; background: var(--card); border: 1.5px solid var(--ln); overflow: hidden; display: block; }
+.exs button > span:first-child, .exs button svg { display: block; width: 100%; height: 100%; }
+.exs button.on { border-color: var(--tx); box-shadow: 0 0 0 1.5px var(--tx); }
+.exs button.dn { opacity: .6; }
+.exn { position: absolute; left: 4px; top: 4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--btn); color: var(--btnt); font-size: 11px; font-weight: 700; line-height: 18px; text-align: center; }
+/* Manual button: text sits a little lower so its baseline lines up with the bottom of the flame. */
+.ibl { position: relative; top: 2px; }
+.tipc-n { flex: 1; font-size: 13px; }
+.tipt .eyebrow { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Recipes: active filter chips under the count, and the filter pop-up */
+.rchips { display: flex; flex-wrap: wrap; gap: 6px; margin: -2px 2px 12px; }
+.rchip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px 6px 12px; border-radius: 999px; background: var(--ac2); color: var(--tx); border: 1px solid var(--ln); font-size: 14px; font-weight: 600; }
+.rchip span { font-size: 11px; opacity: .7; }
+.rfl { margin: 8px 2px 2px; font-size: 13px; font-weight: 600; }
+.rfm { margin: 0 -6px; padding: 0 3px; }
+.rfg { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.rfr { display: grid; grid-template-columns: 86px 1fr; align-items: center; gap: 8px; }
+.rfr > span { font-size: 15px; line-height: 1.2; color: var(--mu); position: relative; top: 2px; }
+.rfr .seg { margin-top: 0; gap: 2px; }
+.swr { width: 100%; display: flex; align-items: center; justify-content: space-between; margin-top: 10px; padding: 4px 2px; background: none; color: var(--tx); border-radius: 0; font-weight: 400; }
+.swr i { position: relative; flex: none; width: 50px; height: 30px; border-radius: 15px; background: rgba(127, 127, 127, .3); transition: background .2s; }
+.swr i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .25); transition: transform .2s; }
+.swr[aria-checked="true"] i { background: var(--ac); }
+.swr[aria-checked="true"] i::after { transform: translateX(20px); }
+.swr:active { transform: none; }
+.lnk { background: none !important; border: 0 !important; color: var(--ac) !important; }
+/* Training plan: custom number of workouts */
+.cnum { display: inline-flex; align-items: center; gap: 5px; }
+.cust { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ln); }
+.cust > label { display: block; font-size: 13px; font-weight: 600; color: var(--mu); margin: 0 2px 6px; }
+.cust .row { align-items: stretch; }
+.custf { flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 0 14px; border-radius: 12px; border: 1.5px solid var(--ac); background: var(--solid); }
+.custf:focus-within { box-shadow: 0 0 0 3px var(--ac2); }
+.custf input { flex: 1; min-width: 0; border: 0 !important; background: none !important; box-shadow: none !important; padding: 11px 0; font-size: 17px; font-weight: 700; outline: none; -moz-appearance: textfield; appearance: textfield; }
+.custf input::-webkit-outer-spin-button, .custf input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.custf > span { flex: none; color: var(--mu); font-size: 15px; }
+.cust .row > button { flex: none; padding-inline: 22px; }
+.cust p { margin: 6px 2px 0; font-size: 13px; }
+/* Choose workout: "Do next" pill beside each workout */
+.nxt { flex: none; align-self: center; padding: 8px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; background: transparent; color: var(--tx); border: 1px solid var(--ln); }
+.nxt.on { background: var(--btn); color: var(--btnt); border-color: transparent; }
+/* Edit workout: Undo bar after each change */
+.undo { position: sticky; bottom: 0; display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 8px 8px 16px; border-radius: 14px; background: var(--btn); color: var(--btnt); box-shadow: var(--sh); animation: sh-up .2s ease; }
+.undo span { flex: 1; min-width: 0; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.undo button { flex: none; padding: 7px 14px; background: transparent; color: var(--btnt); border: 1px solid currentColor; font-size: 14px; }

@@ -55,7 +55,7 @@ export function dish(r: { t: string; ing: string[] }){const txt=r.ing.join(" ").
  nuts:(x,y)=>E(7,()=>`<ellipse cx="${x+J(20)}" cy="${y+J(14)}" rx="3.2" ry="2.2" transform="rotate(${rnd()*180} ${x} ${y})" fill="#9a6a3e"/>`)};
  const body=cats.map((c,i)=>F[c](sl[i%sl.length][0],sl[i%sl.length][1])).join("");
  return`<svg viewBox="0 0 100 100" style="width:96px;flex:none" role="img" aria-label="Illustration of ${esc(r.t)}"><circle cx="50" cy="52" r="47" fill="#00000014"/><circle cx="50" cy="50" r="47" fill="#fbfaf7" stroke="#e2ddd2"/><circle cx="50" cy="50" r="38" fill="${bowl?"#f3ead7":"#f4f1ea"}" stroke="#e6dfd0"/>${body}</svg>`}
-export function hormones(c, p) {const L=c.len||28,ov=L-14,per=c.per||5,W=340,H=150,X=d=>10+(d-1)/(L-1)*(W-20),Y=v=>H-24-v*.92*(H-44),g=(d,m,s)=>Math.exp(-Math.pow((d-m)/s,2)),
+export function hormones(c, p) {const L=c.len||26,ov=L-14,per=c.per||5,W=340,H=150,X=d=>10+(d-1)/(L-1)*(W-20),Y=v=>H-24-v*.92*(H-44),g=(d,m,s)=>Math.exp(-Math.pow((d-m)/s,2)),
  E=d=>.14+.78*g(d,ov-1,2.1)+.38*g(d,ov+7,3.6),Pg=d=>.05+.95*g(d,ov+7,3.4),T=d=>.22+.3*g(d,ov,1.6)+.06*g(d,ov+6,3),
  sm=pts=>{let s="M"+pts[0][0].toFixed(1)+","+pts[0][1].toFixed(1);for(let i=0;i<pts.length-1;i++){const a=pts[i-1]||pts[i],b=pts[i],c2=pts[i+1],d=pts[i+2]||c2;s+=`C${(b[0]+(c2[0]-a[0])/6).toFixed(1)},${(b[1]+(c2[1]-a[1])/6).toFixed(1)} ${(c2[0]-(d[0]-b[0])/6).toFixed(1)},${(c2[1]-(d[1]-b[1])/6).toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)}`}return s},
  path=f=>{const P=[];for(let d=1;d<=L+.01;d+=1)P.push([X(d),Y(f(d))]);return sm(P)},

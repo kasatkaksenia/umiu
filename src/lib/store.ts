@@ -24,7 +24,7 @@ export interface State {
   hist: Workout[];
   draft: Draft | null;
   tpl: Record<string, string[]>;
-  plan: { days: number; split: string; i: number };
+  plan: { days: number; split: string; i: number; set?: boolean };
   f: FoodEntry[];
   goal: { k: number; p: number; c: number; f: number };
   prof: Profile;
@@ -37,6 +37,8 @@ export interface State {
   /** Small preferences and view settings (filters, chosen style, open panels …). */
   set: Record<string, any>;
   per: Period[];
+  /** Menstrual flow per day (YYYY-MM-DD → 1 light, 2 medium, 3 heavy), like Apple Health. */
+  flow?: Record<string, number>;
   fav: string[];
   eq: string[];
 }
@@ -66,6 +68,8 @@ export type Sheet =
   | { t: "col"; items?: { title: string; img: string }[]; msg?: string }
   | { t: "csel"; sel: string[] }
   | { t: "qf" }
+  | { t: "ntf" }
+  | { t: "rf" }
   | { t: "gp" }
   | { t: "goals" }
   | { t: "look" }

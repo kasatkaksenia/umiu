@@ -75,3 +75,21 @@ With the Claude in Chrome extension connected (`/chrome` in Claude Code), Claude
 | Save plan was far below the equipment list on desktop | Second Save button in the left column on wide screens |
 | "about about 80%" in the welcome-back card (from the first version) | Text fixed |
 | Small inputs made iOS zoom in on focus | Every field is at least 16px |
+| Cycle phase card: widgets button covered the progress bar | Button moved into the first line (`.stl`) |
+| Typing "62." in a weight lost the dot, so decimals were hard to enter; "62,5" ignored | `SetInput` keeps the typed text; comma becomes a dot |
+| Phone gaps between widgets were 24px between columns, 12px elsewhere (flex margins don't collapse) | `.cols` is block on phones; one `--vgap` for cards, grids, Cycle columns |
+| Quote banner decoration sat under the filter button | Decoration kept left of the button |
+| Breathing card changed height while the instructions changed | Fixed stage for the orb, three-line text box |
+| Native select arrow touched the right border | Own CSS arrow, 40px right padding |
+| Delete pop-up looked like stock iOS (blue buttons) | App font, colours and pill buttons |
+| Add-exercise search hid "Machine hip thrust" (equipment not ticked, or already in the workout) | Separate groups for both while searching |
+| Generator made 2 exercises when 6 were asked (few ticked machines) | Fills in less strict passes |
+| Icon in "Manual" sat 10px from the text; filter icons off-centre | No margin on icons in buttons, flex gap |
+| Nutrition tip card changed size between tips | All tips stacked in one grid cell |
+| Exercise menu ☰ glyph sat off-centre | Drawn SVG icon in a 40px round button |
+| "Add meal" text was 14px next to 16px "Scan barcode" | `.lab`, `.lab2` fixed at 16px |
+| Scan barcode (label) stayed 16px while buttons in rows shrink to 14px on small phones | Same small-screen rule for `.lab`/`.lab2` |
+| Nutrition tip card grew 3px when a long topic name wrapped | Topic label on one line |
+| "Scan barcode" wrapped to two lines on iPhone SE, so "Add meal" looked padded differently | Two-button rows: one line, 8px side padding on small phones |
+| Swipe didn't work over the exercise demo, header or empty space | Listener on the whole page; demo's inner SVG ignores touches |
+| Custom "10" chip cut off at the row's right edge after Set | Row scrolls to the end after saving |

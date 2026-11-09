@@ -1,10 +1,13 @@
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useIonRouter } from "@ionic/react";
 import { CD, EX } from "../../data/exercises";
-import { fig } from "../../lib/figures";
+import { fig, figSvg } from "../../lib/figures";
 import { S, useStore } from "../../lib/store";
-import { adv, cleanNum, muscles, rowOp, rowsOf, setDone, setTxt, setVal } from "../../lib/train";
+import { adv, cleanNum, dr, muscles, rowOp, rowsOf, setDone, setTxt, setVal } from "../../lib/train";
 import { BackButton, Page } from "../../components/layout";
 import { FigAnim, Svg } from "../../components/ui";
+import { dmy } from "../../lib/util";
 
 export function ExerciseScreen() {
   useStore();
@@ -15,6 +18,7 @@ export function ExerciseScreen() {
     <Page title={e[0]}>
       <BackButton fallback="/train" />
       <h1>{e[0]}</h1>
+      <Swipe id={id}>
       <div className="cols c-even">
         <div className="col">
           <div className="card">
@@ -46,7 +50,66 @@ export function ExerciseScreen() {
           </div>
         </div>
       </div>
+      </Swipe>
     </Page>
+  );
+}
+
+/**
+ * Exercises of the current workout: a strip of all of them (tap to jump) and a left/right swipe
+ * anywhere on the screen to go to the next / previous one. Only shown when the exercise is in the workout.
+ */
+function Swipe({ id, children }: { id: string; children: React.ReactNode }) {
+  const r = useIonRouter();
+  const ids = dr().ids, i = ids.indexOf(id);
+  const strip = useRef<HTMLDivElement>(null), box = useRef<HTMLDivElement>(null);
+  const go = (j: number) => j >= 0 && j < ids.length && j != i && r.push("/train/ex/" + ids[j], j > i ? "forward" : "back", "replace");
+  const goRef = useRef(go);
+  goRef.current = go;
+  useEffect(() => {
+    const st = strip.current, el = st?.querySelector<HTMLElement>(".on");
+    if (st && el) st.scrollLeft = el.offsetLeft - (st.clientWidth - el.offsetWidth) / 2;
+  }, [id]);
+  // The swipe listens on the whole screen (header and empty space below the cards too), not just the cards.
+  useEffect(() => {
+    const pg = box.current?.closest<HTMLElement>(".ion-page");
+    if (!pg || i < 0) return;
+    let t0: { x: number; y: number } | null = null;
+    const start = (ev: TouchEvent) => {
+      const p = ev.touches[0], tg = ev.target as HTMLElement;
+      // Leave the screen edge to the iOS back gesture, let the strip scroll on its own, ignore multi-touch.
+      t0 = ev.touches.length > 1 || p.clientX < 28 || tg.closest(".exs, .ov") ? null : { x: p.clientX, y: p.clientY };
+    };
+    const end = (ev: TouchEvent) => {
+      const a = t0, p = ev.changedTouches[0];
+      t0 = null;
+      if (!a) return;
+      const dx = p.clientX - a.x, dy = p.clientY - a.y;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) goRef.current(dx < 0 ? i + 1 : i - 1);
+    };
+    pg.addEventListener("touchstart", start, { passive: true });
+    pg.addEventListener("touchend", end, { passive: true });
+    return () => {
+      pg.removeEventListener("touchstart", start);
+      pg.removeEventListener("touchend", end);
+    };
+  }, [i]);
+  if (i < 0) return <div ref={box}>{children}</div>;
+  return (
+    <div ref={box}>
+      <div className="exs" ref={strip} role="list" aria-label="Exercises in this workout">
+        {ids.map((k, j) => {
+          const R = rowsOf(k), n = R.filter(x => x.d).length;
+          return (
+            <button key={k} role="listitem" className={(j == i ? "on" : "") + (n && n == R.length ? " dn" : "")} aria-current={j == i} aria-label={`${j + 1}. ${EX[k][0]}, ${n} of ${R.length} done`} onClick={() => go(j)}>
+              <Svg as="span" html={figSvg(k, 0)} />
+              <span className="exn">{j + 1}</span>
+            </button>
+          );
+        })}
+      </div>
+      {children}
+    </div>
   );
 }
 
@@ -55,7 +118,7 @@ function SetsTable({ id }: { id: string }) {
   // [field, column heading, keyboard, accessible name]
   const cols: [("r" | "w" | "i"), string, "numeric" | "decimal", string][] = C
     ? C.map(c => [c[0] as "r" | "w" | "i", c[1], "decimal", c[1]])
-    : [["r", "Reps", "numeric", "Reps"], ["w", "kg", "decimal", "Weight"]];
+    : [["w", "kg", "decimal", "Weight"], ["r", "Reps", "numeric", "Reps"]];
   const unit = C ? "block" : "set";
   return (
     <table className="tb">
@@ -68,8 +131,7 @@ function SetsTable({ id }: { id: string }) {
             <td>{j + 1}</td>
             {cols.map(([k, , im, l]) => (
               <td key={k}>
-                <input type="text" inputMode={im} pattern={im == "numeric" ? "[0-9]*" : undefined} aria-label={`${l} ${unit} ${j + 1}`}
-                  value={x[k] == null ? "" : String(x[k])} onChange={ev => setVal(id, j, k, cleanNum(id, k, ev.target.value))} />
+                <SetInput id={id} j={j} k={k} im={im} label={`${l} ${unit} ${j + 1}`} value={x[k]} />
               </td>
             ))}
             <td>
@@ -92,6 +154,24 @@ function SetsTable({ id }: { id: string }) {
   );
 }
 
+/** One cell of the sets table. Keeps the typed text (e.g. "62." on the way to "62.5") and stores the number. */
+function SetInput({ id, j, k, im, label, value }: { id: string; j: number; k: "r" | "w" | "i"; im: "numeric" | "decimal"; label: string; value: number | "" | undefined }) {
+  const shown = value == null ? "" : String(value);
+  const [txt, setTxt] = useState(shown);
+  useEffect(() => {
+    if (txt === "" ? shown !== "" : +txt !== +shown) setTxt(shown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shown]);
+  return (
+    <input type="text" inputMode={im} pattern={im == "numeric" ? "[0-9]*" : undefined} aria-label={label} value={txt}
+      onChange={ev => {
+        const v = cleanNum(id, k, ev.target.value);
+        setTxt(v);
+        setVal(id, j, k, v == "." ? "" : v);
+      }} />
+  );
+}
+
 export function ExerciseHistory() {
   useStore();
   const { id } = useParams<{ id: string }>();
@@ -106,7 +186,7 @@ export function ExerciseHistory() {
           const x = w.it.find(y => y.id == id)!;
           return (
             <div className="card" key={i}>
-              <b>{w.d}</b> <span className="mu">{w.n}</span>
+              <b>{dmy(w.d)}</b> <span className="mu">{w.n}</span>
               {x.s.map((s, j) => <div className="li" key={j}><span className="mu">Set {j + 1}</span><span>{setTxt(id, s)}</span></div>)}
             </div>
           );

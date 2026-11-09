@@ -66,7 +66,6 @@ export function SideMenu() {
         </nav>
         <div className="side-foot">
           <button className="g s" onClick={() => openSheet({ t: "look" })}>Style &amp; data</button>
-          <p className="mu">Saved on this device</p>
         </div>
       </div>
     </IonMenu>
@@ -77,7 +76,6 @@ export function TopBar() {
   return (
     <div className="top">
       <span className="brand"><Logo /></span>
-      <span className="sync">Saved on this device</span>
       <button className="lk" aria-label="Style and data" onClick={() => openSheet({ t: "look" })}>
         <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />

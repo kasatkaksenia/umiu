@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { useIonAlert, useIonRouter } from "@ionic/react";
 import { CD, EX, SPL } from "../../data/exercises";
 import { fig, figSvg } from "../../lib/figures";
 import { S, UI, commit, openSheet, render, save, useStore } from "../../lib/store";
-import { comeback, dr, fin, nameOf, rmEx, rowsOf, setTxt, vol, wkDone } from "../../lib/train";
-import { TODAY } from "../../lib/util";
+import { comeback, dr, ewName, fin, nameOf, rmEx, rowsOf, setTxt, vol, wkDone } from "../../lib/train";
+import { TODAY, dmy } from "../../lib/util";
 import { Hero, Ico, Svg, Tabs } from "../../components/ui";
 import { Page } from "../../components/layout";
 
@@ -12,7 +13,7 @@ export default function Train() {
   const v: "w" | "h" = S.set.tv || "w";
   return (
     <Page title="Train">
-      <Hero kind="train" seed={1} a="Your next" b="workout" tag="movement" />
+      <Hero kind="train" seed={1} a="Your next" b="workout" tag="movement" icon={4} />
       <Tabs items={[["w", "Workout"], ["h", "History"]]} cur={v} on={k => {
         S.set.tv = k;
         S.set.hw = null;
@@ -51,8 +52,8 @@ function Workout() {
         <div className="card">
           <div className="mu eyebrow">Next workout</div>
           <div className="row" style={{ alignItems: "center", margin: "6px 0 10px" }}>
-            <div>
-              <h2 style={{ margin: 0, fontSize: 22 }}>{nameOf(D.n)}</h2>
+            <div style={{ minWidth: 0 }}>
+              <WorkoutName k={D.n} />
               <div className="mu">{D.ids.length} exercises · {sets} sets</div>
             </div>
             <Svg className="wfig" html={fig([...P].join(), [...Q].filter(x => !P.has(x)).join())} />
@@ -68,6 +69,32 @@ function Workout() {
           <button style={{ width: "100%" }} onClick={() => fin()}>Finish workout</button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/** Workout title; the pencil turns it into a text field. */
+function WorkoutName({ k }: { k: string }) {
+  const [edit, setEdit] = useState(false);
+  const [txt, setTxt] = useState("");
+  const done = () => {
+    ewName(k, txt);
+    setEdit(false);
+  };
+  if (edit)
+    return (
+      <div className="wkn">
+        <input autoFocus maxLength={32} aria-label="Workout name" value={txt} onChange={e => setTxt(e.target.value)} onBlur={done}
+          onKeyDown={e => e.key == "Enter" && done()} />
+      </div>
+    );
+  return (
+    <div className="wkn">
+      <h2>{nameOf(k)}</h2>
+      <button className="g s ic" aria-label="Rename workout" onClick={() => {
+        setTxt(nameOf(k));
+        setEdit(true);
+      }}>✎</button>
     </div>
   );
 }
@@ -90,7 +117,7 @@ function ExRow({ id }: { id: string }) {
         ev.stopPropagation();
         UI.menu = menu ? null : id;
         render();
-      }}>☰</button>
+      }}><Ico k="menu" s={18} /></button>
       {menu && (
         <div className="pop" onClick={ev => ev.stopPropagation()}>
           <button onClick={() => {
@@ -176,14 +203,14 @@ function History() {
         </div>
       </div>
       <div className="col">
-        <h2>{S.set.hd ? "Workouts on " + S.set.hd : "Recent workouts"}</h2>
+        <h2>{S.set.hd ? "Workouts on " + dmy(S.set.hd) : "Recent workouts"}</h2>
         {L.length ? L.map(([w, i]) => (
           <button key={i} className="card li" onClick={() => {
             S.set.hw = i;
             save();
             render();
           }}>
-            <span><b>{w.n}</b><br /><span className="mu">{w.d} · {w.it.length} exercises · {vol(w)} kg volume</span></span>
+            <span><b>{w.n}</b><br /><span className="mu">{dmy(w.d)} · {w.it.length} exercises · {vol(w)} kg volume</span></span>
             <span>›</span>
           </button>
         )) : <p className="mu">No workouts yet.</p>}
@@ -201,7 +228,7 @@ function WorkoutDetail() {
         S.set.hw = null;
         commit();
       }}>‹ Back</button>
-      <h2>{w.n} <span className="mu">{w.d}</span></h2>
+      <h2>{w.n} <span className="mu">{dmy(w.d)}</span></h2>
       <div className="grid-cards">
         {w.it.map((x, k) => (
           <div className="card" key={k}>

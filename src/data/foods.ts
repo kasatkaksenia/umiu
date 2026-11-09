@@ -1,7 +1,8 @@
 // Food database (per 100 g), aliases for Russian / Bulgarian search, recipes.
 /* eslint-disable */
 export interface Food { n: string; k: number; p: number; c: number; f: number; b?: number }
-export interface Recipe { t: string; p: number; k: number; c: number; f: number; m?: number; ing: string[]; st: string[]; cu?: number; img?: string }
+export type Cat = "breakfast" | "lunch" | "dinner" | "snack" | "dessert";
+export interface Recipe { t: string; p: number; k: number; c: number; f: number; m?: number; ing: string[]; st: string[]; cu?: number; img?: string; cat?: Cat }
 export const FD: Record<string, Food> = {};
 `chicken|Chicken breast|120|22.5|0|2.6
 thigh|Chicken thigh (skinless)|121|19.7|0|4.1
@@ -188,8 +189,8 @@ Chicken thigh traybake|thigh:220,potato:200,zuc:150,pep:100,oil:8|Chop everythin
 Tuna pasta salad|tuna:150,wpasta:80,tom:100,cuc:80,oil:8,feta:30|Cook and cool the pasta.;Mix with tuna, tomato, cucumber and feta.;Dress with oil.|15
 Beef and broccoli with rice|beef:200,broc:200,brice:120,soy:15,garlic:5|Cook the rice.;Brown the beef with garlic.;Add broccoli and soy; cook 5 minutes.|25
 Cottage cheese protein pancakes|cott:200,egg:100,oats:60,banana:80|Blend all the ingredients.;Cook small pancakes 2 minutes a side.|15`;
-function mkR(l: string, tm?: number): Recipe {const[t,ing,st,m]=l.split("|");let k=0,p=0,c=0,f=0;const I=ing.split(",").map(x=>{const[key,g]=x.split(":"),d=FD[key],n=+g;k+=d.k*n/100;p+=d.p*n/100;c+=d.c*n/100;f+=d.f*n/100;const u=UN[key];return u?`${n/u[0]} ${n/u[0]>1?u[2]:u[1]}`:`${n} g ${d.n}`});
- return{t,p:Math.round(p),k:Math.round(k),c:Math.round(c),f:Math.round(f),ing:I,st:st.split(";"),m:+m||tm||20}}
+function mkR(l: string, tm?: number): Recipe {const[t,ing,st,m,cat]=l.split("|");let k=0,p=0,c=0,f=0;const I=ing.split(",").map(x=>{const[key,g]=x.split(":"),d=FD[key],n=+g;k+=d.k*n/100;p+=d.p*n/100;c+=d.c*n/100;f+=d.f*n/100;const u=UN[key];return u?`${n/u[0]} ${n/u[0]>1?u[2]:u[1]}`:`${n} g ${d.n}`});
+ return{t,p:Math.round(p),k:Math.round(k),c:Math.round(c),f:Math.round(f),ing:I,st:st.split(";"),m:+m||tm||20,...(cat?{cat:cat as Cat}:{})}}
 export const REC: Recipe[] = [
 {t:"Greek yogurt protein bowl",p:48,k:380,c:33,f:10,ing:["200 g Greek yogurt 0%","30 g whey protein","80 g berries","20 g oats","10 g walnuts"],st:["Stir whey into the yogurt until smooth.","Top with berries, oats and chopped walnuts."]},
 {t:"Chicken & quinoa plate",p:52,k:610,c:60,f:21,ing:["170 g chicken breast","70 g quinoa (dry)","150 g broccoli","1 tbsp olive oil","1 lemon"],st:["Season chicken and pan-sear 6 min per side until 75°C inside.","Boil quinoa 12–15 min; steam broccoli 5 min.","Plate and finish with oil and lemon juice."]},
@@ -218,6 +219,68 @@ bg13|Lactima – Izvara (quark)|90|12|3.5|3|лактима извара|laktima 
 bg14|Madjarov – Pileshko fileta (chicken breast)|115|22|0|3|маджаров пилешко|madzharov madjarov`;
 BGP.split("\n").forEach(l=>{const[k,n,kc,p,c,f,cy,lat]=l.split("|");FD[k]={n,k:+kc,p:+p,c:+c,f:+f,b:1};ALI[k]=cy+"|"+cy+" "+lat});
 REC.push(...RW3.split("\n").map(l => mkR(l)));
+
+// More recipes (Nov 2026): mostly desserts, snacks and breakfasts, which were missing. 5th field = category.
+const RW4=`Chocolate protein mousse|skyr:250,whey:25,cocoa:10,dchoc:10,berry:50|Whisk skyr, whey and cocoa until smooth and airy.;Chill 10 minutes.;Top with grated dark chocolate and berries.|10|dessert
+Baked cinnamon apples with yogurt|apple:300,gyog:200,wal:15,honey:10|Core and slice the apples, sprinkle with cinnamon.;Bake at 190 °C for 20 minutes.;Serve warm over yogurt with walnuts and honey.|25|dessert
+Peanut butter protein cookies|oats:80,whey:30,pb:30,banana:100,egg:50|Mash the banana and mix with everything else.;Shape 8 small cookies on a lined tray.;Bake at 180 °C for 12 minutes.|20|dessert
+Mango lassi frozen yogurt|gyog:250,mango:150,whey:15,lemon:10|Blend everything until smooth.;Freeze in a tub for 2 hours, stirring twice.;Scoop and serve.|10|dessert
+Cottage cheese chocolate cream|cott:250,cocoa:10,honey:15,berry:80|Blend cottage cheese, cocoa and honey until silky.;Spoon into a glass.;Top with berries.|5|dessert
+Berry crumble with skyr|berry:200,oats:40,alm:15,butter:10,skyr:200|Put the berries in a small dish.;Rub oats, chopped almonds and butter into a crumble and scatter on top.;Bake at 190 °C for 20 minutes; serve with skyr.|30|dessert
+Banana nice cream with peanut butter|banana:200,pb:15,almilk:60,whey:20|Freeze sliced banana overnight.;Blend with almond milk and whey until creamy.;Swirl in peanut butter.|5|dessert
+Chocolate chia pots|chia:30,milk:250,cocoa:8,honey:10,whey:20|Whisk milk, whey, cocoa and honey.;Stir in chia and rest 5 minutes, then stir again.;Chill at least 2 hours.|5|dessert
+Hummus veggie snack box|hummus:80,carrot:100,cuc:100,pep:80,egg:100|Boil the eggs 9 minutes, cool and halve.;Cut the vegetables into sticks.;Pack with hummus for dipping.|15|snack
+Greek yogurt ranch dip with crudités|gyog:200,garlic:3,lemon:10,carrot:100,cuc:100|Mix yogurt with grated garlic, lemon, dill and pepper.;Cut the vegetables into sticks.;Dip and enjoy.|10|snack
+Edamame with sea salt and chili|edam:200,soy:5,lemon:5|Boil the edamame 4 minutes.;Drain and toss with salt, chili and a little soy.;Squeeze over lemon.|5|snack
+Tuna cucumber bites|tuna:120,gyog:40,cuc:200,lemon:5|Mix tuna with yogurt, lemon and pepper.;Slice the cucumber into thick rounds.;Spoon tuna on top.|10|snack
+Roasted chickpeas|chick:200,oil:8|Dry the chickpeas well.;Toss with oil, paprika and salt.;Roast at 200 °C for 25 minutes until crunchy.|30|snack
+Apple slices with peanut butter and seeds|apple:180,pb:20,pump:10,gyog:150|Slice the apple.;Spread with peanut butter.;Sprinkle pumpkin seeds; serve with a pot of yogurt.|5|snack
+Smoked salmon cucumber rolls|smoked:80,cott:80,cuc:150|Slice the cucumber lengthways into thin ribbons.;Spread with cottage cheese and add salmon.;Roll up and pin.|10|snack
+Protein trail mix with yogurt|alm:15,wal:10,pump:10,dchoc:10,skyr:200|Mix nuts, seeds and chopped chocolate.;Serve over skyr or on the side.|3|snack
+Savoury cottage cheese bowl|cott:250,tom:100,cuc:80,egg:50,bread:40|Spoon cottage cheese into a bowl.;Add chopped tomato, cucumber and a sliced boiled egg.;Season and serve with toast.|10|breakfast
+Spinach and mushroom egg wrap|egg:150,spin:60,mush:80,wrap:60,feta:20|Fry the mushrooms, add spinach to wilt.;Pour in the beaten eggs and cook as a flat omelette.;Roll in the wrap with feta.|12|breakfast
+Apple pie overnight oats|oats:60,milk:200,whey:25,apple:100,wal:10|Mix oats, milk and whey with cinnamon.;Stir in grated apple.;Chill overnight; top with walnuts.|5|breakfast
+Mango coconut chia breakfast|chia:25,gyog:200,mango:100,almilk:100|Stir chia into almond milk and rest 10 minutes.;Layer with yogurt and diced mango.|10|breakfast
+Chicken pesto pasta salad|chicken:150,wpasta:70,tom:100,spin:40,parm:15,oil:8|Cook and cool the pasta.;Pan-sear and slice the chicken.;Toss with tomato, spinach, oil, basil and parmesan.|25|lunch
+Salmon niçoise salad|salmon:130,potato:150,gbean:100,egg:50,lett:60,oil:8|Boil the potatoes and beans; boil the egg 8 minutes.;Bake the salmon at 200 °C for 12 minutes.;Arrange on lettuce and dress with oil and lemon.|30|lunch
+Lemon garlic shrimp with couscous|shrimp:200,cous:70,zuc:150,garlic:5,lemon:10,oil:8|Pour boiling water over the couscous and cover 5 minutes.;Fry garlic and zucchini, add the shrimp for 3 minutes.;Finish with lemon and serve over couscous.|20|dinner
+Baked chicken and cauliflower curry|chicken:200,caul:200,pass:150,gyog:60,brice:60|Toss chicken and cauliflower with curry spices.;Bake with the tomatoes at 200 °C for 25 minutes.;Stir in yogurt; serve with rice.|35|dinner`;
+REC.push(...RW4.split("\n").map(l => mkR(l)));
+
+// More recipes (Nov 2026, second batch).
+const RW5=`Pumpkin spice protein oats|oats:60,milk:200,whey:25,banana:60,pump:10|Cook oats in milk with cinnamon and nutmeg.;Stir in whey off the heat.;Top with sliced banana and pumpkin seeds.|8|breakfast
+Smoked salmon cottage cheese toast|bread:80,cott:80,smoked:80,cuc:50,lemon:5|Toast the bread.;Spread with cottage cheese.;Top with salmon, cucumber and lemon.|5|breakfast
+Berry protein smoothie bowl|berry:150,skyr:200,whey:20,banana:60,chia:10|Blend berries, skyr, whey and banana until thick.;Pour into a bowl.;Top with chia seeds.|5|breakfast
+Veggie breakfast hash with eggs|potato:200,pep:80,onion:50,egg:100,oil:8|Dice and pan-fry the potato in oil for 12 minutes.;Add pepper and onion for 4 minutes.;Make two wells, crack in the eggs and cover until set.|20|breakfast
+Turkey club lettuce wraps|turkeyb:150,lett:80,tom:80,avo:40,gyog:30|Slice turkey, tomato and avocado.;Spread yogurt on large lettuce leaves.;Fill and roll up.|10|lunch
+Mediterranean quinoa salad|quin:60,chick:120,cuc:100,tom:100,feta:40,oil:8|Cook and cool the quinoa.;Chop cucumber and tomato.;Toss everything with oil, lemon and oregano.|20|lunch
+Chicken and avocado rice paper rolls|chicken:150,carrot:60,cuc:60,avo:40,soy:10|Slice the cooked chicken and vegetables into strips.;Soften rice paper in warm water.;Fill, roll and dip in soy sauce.|20|lunch
+Lentil and feta soup|lent:70,carrot:80,onion:60,pass:200,feta:30|Fry the onion and carrot for 5 minutes.;Add lentils, tomatoes and 600 ml water; simmer 20 minutes.;Blend half and crumble feta on top.|30|lunch
+Egg salad sandwich|egg:150,gyog:40,bread:80,lett:30|Boil the eggs 9 minutes, cool and chop.;Mix with yogurt, mustard and pepper.;Fill the bread with lettuce and egg.|15|lunch
+Garlic butter steak bites with greens|steak:200,butter:10,garlic:5,gbean:150,potato:150|Boil the potatoes.;Sear cubed steak in a hot pan 3 minutes.;Add butter and garlic; serve with steamed beans and potatoes.|25|dinner
+Honey soy salmon traybake|salmon:150,broc:150,sweet:150,soy:10,honey:8|Cube the sweet potato and roast at 200 °C for 15 minutes.;Add broccoli and salmon brushed with soy and honey.;Roast 12 more minutes.|30|dinner
+Turkey taco bowl|turkey:180,rice:60,bblack:80,corn:50,tom:80,gyog:30|Cook the rice.;Brown the turkey with taco spices.;Bowl it up with beans, corn, tomato and a yogurt topping.|25|dinner
+Creamy mushroom chicken|chicken:200,mush:150,gyog:60,spin:60,pasta:60|Sear sliced chicken; set aside.;Fry the mushrooms, add spinach and yogurt off the heat.;Return the chicken and serve with pasta.|25|dinner
+Tofu peanut noodles|tofu:180,pasta:70,pb:15,soy:10,carrot:60,cab:60|Cook the noodles.;Crisp cubed tofu in a pan.;Toss everything with peanut butter, soy and a splash of hot water.|20|dinner
+Protein brownie bites|cocoa:15,whey:30,oats:40,banana:100,egg:50,dchoc:10|Mash the banana and mix in the rest.;Spoon into a mini muffin tray.;Bake at 180 °C for 12 minutes.|20|dessert
+Strawberry skyr popsicles|skyr:300,berry:150,honey:10|Blend everything.;Pour into popsicle moulds.;Freeze at least 4 hours.|5|dessert
+Warm chocolate protein mug cake|whey:30,cocoa:8,egg:50,milk:40,oats:20|Mix everything in a large mug.;Microwave 60–75 seconds.;Rest 1 minute before eating.|3|dessert
+Cottage cheese mango cup|cott:200,mango:100,alm:10|Spoon cottage cheese into a cup.;Top with diced mango and chopped almonds.|3|snack
+Turkey and cheese roll-ups|turkeyb:100,cheddar:20,cuc:80|Lay out turkey slices.;Add a strip of cheese and cucumber.;Roll up tightly.|5|snack
+Spiced roasted edamame|edam:150,oil:5|Toss edamame with oil, paprika and salt.;Roast at 200 °C for 15 minutes.|20|snack`;
+REC.push(...RW5.split("\n").map(l => mkR(l)));
+
+/** Meal category of a recipe: set on newer recipes, guessed from the name for older and own ones. */
+export function catOf(r: Recipe): Cat {
+  if (r.cat) return r.cat;
+  const t = r.t.toLowerCase();
+  if (/pudding|cheesecake|mousse|brownie|cookie|crumble|ice cream|nice cream/.test(t)) return "dessert";
+  if (/shake|parfait|bites|snack|dip\b|egg muffin/.test(t)) return "snack";
+  if (/oats|pancake|omelette|scramble|frittata|shakshuka|toast|breakfast|yogurt protein bowl|power bowl|protein bowl|steak & eggs/.test(t)) return "breakfast";
+  if (/salad|wrap|pita|tacos|soup|poke|melt|sandwich|chowder|lettuce/.test(t)) return "lunch";
+  return "dinner";
+}
+export const CATS: [Cat, string][] = [["breakfast", "Breakfast"], ["lunch", "Lunch"], ["dinner", "Dinner"], ["snack", "Snacks"], ["dessert", "Desserts"]];
 export const nz = (s: string) => String(s).toLowerCase().replace(/ё/g, "е").replace(/й/g, "и");
 export const FDK = Object.keys(FD);
 export const FSRC = FDK.map(k => ({ k, h: nz(FD[k].n + " " + (ALI[k] || "").replace("|", " ")) }));

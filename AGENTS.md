@@ -15,7 +15,20 @@ A personal Train / Food / Cycle app for one owner. It is a **mobile-first respon
 2. **iOS-ready.** Everything must keep working inside a Capacitor iOS app: no server, no browser-only features without a native plan, safe areas respected, inputs ≥ 16 px. See [docs/IOS.md](docs/IOS.md).
 3. **Verify in a browser before saying "done".** Run `npm run qa`, look at the iPhone screenshots, fix, repeat (usually 2–3 rounds). See [docs/QA.md](docs/QA.md).
 
-And the owner's scope rule: **change only what was asked; suggest other improvements instead of making them.**
+## Scope rule (owner's rule)
+
+**Never change anything the owner didn't ask to change.** This covers code, design, copy, docs and refactors alike.
+
+- You may **suggest** other changes (bugs you noticed, UX ideas, cleanups), but make them **only after the owner confirms**.
+- When a request says "suggest", propose options and wait; don't implement.
+- If a requested change forces a side change (e.g. a shared style), say so in the report.
+
+## Git workflow (owner's rule)
+
+- Everything happens on `main`. **Don't create branches.**
+- **Don't commit or push.** Leave changes in the working tree; the owner reviews, commits and pushes manually.
+- At the end of a task, list the changed files (`git status --short`) so the owner knows what to commit.
+- Reading git is fine (`status`, `diff`, `log`, `fetch`). Every push to `main` deploys the live site.
 
 ## Commands
 
@@ -42,6 +55,7 @@ Node comes from nvm and is not on the default PATH in fresh shells: prefix comma
 | [docs/IOS.md](docs/IOS.md) | building the iPhone app, native replacements |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | why things are the way they are, lessons learned, gotchas |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | what's next, known limits |
+| [docs/EXERCISES.md](docs/EXERCISES.md) | every exercise grouped by equipment (generated from `src/data/exercises.ts`) |
 | [HANDOFF.md](HANDOFF.md) | history: the first single-file version and its product decisions (formulas, swap ratings, progression) |
 
 Claude Code skills (in `.claude/skills/`, usable by name):

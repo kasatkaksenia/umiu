@@ -23,7 +23,7 @@ for (const dn of devs) {
       const W = document.documentElement.clientWidth, bad = [];
       pg?.querySelectorAll("main *").forEach(e => {
         const r = e.getBoundingClientRect();
-        if (r.width && (r.right > W + 1 || r.left < -1) && !e.closest(".hs,.tb,.hero,.qc,.tabs")) bad.push(String(e.className || e.tagName));
+        if (r.width && (r.right > W + 1 || r.left < -1) && !e.closest(".hs,.tb,.hero,.qc,.tabs,.pstrip,.exs")) bad.push(String(e.className || e.tagName));
       });
       return bad.slice(0, 5);
     });

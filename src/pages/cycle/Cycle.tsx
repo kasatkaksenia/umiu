@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { EL, HM, MF, MIND, PH, PR, SYM, TL, fmt } from "../../data/cycle";
 import { avq } from "../../lib/art";
-import { Phase, addSym, ahImport, delSym, ent, perAdd, perDel, perEnd, perSort, perStart, phase, qList, setCycle, setMood, setNote, togSym, wOn } from "../../lib/cycle";
+import { DEF_LEN, Phase, addSym, avgOf, delSym, ent, flowOf, perOn, perTog, phase, predOf, setFlow, qList, setCycle, setMood, setNote, togSym, wOn } from "../../lib/cycle";
 import { hormones } from "../../lib/figures";
 import { QX } from "../../data/cycle";
 import { S, commit, openSheet, render, useStore } from "../../lib/store";
-import { A_, TODAY, dDiff, dFmt, dayNo, mod } from "../../lib/util";
-import { Deco, FileButton, Hero, Ico, MoodIcon, Svg, Wico, useArt } from "../../components/ui";
+import { A_, TODAY, dAdd, dDiff, dayNo, dmy, mod } from "../../lib/util";
+import { Deco, Hero, Ico, MoodIcon, Svg, Wico, useArt } from "../../components/ui";
 import { Page } from "../../components/layout";
+import { MOODS } from "../../lib/moods";
 
 const HERO: Record<string, string> = { menstrual: "water", follicular: "grass", ovulation: "petal", luteal: "wind" };
 
@@ -16,7 +17,7 @@ export default function Cycle() {
   const p = phase();
   return (
     <Page title="Cycle">
-      <Hero kind={p ? HERO[p.k] : "wind"} seed={3} a="Move with" b="your cycle" tag="balance" />
+      <Hero kind={p ? HERO[p.k] : "wind"} seed={3} a="Move with" b="your cycle" tag="balance" icon="wave" />
       <div className="masonry">
         <Status p={p} />
         {wOn("per") && <PeriodCard p={p} />}
@@ -43,9 +44,9 @@ export default function Cycle() {
   );
 }
 
-function WidgetsButton() {
+function WidgetsButton({ inline }: { inline?: boolean }) {
   return (
-    <button className="g s ic wbtn" aria-label="Customize widgets" onClick={() => openSheet({ t: "wid" })}><Ico k="sliders" s={16} /></button>
+    <button className={"g s ic" + (inline ? " wbi" : " wbtn")} aria-label="Customize widgets" onClick={() => openSheet({ t: "wid" })}><Ico k="sliders" s={16} /></button>
   );
 }
 
@@ -60,76 +61,121 @@ function Status({ p }: { p: Phase | null }) {
   const x = PH[p.k];
   return (
     <div className="card">
-      <WidgetsButton />
-      <span className="pill">{x.n} phase</span> <b>Day {p.day}</b> of {p.L}
+      {/* Button sits in the first line so it never covers the progress bar. */}
+      <div className="stl">
+        <span><span className="pill">{x.n} phase</span><span><b>Day {p.day}</b> of {p.L}</span></span>
+        <WidgetsButton inline />
+      </div>
       <div className="bar" style={{ margin: "10px 0" }}><i style={{ width: `${(p.day / p.L) * 100}%` }} /></div>
       <p className="mu" style={{ margin: 0 }}>{x.d} Next period in ~{p.next} days.</p>
     </div>
   );
 }
 
+const FLOW = ["None", "Light", "Medium", "Heavy"];
+const WD = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("en", { weekday: "narrow" });
+const dLong = (d: string) => (d == TODAY() ? "Today" : new Date(d + "T12:00:00").toLocaleDateString("en", { weekday: "short", day: "numeric", month: "short" }));
+const MON = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("en", { month: "long", year: d.slice(0, 4) == TODAY().slice(0, 4) ? undefined : "numeric" });
+const MORE = 42; // days added each time the strip is scrolled near an end
+
+/**
+ * Period tracker in the style of Apple Health: an endless strip of days.
+ * Tap a past day (or today) to mark it as a period day, tap again to unmark it;
+ * the last tapped period day can get a flow level. Future days show predictions.
+ */
 function PeriodCard({ p }: { p: Phase | null }) {
-  const L = perSort(), o = L[0] && !L[0].e && dDiff(L[0].s, TODAY()) <= 14 ? L[0] : null, op = !!S.set.pa;
-  const [s, setS] = useState(""), [e, setE] = useState(""), [msg, setMsg] = useState("");
+  const t = TODAY();
+  const [sel, setSel] = useState<string | null>(null);
+  const [rng, setRng] = useState({ a: -MORE, b: 28 }); // first and last day, relative to today
+  const [mid, setMid] = useState(t); // day in the middle of the strip, for the month label
+  const strip = useRef<HTMLDivElement>(null);
+  const shift = useRef(0);
+  const days = Array.from({ length: rng.b - rng.a + 1 }, (_, i) => dAdd(t, rng.a + i));
+  const stride = () => {
+    const c = strip.current?.children;
+    return c && c.length > 1 ? (c[1] as HTMLElement).offsetLeft - (c[0] as HTMLElement).offsetLeft : 44;
+  };
+  const toToday = (smooth?: boolean) => {
+    const st = strip.current, el = st?.querySelector<HTMLElement>(".pday.today");
+    if (!st || !el || !st.clientWidth) return false;
+    const a = st.getBoundingClientRect(), b = el.getBoundingClientRect();
+    st.scrollTo({ left: st.scrollLeft + b.left - a.left - (a.width - b.width) / 2, behavior: smooth ? "smooth" : "auto" });
+    return true;
+  };
+  // Start with today in the middle; the page may still be hidden while Ionic animates it in.
+  useEffect(() => {
+    if (!toToday()) {
+      const tm = setTimeout(() => toToday(), 350);
+      return () => clearTimeout(tm);
+    }
+  }, []);
+  // After adding days on the left, keep the same days in view.
+  useLayoutEffect(() => {
+    if (shift.current && strip.current) {
+      strip.current.scrollLeft += shift.current;
+      shift.current = 0;
+    }
+  }, [rng.a]);
+  const onScroll = () => {
+    const st = strip.current;
+    if (!st) return;
+    const w = stride(), i = Math.floor((st.scrollLeft + st.clientWidth / 2) / w);
+    setMid(days[Math.max(0, Math.min(days.length - 1, i))]);
+    if (st.scrollLeft < w * 7 && !shift.current) {
+      shift.current = MORE * w;
+      setRng(r => ({ ...r, a: r.a - MORE }));
+    } else if (st.scrollLeft + st.clientWidth > st.scrollWidth - w * 7) setRng(r => ({ ...r, b: r.b + MORE }));
+  };
+  const cur = perOn(t), away = Math.abs(dDiff(t, mid)) > 4;
+  const fs = sel ? flowOf(sel) : null;
+  const n = avgOf();
   return (
-    <div className="card">
+    <div className="card pcard">
       <div className="ch"><b className="wt"><Wico k="per" /> Period tracker</b></div>
-      <p style={{ margin: "8px 0" }}>
-        {o ? <>Period day <b>{dDiff(o.s, TODAY()) + 1}</b>, started {dFmt(o.s)}.</>
-          : p ? <>Cycle day <b>{p.day}</b> of {p.L}. Next period in about {p.next} day{p.next == 1 ? "" : "s"}.</>
-            : "Log the first day of your period to start tracking."}
+      <p style={{ margin: "8px 0 2px" }}>
+        {cur ? <>Period day <b>{dDiff(cur.s, t) + 1}</b></>
+          : p ? <>Next period in about <b>{p.next} day{p.next == 1 ? "" : "s"}</b></>
+            : "Tap the days of your last period to start tracking."}
       </p>
-      <div className="row">
-        {o ? <button onClick={perEnd}>Period ended today</button> : <button onClick={() => perStart()}>My period started today</button>}
-        <button className="g" aria-expanded={op} onClick={() => {
-          S.set.pa = op ? 0 : 1;
-          render();
-        }}>{op ? "Close" : "Other date"}</button>
+      <p className="mu pavg">
+        {n ? `Average cycle ${S.cyc!.len} days, from your last ${n + 1} periods.` : `Cycle ${S.cyc?.len || DEF_LEN} days until you log two periods.`}
+      </p>
+      <div className="pmon">
+        <b>{MON(mid)}</b>
+        {away && <button className="g s" onClick={() => toToday(true)}>Today</button>}
       </div>
-      {op && (
-        <>
-          <div className="row" style={{ marginTop: 10 }}>
-            <div><span className="mu">First day</span><input type="date" max={TODAY()} value={s} aria-label="First day" onChange={ev => setS(ev.target.value)} /></div>
-            <div><span className="mu">Last day (optional)</span><input type="date" max={TODAY()} value={e} aria-label="Last day" onChange={ev => setE(ev.target.value)} /></div>
+      <div className="pstrip" ref={strip} onScroll={onScroll} role="group" aria-label="Days: tap to mark or unmark a period day">
+        {days.map(d => {
+          const f = flowOf(d), pd = f == null && d > t ? predOf(d) : null, first = d.slice(8) == "01";
+          const cls = "pday" + (f != null ? " fl f" + f : "") + (pd ? " " + pd : "") + (d == t ? " today" : "") + (d == sel ? " sel" : "") + (d > t ? " fut" : "") + (first ? " m1" : "");
+          return (
+            <button key={d} className={cls} aria-pressed={f != null} disabled={d > t}
+              aria-label={`${dLong(d)}${f != null ? ", period" + (f ? ", " + FLOW[f].toLowerCase() + " flow" : "") : pd == "per" ? ", predicted period" : pd == "fert" ? ", fertile window" : ""}`}
+              onClick={() => {
+                perTog(d);
+                setSel(f == null ? d : null);
+              }}>
+              <span className="pw">{first ? new Date(d + "T12:00:00").toLocaleDateString("en", { month: "short" }) : WD(d)}</span>
+              <span className="pc">{+d.slice(8)}</span>
+            </button>
+          );
+        })}
+      </div>
+      {sel && fs != null ? (
+        <div className="pflow">
+          <b>{dLong(sel)}</b><span className="mu"> · flow (optional)</span>
+          <div className="seg" role="group" aria-label="Period flow">
+            {FLOW.slice(1).map((l, i) => (
+              <button key={l} className={fs == i + 1 ? "on" : ""} aria-pressed={fs == i + 1} onClick={() => setFlow(sel, fs == i + 1 ? 0 : i + 1, true)}>{l}</button>
+            ))}
           </div>
-          <button className="g" style={{ width: "100%", marginTop: 8 }} onClick={() => {
-            if (perAdd(s, e)) {
-              setS("");
-              setE("");
-            }
-          }}>Add period</button>
-        </>
-      )}
-      {L.length > 0 && (
-        <div style={{ marginTop: 10 }}>
-          {L.slice(0, 6).map((x, i) => {
-            const n = x.e ? dDiff(x.s, x.e) + 1 : null, nx = L[i - 1], cl = nx ? dDiff(x.s, nx.s) : null;
-            return (
-              <div className="li" key={x.s}>
-                <span>
-                  <b>{dFmt(x.s)}{x.e ? " – " + dFmt(x.e) : " – now"}</b><br />
-                  <span className="mu">{n ? n + " day" + (n > 1 ? "s" : "") : "ongoing"}{cl && cl <= 60 ? " · cycle " + cl + " days" : ""}</span>
-                </span>
-                <button className="g s ic" aria-label={`Delete period ${dFmt(x.s)}`} onClick={() => perDel(x.s)}>✕</button>
-              </div>
-            );
-          })}
         </div>
+      ) : (
+        <p className="mu phint">Tap a day to mark it as a period day, tap again to unmark. Scroll back to add earlier periods.</p>
       )}
-      <details style={{ marginTop: 10 }}>
-        <summary>Import from Apple Health</summary>
-        <p className="mu" style={{ margin: "8px 0" }}>A web page cannot read Apple Health directly, so there is no live sync. Instead, export once and import the file here:</p>
-        <ol className="mu" style={{ margin: "0 0 8px", paddingLeft: 20 }}>
-          <li>Open the Health app and tap your profile picture.</li>
-          <li>Tap Export All Health Data and save the file.</li>
-          <li>Choose that file (export.zip or export.xml) below.</li>
-        </ol>
-        <FileButton accept=".zip,.xml,application/zip,text/xml" onFiles={async f => {
-          setMsg("Reading the file…");
-          setMsg(await ahImport(f[0]));
-        }}>Choose export file</FileButton>
-        <p className="mu" role="status" style={{ margin: "6px 0 0" }}>{msg}</p>
-      </details>
+      <div className="plg mu" aria-hidden="true">
+        <span><i className="lg-p" />Period</span><span><i className="lg-pr" />Predicted</span><span><i className="lg-f" />Fertile window</span>
+      </div>
     </div>
   );
 }
@@ -184,8 +230,8 @@ function Today() {
       <b>Today</b>
       <div className="row" style={{ margin: "10px 0" }}>
         {[0, 1, 2, 3, 4].map(i => (
-          <button key={i} className={"chip mood" + (e.m == i + 1 ? " on" : "")} aria-label={`Mood ${i + 1} of 5`} aria-pressed={e.m == i + 1}
-            onClick={() => setMood(i + 1)}><MoodIcon i={i} /></button>
+          <button key={i} className={"chip mood" + (e.m == i + 1 ? " on" : "")} aria-label={`Mood: ${MOODS[i].n}`} aria-pressed={e.m == i + 1}
+            onClick={() => setMood(i + 1)}><MoodIcon i={i} s={38} /></button>
         ))}
       </div>
       <button className="g fh" aria-expanded={sy} onClick={() => {
@@ -251,16 +297,18 @@ function Fact() {
   );
 }
 
-/** Guided breathing: an orb grows and shrinks with the instructions. */
+/** Guided breathing: the orb sits in a fixed-size stage in the middle, so the card never changes size. */
 function Breathing() {
   const key = S.set.pr && PR[S.set.pr] ? S.set.pr : "cyc", pr = PR[key];
   const orb = useRef<HTMLDivElement>(null);
   const [run, setRun] = useState(false);
-  const [txt, setTxt] = useState(pr.n + " · " + fmt(pr.dur));
+  const [txt, setTxt] = useState("");
+  const [left, setLeft] = useState(pr.dur);
   useEffect(() => {
     if (!run) {
-      if (orb.current) orb.current.style.transform = "scale(.55)";
-      setTxt(pr.n + " · " + fmt(pr.dur));
+      if (orb.current) orb.current.style.transform = "scale(.62)";
+      setTxt("");
+      setLeft(pr.dur);
       return;
     }
     const t0 = Date.now();
@@ -271,28 +319,28 @@ function Breathing() {
         return;
       }
       const [ph, sc] = pr.f(t);
-      if (orb.current) orb.current.style.transform = `scale(${sc})`;
-      setTxt(ph + " · " + fmt(Math.ceil(pr.dur - t)));
+      // Practices scale the orb between about .5 and 1; keep it inside the stage.
+      if (orb.current) orb.current.style.transform = `scale(${Math.min(1, Math.max(.5, sc))})`;
+      setTxt(ph);
+      setLeft(Math.ceil(pr.dur - t));
     }, 80);
     return () => clearInterval(iv);
   }, [run, key]);
   return (
     <div className="card brw">
-      <div className="row" style={{ alignItems: "center", gap: 12, flexWrap: "nowrap" }}>
+      <b>Breathing &amp; meditation</b>
+      <select aria-label="Practice" value={key} onChange={e => {
+        S.set.pr = e.target.value;
+        setRun(false);
+        commit();
+      }}>
+        {Object.entries(PR).map(([k, v]) => <option key={k} value={k}>{v.n}</option>)}
+      </select>
+      <div className="brs">
         <div className="brc" ref={orb} />
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <b>Breathing &amp; meditation</b>
-          <select aria-label="Practice" value={key} style={{ margin: "6px 0" }} onChange={e => {
-            S.set.pr = e.target.value;
-            setRun(false);
-            commit();
-          }}>
-            {Object.entries(PR).map(([k, v]) => <option key={k} value={k}>{v.n}</option>)}
-          </select>
-          <p className="mu" role="timer" style={{ margin: 0, fontSize: 13 }}>{txt}</p>
-        </div>
+        <span className="brt" role="timer">{fmt(left)}</span>
       </div>
-      <p className="mu" style={{ margin: "8px 0" }}>{pr.d}</p>
+      <p className="brp" aria-live="polite">{run ? txt : pr.d}</p>
       <button style={{ width: "100%" }} onClick={() => setRun(!run)}>{run ? "Stop" : "Start"}</button>
       {pr.w && (
         <details>
@@ -307,7 +355,7 @@ function Breathing() {
 function Setup({ p }: { p: Phase | null }) {
   const c = S.cyc;
   const [start, setStart] = useState(c?.start || "");
-  const [len, setLen] = useState(String(c?.len || 28));
+  const [len, setLen] = useState(String(c?.len || DEF_LEN));
   return (
     <div className="card">
       <b>{p ? "Update" : "Set up"} your cycle</b>
@@ -315,7 +363,7 @@ function Setup({ p }: { p: Phase | null }) {
         <div><span className="mu">Period started</span><input type="date" aria-label="Period started" value={start} onChange={e => setStart(e.target.value)} /></div>
         <div><span className="mu">Cycle length</span><input type="number" aria-label="Cycle length in days" value={len} onChange={e => setLen(e.target.value)} /></div>
       </div>
-      <button style={{ width: "100%", marginTop: 10 }} onClick={() => setCycle(start, +len || 28)}>Save</button>
+      <button style={{ width: "100%", marginTop: 10 }} onClick={() => setCycle(start, +len || DEF_LEN)}>Save</button>
     </div>
   );
 }
@@ -328,7 +376,7 @@ function LastEntries() {
       <b>Last entries</b>
       {hist.map(([d, x]) => (
         <div className="li" key={d}>
-          <span className="hm">{d.slice(5)} {x.m ? <MoodIcon i={x.m - 1} s={18} /> : null}</span>
+          <span className="hm">{dmy(d)} {x.m ? <MoodIcon i={x.m - 1} s={18} /> : null}</span>
           <span className="mu" style={{ textAlign: "right" }}>{x.sy.join(", ")}</span>
         </div>
       ))}

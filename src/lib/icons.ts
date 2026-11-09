@@ -18,13 +18,45 @@ mind:["--pk",`<path d="M9 21a5.500 5.500 0 0 1 .5-11 7 7 0 0 1 13 1.500A4.500 4.
 fact:["--h2",`<path d="M16 3a8 8 0 0 0-4.500 14.600c.8.700 1.200 1.600 1.200 2.600V22h6.600v-1.800c0-1 .4-1.900 1.200-2.600A8 8 0 0 0 16 3z" fill="var(--c)"/><path d="M12.500 25.500h7M13.500 29h5" stroke="var(--c)" stroke-width="2" stroke-linecap="round"/><path d="M12.500 16c0-3.500 2.500-5.500 6.500-5.500 0 3.500-2.500 5.500-6.500 5.500z" fill="var(--solid)" opacity=".92"/>`]});
 WIC.per=["--h1",`<path d="M16 3C11 10 8 14 8 19a8 8 0 0 0 16 0c0-5-3-9-8-16z" fill="var(--c)"/><path d="M12.500 20a3.500 3.500 0 0 0 3.500 3.500" stroke="var(--solid)" stroke-width="1.800" fill="none" stroke-linecap="round" opacity=".9"/><path d="M22 5c3 0 5 1.500 5 4-3 0-5-1.500-5-4z" fill="var(--a)"/>`];
 const LEAF="M12 88C8 34 46 8 90 10C92 58 56 92 12 88Z";
+// Eat, Sports, Do widget icons: salad bowl, sneaker, checklist.
+Object.assign(WIC, {
+eat:["--h1",`<path d="M3.500 16h25a12.500 12.500 0 0 1-25 0z" fill="var(--c)"/><path d="M9 16c0-4.500 3-7.500 7.500-7.500 0 4.500-3 7.500-7.500 7.500z" fill="var(--a)"/><circle cx="20.500" cy="13" r="3" fill="var(--c)" opacity=".7"/><path d="M10 27.500h12" stroke="var(--c)" stroke-width="2.400" stroke-linecap="round"/><path d="M8.500 20.500a7 7 0 0 0 4 3.500" stroke="var(--solid)" stroke-width="1.600" fill="none" stroke-linecap="round" opacity=".8"/>`],
+sport:["--h2",`<path d="M3 21.500c0-3.500 1.200-7 3.200-10l5.300 2.300c1.800.800 3.700 0 4.600-1.700l3 1.200c2 3 5.500 4.500 8 5.400 1.300.500 1.600 2.700.6 4H4.500C3.700 22.700 3 22.300 3 21.500z" fill="var(--c)"/><path d="M3.400 24.500h25.400" stroke="var(--c)" stroke-width="2.400" stroke-linecap="round" opacity=".55"/><path d="M15 15.500l2 1.300M17.500 14.300l2 1.300" stroke="var(--solid)" stroke-width="1.600" stroke-linecap="round"/><circle cx="26" cy="7" r="2.200" fill="var(--a)"/>`],
+do:["--h3",`<rect x="6.500" y="5" width="19" height="24" rx="4.500" fill="var(--c)"/><rect x="11.500" y="3" width="9" height="4.500" rx="2.200" fill="var(--a)"/><path d="M10.500 14l1.800 1.800 3.200-3.400M10.500 21.500l1.800 1.800 3.200-3.400" stroke="var(--solid)" stroke-width="1.900" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M18 14h3.500M18 21.500h3.500" stroke="var(--solid)" stroke-width="1.900" stroke-linecap="round" opacity=".8"/>`]});
+// Eat, Sports, Do widget icons (v3): half a fig, a kettlebell with a wave, a paper plane.
+Object.assign(WIC, {
+eat:["--h1",`<path d="M16 5.5c4.700 1.400 10 5.600 10 13.200A10 10 0 0 1 6 18.700C6 11.100 11.300 6.900 16 5.500z" fill="var(--c)"/><path d="M16 3.200c.4-1.200 1.400-1.900 2.800-2" stroke="var(--c)" stroke-width="1.800" fill="none" stroke-linecap="round"/><ellipse cx="16" cy="19.200" rx="7" ry="6.700" fill="var(--solid)" opacity=".92"/><path d="M16 13.200c-2.600 2-3.800 4.100-3.800 6.100a3.800 3.800 0 0 0 7.600 0c0-2-1.200-4.100-3.800-6.100z" fill="var(--c)" opacity=".5"/><g fill="var(--a)"><circle cx="14.800" cy="17.600" r=".9"/><circle cx="17.300" cy="18.800" r=".9"/><circle cx="15" cy="21" r=".9"/><circle cx="17.200" cy="21.800" r=".8"/></g>`],
+sport:["--h2",`<path d="M11 13.500a5 5 0 0 1 10 0" fill="none" stroke="var(--c)" stroke-width="3" stroke-linecap="round"/><path d="M8.300 12.500h15.400l1.300 2.700A10 10 0 1 1 7 15.200z" fill="var(--c)"/><path d="M8.300 21.300c2.600-1.900 5.100-1.900 7.700 0s5.100 1.900 7.700 0" fill="none" stroke="var(--solid)" stroke-width="2" stroke-linecap="round" opacity=".9"/><path d="M26.500 3.500l.7 1.800 1.800.7-1.800.7-.7 1.800-.7-1.800-1.800-.7 1.800-.7z" fill="var(--a)"/>`],
+do:["--h3",`<path d="M29 4L3.500 14l9.300 3.900z" fill="var(--c)"/><path d="M29 4L12.800 17.900 15.500 27.500z" fill="var(--c)" opacity=".62"/><path d="M12.800 17.900l2.700 9.600 2.800-6.500z" fill="var(--c)"/><path d="M10 22.500c-2.200 2.300-4.300 3.300-6.800 3" fill="none" stroke="var(--a)" stroke-width="2" stroke-linecap="round" stroke-dasharray="1.200 3"/>`],
+});
 // Organic shapes used as CSS masks for card and hero decorations (--m1 … --m6).
 export const IC: string[] = [`<path d="${LEAF}"/>`,`<path d="M12 88C8 56 24 30 52 26C56 56 40 84 12 88Z"/><path d="M48 70C46 40 62 18 90 12C92 42 78 66 48 70Z"/>`,`<path d="M50 6C82 30 86 70 50 94C14 70 18 30 50 6Z"/>`,
 `<circle cx="60" cy="14" r="9"/><g fill="none" stroke="#000" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path d="M54 30L44 56M52 36L74 44M50 38L30 46M44 56L62 70L56 92M44 56L28 72L14 82"/></g>`,`<g fill="none" stroke="#000" stroke-width="9" stroke-linecap="round"><path d="M50 50c0-7 9-7 9 0s-13 10-13 0 3-18 19-18 24 14 24 26-12 28-30 28S14 74 14 52 34 8 58 8"/></g>`];
 const icSvg = (i: number) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#000">${IC[i]}</svg>`;
+// Brand marks (100×100, black = shape; used as CSS masks so they take the theme colour).
+// wave: circle cut by the logo's wave (Cycle banner). moon: crescent holding a drop, with stars.
+export const BRAND: Record<string, string> = {
+  wave: `<defs><clipPath id="c"><circle cx="50" cy="50" r="40"/></clipPath></defs><circle cx="50" cy="50" r="40" fill="none" stroke="#000" stroke-width="6"/><path clip-path="url(#c)" d="M0 56c12-14 22-14 33 0s22 14 34 0 22-14 33 0V100H0z"/><path d="M10 40c12-14 22-14 33 0s22 14 34 0" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" clip-path="url(#c)"/>`,
+  moon: `<path d="M58 14a36 36 0 1 0 28 58A30 30 0 0 1 58 14z"/><path d="M52 38c6 9 10 15 10 21a10 10 0 0 1-20 0c0-6 4-12 10-21z"/><circle cx="86" cy="22" r="4"/><circle cx="94" cy="44" r="3"/><circle cx="74" cy="8" r="2.4"/>`,
+};
+export const brandSvg = (k: string) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="#000">${BRAND[k]}</svg>`;
 export function initIcons() {
   const st = document.documentElement.style;
+  Object.keys(BRAND).forEach(k => st.setProperty("--b-" + k, `url("data:image/svg+xml,${encodeURIComponent(brandSvg(k))}")`));
   IC.forEach((_, i) => st.setProperty("--m" + (i + 1), `url("data:image/svg+xml,${encodeURIComponent(icSvg(i))}")`));
   for (let i = IC.length; i < 6; i++) st.setProperty("--m" + (i + 1), `var(--m${(i % IC.length) + 1})`);
 }
 export const hsh=s=>{let h=7;for(const ch of String(s))h=(h*31+ch.charCodeAt(0))>>>0;return h};
+// Magic wand with sparkles, for AI / generate actions.
+CI.magic = '<path d="M4 20L14.5 9.5M12.5 7.5l4 4"/><path d="M17 2.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8zM20 12l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5zM9 2.5l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3L7.2 4.3l1.3-.5z"/>';
+// Three lines (exercise menu). Drawn, so it sits exactly in the middle of its round button.
+CI.menu = '<path d="M5 7h14M5 12h14M5 17h14"/>';
+// Eat, Sports, Do widget icons (v4): cherries, lightning bolt, hourglass, drawn in the widget colour (no background shape).
+const W = (d: string, w = 2.2) => `<path d="${d}" fill="none" stroke="var(--c)" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+Object.assign(WIC, {
+  eat: ["--h1", W("M12.5 18.5C13 14 15 11 18 9.2M19.6 19.2C19.4 14.6 18.8 11.6 18 9.2", 1.6) + `<circle cx="12.3" cy="20.6" r="3.4" fill="var(--c)"/><circle cx="19.8" cy="21.2" r="3.4" fill="var(--c)"/><path d="M18 9.2c1.600-2 3.800-2.300 5.400-1.300-1.200 1.900-3.300 2.400-5.400 1.300z" fill="var(--a)"/>`],
+  sport: ["--h2", `<path d="M17.800 6.800L10 17.600h5.200L13.800 25.600 22 14.200h-5.300z" fill="var(--c)" stroke="var(--c)" stroke-width="1" stroke-linejoin="round"/><circle cx="23.300" cy="9.300" r="1.300" fill="var(--a)"/><circle cx="8.700" cy="22.800" r="1" fill="var(--a)"/>`],
+  do: ["--h3", W("M10.500 8.500h11M10.500 23.500h11", 2) + W("M12 8.500c0 4 4 5.500 4 7.500s-4 3.500-4 7.500M20 8.500c0 4-4 5.500-4 7.500s4 3.500 4 7.500", 1.5) + `<path d="M13.200 23c.4-2.300 2.800-3.400 2.800-4.200 0 .8 2.400 1.900 2.800 4.200z" fill="var(--c)" opacity=".75"/><path d="M14 11.500h4l-2 2.200z" fill="var(--c)" opacity=".75"/>`],
+});
+// Without the sticker the glyphs have room to be a bit bigger.
+(["eat", "sport", "do"] as const).forEach(k => (WIC[k][1] = `<g transform="matrix(1.22 0 0 1.22 -3.5 -3.5)">${WIC[k][1]}</g>`));
