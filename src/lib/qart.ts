@@ -503,3 +503,33 @@ export function pickArt(q: Quote, token: string): string {
   save();
   return v;
 }
+
+/* ---------- matching the look (owner picked options A + B) ---------- */
+/** Pictures whose own colours already fit each look; they are shown as drawn. */
+const MATCH: Record<string, string[]> = {
+  w: ["silk", "lotus", "driedPetals", "backlitLeaf", "bigLeaf", "eraPoster", "curvedBlobs", "echoes", "auraHands", "mossTree"],
+  dh: ["sunrise", "arch", "statue", "ammonite", "auraHands", "bigLeaf", "mossTree", "eraPoster", "conch", "palmStorm", "windExposure", "buddhaHills"],
+  px: ["arch", "echoes", "windExposure", "eraPoster", "statue", "mossTree", "driedPetals", "ammonite"],
+  mi: ["hillsDict", "mistDict", "grassWaves", "buddhaHills", "vortex", "chart", "bigLeaf", "driedPetals", "hexGlass", "mossTree", "backlitLeaf"],
+  gs: ["florescence", "auraGrain", "nightPool", "moonPhases", "track", "hexGlass", "dancers", "bunnyChill", "starField"],
+  em: ["sunrise", "florescence", "nightPool", "auraGrain", "dancers", "moonCatch", "ammonite", "bunnyChill", "conch"],
+  np: ["nightPool", "moonPhases", "moonCatch", "florescence", "auraGrain", "bunnyChill", "dancers", "statue"],
+};
+/**
+ * Two-tone print per look: shadow colour, highlight colour, text colour. Light looks print light-to-pastel with dark text,
+ * dark looks print dark-to-muted with light text, so the quote always reads.
+ */
+const DUO: Record<string, [string, string, string]> = {
+  w: ["#d77394", "#fdeef2", "#2b1020"], dh: ["#c99470", "#f8f1e8", "#2a1d16"], px: ["#d39468", "#fbfbfa", "#1a1a1a"], mi: ["#8fa38c", "#f0f2ee", "#1f241f"],
+  gs: ["#0a0a0b", "#71862e", "#ffffff"], em: ["#140805", "#b5481a", "#ffffff"], np: ["#0f0f10", "#8a6a45", "#f3e6c4"],
+};
+export const duoInk = (look: string) => (DUO[look] || DUO.w)[2];
+export const artFits = (key: string, look: string) => (MATCH[look] || MATCH.w).includes(key.split(".")[0]);
+/** The picture printed in the look's two-tone colours (brightness kept, so the text stays readable). */
+export function duoSvg(svgStr: string, look: string) {
+  const ch = (h: string) => [1, 3, 5].map(i => (parseInt(h.slice(i, i + 2), 16) / 255).toFixed(3));
+  const [d, l] = (DUO[look] || DUO.w).slice(0, 2).map(ch);
+  const f = `<filter id="qa-duo" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".3 .59 .11 0 0 .3 .59 .11 0 0 .3 .59 .11 0 0 0 0 0 1 0"/><feComponentTransfer>${["R", "G", "B"].map((c, i) => `<feFunc${c} type="table" tableValues="${d[i]} ${l[i]}"/>`).join("")}</feComponentTransfer></filter>`;
+  const i = svgStr.indexOf("</defs>") + 7;
+  return svgStr.slice(0, i - 7) + f + "</defs><g filter=\"url(#qa-duo)\">" + svgStr.slice(i).replace(/<\/svg>$/, "</g></svg>");
+}

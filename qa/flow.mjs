@@ -62,10 +62,12 @@ expect("custom workouts per week above 14", await page.evaluate(() => JSON.parse
 await page.goto(URL + "#/food/log"); await page.waitForTimeout(900);
 expect("Today has four meals", (await $(".meals .ml").count()) == 4, await $(".meals .ml").count());
 await $(".meals .ml:nth-of-type(2) .mladd").click(); await page.waitForTimeout(300);
-expect("meal + shows where food goes", /Adding to Lunch/.test(await $(".mlto").innerText()), "no hint");
-await $('input[aria-label="Food name"]').fill("кур");
-expect("Russian food search", /Chicken/.test(await $(".fres .li").first().innerText()), await $(".fres .li").first().innerText());
-await $(".fres .fadd").first().click(); await page.waitForTimeout(400);
+expect("no separate food search card", (await page.locator(".ion-page.up:not(.ion-page-hidden) .fsr").count()) == 0, "search card still on the page");
+expect("meal + opens the search for that meal", /Add to Lunch/.test(await page.locator(".sh").innerText()), "no sheet");
+expect("search links are New food / New meal", /New food/.test(await page.locator(".sh .fsl").innerText()) && /New meal/.test(await page.locator(".sh .fsl").innerText()), await page.locator(".sh .fsl").innerText());
+await page.locator('.sh input[aria-label="Food name"]').fill("кур");
+expect("Russian food search", /Chicken/.test(await page.locator(".sh .fres .li").first().innerText()), await page.locator(".sh .fres .li").first().innerText());
+await page.locator(".sh .fres .fadd").first().click(); await page.waitForTimeout(400);
 expect("+ opens the edit window", (await page.locator('.sh input[aria-label="Amount in grams"]').count()) == 1, "no sheet");
 await page.locator(".sh .chip:has-text('150 g')").click();
 expect("macros scale with grams", (await page.inputValue('.sh input[aria-label="kcal"]')) == "180", await page.inputValue('.sh input[aria-label="kcal"]'));
@@ -75,7 +77,8 @@ expect("edited nutrients are saved", await page.evaluate(() => JSON.parse(localS
 expect("food lands in the chosen meal", /Lunch[\s\S]*Chicken breast/.test(await $(".meals .ml:nth-of-type(2)").innerText()), await $(".meals").innerText());
 // Meal from photo (no AI connected): add ingredients, halve the whole meal, add it to today.
 const png = await page.evaluate(() => { const c = document.createElement("canvas"); c.width = 300; c.height = 200; const x = c.getContext("2d"); x.fillStyle = "#e9d8a6"; x.fillRect(0, 0, 300, 200); return c.toDataURL("image/png").split(",")[1]; });
-const [fc] = await Promise.all([page.waitForEvent("filechooser"), $('label[aria-label="Meal from photo"]').click()]);
+await $(".meals .ml:nth-of-type(4) .mladd").click(); await page.waitForTimeout(300);
+const [fc] = await Promise.all([page.waitForEvent("filechooser"), page.locator('.sh label[aria-label="Meal from photo"]').click()]);
 await fc.setFiles({ name: "meal.png", mimeType: "image/png", buffer: Buffer.from(png, "base64") }); await page.waitForTimeout(400);
 for (const q of ["rice", "chicken"]) { await page.fill('.sh input[aria-label="Add ingredient"]', q); await page.waitForTimeout(150); await page.locator(".sh .sg button").first().click(); }
 await page.fill('.sh input[aria-label="Meal name"]', "Photo bowl");
@@ -83,6 +86,13 @@ await page.locator('.sh button[aria-label="Scale whole meal by 0.5"]').click(); 
 expect("photo meal: whole meal scales all ingredients", (await page.inputValue('.sh input[aria-label="Whole meal in grams"]')) == "100", await page.inputValue('.sh input[aria-label="Whole meal in grams"]'));
 await page.locator(".sh button:has-text('Add to today')").click(); await page.waitForTimeout(300);
 expect("photo meal is logged", /Photo bowl/.test(await $(".meals").innerText()), "missing");
+await $(".meals .ml:nth-of-type(3) .mladd").click(); await page.waitForTimeout(300);
+await page.locator(".sh button:has-text('New meal')").click(); await page.waitForTimeout(300);
+await page.fill('.sh input[aria-label="Meal name"]', "Pasta bake"); await page.fill('.sh input[aria-label="kcal"]', "500");
+await page.locator(".sh button:has-text('Next')").click(); await page.waitForTimeout(300);
+await page.locator(".sh .chip", { hasText: /^½ portion$/ }).click();
+await page.locator(".sh button:has-text('Add to Dinner')").click(); await page.waitForTimeout(300);
+expect("new meal asks the amount, then logs it", await page.evaluate(() => { const f = JSON.parse(localStorage.getItem("bloom2")).f.at(-1); return f.n == "Pasta bake" && f.k == 250 && f.ml == "d"; }), "not logged");
 await $(".tabs button:has-text('Recipes')").click(); await page.waitForTimeout(800);
 const allN = parseInt(await $(".rcount").innerText());
 await $(".fic").click(); await page.waitForTimeout(300);
@@ -112,7 +122,9 @@ await page.goto(URL + "#/food/targets"); await page.waitForTimeout(900);
 expect("body fat: no measuring text, (i) opens guide", !/Measure the neck|Enter neck/.test(await page.locator(".ion-page.up:not(.ion-page-hidden)").innerText()), "text still there");
 await $(".ib[aria-label='How to measure']").evaluate(e => e.click()); await page.waitForTimeout(400);
 expect("measuring guide has the drawing", (await page.locator(".sh svg[aria-label^='Where to measure']").count()) == 1, "no drawing");
+expect("measuring steps sit beside the drawing", (await page.locator(".sh .tpw .tps li").count()) >= 2, "no steps");
 await page.keyboard.press("Escape"); await page.waitForTimeout(300);
+expect("photos: fair-look tip under the button", await $(".card:has(.pg)").evaluate(c => { const b = c.querySelector("label, button"); const p = [...c.querySelectorAll("p")].find(x => /fair look/.test(x.textContent)); return !!(b && p && (b.compareDocumentPosition(p) & 4)); }), "tip not under the button");
 expect("photos: no storage note", !/Stored only/.test(await page.locator(".ion-page.up:not(.ion-page-hidden)").innerText()), "note still there");
 await page.goto(URL + "#/profile"); await page.waitForTimeout(800);
 expect("style row shows the new look", /Mist/.test(await $(".lkrow").innerText()), await $(".lkrow").innerText());
@@ -134,9 +146,18 @@ expect("flow logged on today", (await $(".pday.today").getAttribute("class")).in
 expect("period start sets phase", /Menstrual/.test(await $(".pill").first().innerText()), await $(".pill").first().innerText());
 expect("no Update your cycle card", (await $("b:text-is('Update your cycle')").count()) == 0, "still there");
 expect("period tracker: no cycle-length or hint text", !/Tap a day|Average cycle|until you log/.test(await $(".pcard").innerText()), await $(".pcard").innerText());
-await $(".ib[aria-label='About this chart']").evaluate(e => e.click()); await page.waitForTimeout(400);
-expect("hormone note lives behind (i)", /Typical pattern/.test(await page.locator(".sh").innerText()), "no sheet");
-await page.keyboard.press("Escape"); await page.waitForTimeout(300);
+expect("hormone note is in the widget, no (i)", /Typical pattern/.test(await $(".card:has(.hx)").innerText()) && (await $(".card:has(.hx) .ib").count()) == 0, "note missing");
+expect("hormone chart shows the day number", /Day \d+/.test(await $(".card:has(.hx) svg").textContent()), "no day tag");
+expect("period tracker: pill in the title row", (await $(".pcard .pch .pcd").count()) == 1, "no pill");
+expect("hormone sentence colours the hormone names", (await $(".hx b").count()) >= 1, await $(".hx").innerText());
+expect("tips in one card, no Eat/Sports/Do cards", (await $(".ctip").count()) == 1 && (await $("b.wt:text-is('Eat')").count()) == 0, "cards wrong");
+expect("tips: no Tip word or number", !/^Tip/.test(await $(".ctip .eyebrow").innerText()) && (await $(".ctip .tipn").count()) == 0, await $(".ctip .eyebrow").innerText());
+expect("mood words under the icons, coloured", (await $(".moods .mdl").count()) == 5 && await $(".moods .mdl").first().evaluate(e => getComputedStyle(e).color != getComputedStyle(document.body).color), "no coloured words");
+expect("symptoms start folded", (await $(".syrow").count()) == 0 && (await $("button.sylab[aria-expanded=false]").count()) == 1, "not folded");
+await $("button.sylab").click(); await page.waitForTimeout(200);
+expect("arrow opens the symptom chips", (await $(".syrow .chip").count()) > 5, await $(".syrow .chip").count());
+expect("symptom chips wrap like filters", await $(".syrow").evaluate(e => getComputedStyle(e).flexWrap == "wrap" && e.scrollWidth <= e.clientWidth + 1), "row scrolls");
+expect("predicted days have a pink dashed ring", await page.evaluate(() => { const e = document.querySelector(".ion-page.up:not(.ion-page-hidden) .pday.per .pc"); return !e || getComputedStyle(e).borderTopStyle == "dashed"; }), "not dashed");
 expect("Daily practice card with Try", (await $(".card").filter({ hasText: "Daily practice" }).filter({ hasText: "Try:" }).count()) == 1, "no practice card");
 await $(".pday.today").click(); await page.waitForTimeout(300);
 expect("second tap unmarks the day", !(await $(".pday.today").getAttribute("class")).includes(" fl"), await $(".pday.today").getAttribute("class"));
@@ -156,6 +177,12 @@ await page.goto(URL + "#/train"); await page.waitForTimeout(900);
 expect("no pencil on the workout title", (await $('button[aria-label="Rename workout"]').count()) == 0, "pencil still there");
 await $("button:has-text('Change workout')").click(); await page.waitForTimeout(400);
 await page.locator(".sh #wkname").fill("Leg day"); await page.locator(".sh #wkname").press("Enter"); await page.keyboard.press("Escape"); await page.waitForTimeout(500);
+if (await $(".cbs").count()) {
+  expect("comeback strip is two lines", await $(".cbs .cbt").evaluate(e => [...e.children].every(c => c.scrollHeight <= c.clientHeight + 1 && c.getClientRects().length == 1) && e.children.length == 2), await $(".cbs").innerText());
+  await $(".cbs button:has-text('See')").click(); await page.waitForTimeout(400);
+  expect("comeback pop-up uses the look's colours", await page.locator(".sh .cbp").evaluate(e => getComputedStyle(e).color == getComputedStyle(document.body).color), "fixed colours");
+  await page.keyboard.press("Escape"); await page.waitForTimeout(300);
+}
 expect("rename from Change workout", /Leg day/.test(await $(".wkn h2").innerText()), await $(".wkn h2").innerText());
 await page.goto(URL + "#/cycle"); await page.waitForTimeout(900);
 const arts = [];
@@ -163,6 +190,13 @@ for (let i = 0; i < 8; i++) { arts.push(await $(".qa").getAttribute("data-art"))
 expect("quote pictures don't repeat", new Set(arts).size == arts.length, arts.join(" "));
 expect("data saved", await page.evaluate(() => !!JSON.parse(localStorage.getItem("bloom2")).hist.length), "no history saved");
 
+// Men don't see the Cycle section.
+await page.evaluate(() => { const o = JSON.parse(localStorage.getItem("bloom2")); o.prof.sex = "m"; localStorage.setItem("bloom2", JSON.stringify(o)); });
+await page.goto(URL + "#/train"); await page.reload(); await page.waitForTimeout(1000);
+expect("no Cycle tab for men", (await page.locator('.bnav button[aria-label="Cycle"]').count()) == 0, "Cycle still shown");
+await page.goto(URL + "#/cycle"); await page.waitForTimeout(1200);
+expect("Cycle link sends men to Train", /#\/train/.test(page.url()), page.url());
+await page.evaluate(() => { const o = JSON.parse(localStorage.getItem("bloom2")); o.prof.sex = "f"; localStorage.setItem("bloom2", JSON.stringify(o)); });
 // Profile: units and language.
 await page.goto(URL + "#/profile"); await page.reload(); await page.waitForTimeout(1000);
 await $('button[role=radio]:has-text("lb")').click(); await page.waitForTimeout(200);

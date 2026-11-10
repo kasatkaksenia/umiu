@@ -1,20 +1,26 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { EL, HM, MF, MIND, PH, PR, SYM, TL, fmt } from "../../data/cycle";
-import { drawArt, pickArt } from "../../lib/qart";
+import { CT_TOPICS, EL, HX, MF, PH, PR, SYM, TL, ctList, fmt } from "../../data/cycle";
+import { artFits, drawArt, duoInk, duoSvg, pickArt } from "../../lib/qart";
+import { lookOf } from "../../sheets/Sheets";
 import { DEF_LEN, Phase, addSym, avgOf, delSym, ent, flowOf, perOn, perTog, phase, predOf, setFlow, qList, setCycle, setMood, setNote, togSym, wOn } from "../../lib/cycle";
 import { hormones } from "../../lib/figures";
 import { QX } from "../../data/cycle";
 import { S, commit, openSheet, render, useStore } from "../../lib/store";
 import { A_, TODAY, dAdd, dDiff, dayNo, dmy, mod } from "../../lib/util";
-import { Hero, Ico, InfoButton, MoodIcon, Svg, Wico } from "../../components/ui";
+import { BrandMark, Hero, Ico, InfoButton, MoodIcon, Svg, Wico } from "../../components/ui";
 import { Page } from "../../components/layout";
-import { MOODS, isClay } from "../../lib/moods";
+import { useIonRouter } from "@ionic/react";
+import { MOODS, isClay, moodInk } from "../../lib/moods";
 import { LANG, pn, t as tt } from "../../lib/i18n";
 
 const HERO: Record<string, string> = { menstrual: "water", follicular: "grass", ovulation: "petal", luteal: "wind" };
 
 export default function Cycle() {
   useStore();
+  const r = useIonRouter();
+  const male = S.prof.sex == "m";
+  // The Cycle section is hidden for men; an old link or bookmark goes to Train.
+  useEffect(() => { if (male) r.push("/train", "none", "replace"); }, [male]);
   const p = phase();
   // New users: the setup card comes first until a period is logged.
   const fresh = !S.per.length && !S.cyc;
@@ -28,14 +34,7 @@ export default function Cycle() {
         {p && wOn("horm") && <Hormones p={p} />}
         {wOn("quote") && <QuoteCard p={p} />}
         {wOn("today") && <Today />}
-        {p && wOn("tips") && (
-          <>
-            <ListCard icon="eat" title="Eat" items={PH[p.k].eat} />
-            <ListCard icon="sport" title="Sports" items={PH[p.k].sport} />
-            <ListCard icon="do" title="Do" items={PH[p.k].do} />
-          </>
-        )}
-        {p && wOn("mind") && <Mind p={p} />}
+        {p && wOn("tips") && <CycleTips p={p} />}
         {wOn("fact") && <Fact />}
         {wOn("reset") && <Breathing />}
         <LastEntries />
@@ -135,13 +134,15 @@ function PeriodCard({ p }: { p: Phase | null }) {
   const fs = sel ? flowOf(sel) : null;
   return (
     <div className="card pcard">
-      <div className="ch"><b className="wt"><Wico k="per" /> Period tracker</b></div>
-      <p style={{ margin: "8px 0 2px" }}>
-        {cur ? <>Period day <b>{dDiff(cur.s, t) + 1}</b></>
-          : p?.late != null ? <b>{lateTxt(p.late)}</b>
-          : p ? <>Next period in about <b>{pn(p.next, "day")}</b></>
-            : "Tap the days of your last period to start tracking."}
-      </p>
+      <div className="ch pch">
+        <b className="wt"><Wico k="per" /> Period tracker</b>
+        <span className="pill pcd">
+          {cur ? <>{tt("Day {n}", { n: dDiff(cur.s, t) + 1 })}</>
+            : p?.late != null ? (p.late ? tt("{n} late", { n: pn(p.late, "day") }) : tt("Due today"))
+            : p ? tt("in {n}", { n: pn(p.next, "day") }) : tt("Not set")}
+        </span>
+        <InfoButton k="per" label="How the period tracker works" />
+      </div>
       <div className="pmon">
         <b>{MON(mid)}</b>
         {away && <button className="g s" onClick={() => toToday(true)}>Today</button>}
@@ -180,17 +181,27 @@ function PeriodCard({ p }: { p: Phase | null }) {
   );
 }
 
+const HC: Record<string, [string, string]> = { E: ["Estrogen", "var(--h1)"], P: ["Progesterone", "var(--h2)"], T: ["Testosterone", "var(--h3)"] };
+
 function Hormones({ p }: { p: Phase }) {
+  // "Rising {E} is…" → coloured hormone names, capitalised at the start of the sentence.
+  const parts = HX[p.k].split(/(\{[EPT]\})/);
   return (
     <div className="card">
-      <div className="ch"><b>Hormone levels</b><InfoButton k="horm" label="About this chart" /></div>
+      <b>Hormone levels</b>
       <Svg html={hormones(S.cyc, p)} />
       <div className="lg">
-        <span><i style={{ background: "var(--h1)" }} />Estrogen</span>
-        <span><i style={{ background: "var(--h2)" }} />Progesterone</span>
-        <span><i style={{ background: "var(--h3)" }} />Testosterone</span>
+        {Object.values(HC).map(([n, c]) => <span key={n}><i style={{ background: c }} />{n}</span>)}
       </div>
-      <p style={{ margin: "6px 0 0" }}>{HM[p.k]}</p>
+      <p className="hx">
+        {parts.map((x, i) => {
+          const h = /^\{([EPT])\}$/.exec(x);
+          if (!h) return x;
+          const [n, c] = HC[h[1]];
+          return <b key={i} style={{ color: `color-mix(in srgb, ${c} 42%, var(--tx))` }}>{i == 1 && !parts[0] ? n : n.toLowerCase()}</b>;
+        })}
+      </p>
+      <p className="mu" style={{ margin: "6px 0 0", fontSize: 13 }}>{tt("Typical pattern for a {n}-day cycle, schematic and not measured.", { n: p.L })}</p>
     </div>
   );
 }
@@ -200,7 +211,13 @@ function QuoteCard({ p }: { p: Phase | null }) {
   const l = qList(p), n = dayNo() + (S.set.q || 0), q = l[mod(n, l.length)], qi = QX.indexOf(q);
   const f = A_(S.set.qt).length + A_(S.set.qe).length + (S.set.qph ? 1 : 0);
   const key = pickArt(q, n + ":" + qi);
-  const a = useMemo(() => drawArt(key, q), [key, q]);
+  const look = lookOf();
+  // Pictures that fit the look are shown as drawn; the rest are printed in the look's two colours.
+  const fit = artFits(key, look);
+  const a = useMemo(() => {
+    const x = drawArt(key, q);
+    return fit ? x : { ...x, svg: duoSvg(x.svg, look), ink: duoInk(look), tag: duoInk(look) };
+  }, [key, q, look, fit]);
   const lay = a.lay || "plain";
   let text = a.lower ? q.q.toLowerCase() : q.q;
   let last = "";
@@ -234,7 +251,7 @@ function QuoteCard({ p }: { p: Phase | null }) {
         </>
       )}
       {lay == "none" && <p className="sr-only">{q.q}{q.a ? " — " + q.a : ""}</p>}
-      <button className="s qa-more" style={{ background: a.chip[0], color: a.chip[1] }} onClick={() => {
+      <button className="s qa-more" style={fit ? { background: a.chip[0], color: a.chip[1] } : { background: "var(--btn)", color: "var(--btnt)" }} onClick={() => {
         S.set.q = (S.set.q || 0) + 1;
         commit();
       }}>Another</button>
@@ -246,6 +263,7 @@ function Today() {
   const e = ent();
   const [ns, setNs] = useState("");
   const [adding, setAdding] = useState(false);
+  const [syOpen, setSyOpen] = useState(false);
   const [note, setNoteTxt] = useState(e.nt);
   const add = () => {
     addSym(ns);
@@ -256,30 +274,39 @@ function Today() {
       <b>Today</b>
       <div className={"row moods" + (e.m ? " has" : "")} role="radiogroup" aria-label="Mood" style={{ margin: "10px 0" }}>
         {[0, 1, 2, 3, 4].map(i => (
-          <button key={i} className={"chip mood" + (isClay() ? " clay" : "") + (e.m == i + 1 ? " on" : "")} role="radio" aria-label={`Mood: ${MOODS[i].n}`} aria-checked={e.m == i + 1}
-            onClick={() => setMood(i + 1)}><MoodIcon i={i} s={38} /></button>
+          <span className={"mdc" + (e.m == i + 1 ? " on" : "")} key={i}>
+            <button className={"chip mood" + (isClay() ? " clay" : "") + (e.m == i + 1 ? " on" : "")} role="radio" aria-label={`Mood: ${MOODS[i].n}`} aria-checked={e.m == i + 1}
+              onClick={() => setMood(i + 1)}><MoodIcon i={i} s={38} /></button>
+            <span className="mdl" aria-hidden="true" style={{ color: moodInk(i) }}>{tt(MOODS[i].n)}</span>
+          </span>
         ))}
       </div>
-      <div className="mu sylab">Symptoms{e.sy.length ? " · " + e.sy.length : ""}</div>
-      {/* One sideways row: chosen symptoms first, then the rest; "+" at the end adds your own. */}
-      <div className="syrow" role="group" aria-label="Symptoms">
-        {[...e.sy.filter(x => SYM.includes(x) || S.symx.includes(x)), ...[...SYM, ...S.symx].filter(x => !e.sy.includes(x))].map(s => {
-          const xi = S.symx.indexOf(s), on = e.sy.includes(s);
-          return (
-            <span className="cw" key={s}>
-              <button className={"chip" + (on ? " on" : "")} aria-pressed={on} onClick={() => togSym(s)}>{s}</button>
-              {xi >= 0 && !on && <button className="cwx" aria-label={`Remove ${s}`} onClick={() => delSym(xi)}>×</button>}
-            </span>
-          );
-        })}
-        {adding ? (
-          <input className="chip syin" autoFocus maxLength={28} placeholder="Your own symptom" aria-label="Your own symptom" value={ns}
-            onChange={ev => setNs(ev.target.value)} onKeyDown={ev => { if (ev.key == "Enter") { add(); setAdding(false); } if (ev.key == "Escape") setAdding(false); }}
-            onBlur={() => { add(); setAdding(false); }} />
-        ) : (
-          <button className="chip syadd" aria-label="Add your own symptom" onClick={() => setAdding(true)}><Ico k="plus" s={16} /></button>
-        )}
-      </div>
+      <button className="q sylab" aria-expanded={syOpen} onClick={() => setSyOpen(!syOpen)}>
+        <span>Symptoms{e.sy.length ? " · " + e.sy.length : ""}</span><Ico k="down" s={18} />
+      </button>
+      {syOpen && (
+        <>
+        {/* Wrapped chips in a fixed order (like filter options); "+" at the end adds your own. */}
+        <div className="syrow" role="group" aria-label="Symptoms">
+          {[...SYM, ...S.symx].map(s => {
+            const xi = S.symx.indexOf(s), on = e.sy.includes(s);
+            return (
+              <span className="cw" key={s}>
+                <button className={"chip" + (on ? " on" : "")} aria-pressed={on} onClick={() => togSym(s)}>{s}</button>
+                {xi >= 0 && !on && <button className="cwx" aria-label={`Remove ${s}`} onClick={() => delSym(xi)}>×</button>}
+              </span>
+            );
+          })}
+          {adding ? (
+            <input className="chip syin" autoFocus maxLength={28} placeholder="Your own symptom" aria-label="Your own symptom" value={ns}
+              onChange={ev => setNs(ev.target.value)} onKeyDown={ev => { if (ev.key == "Enter") { add(); setAdding(false); } if (ev.key == "Escape") setAdding(false); }}
+              onBlur={() => { add(); setAdding(false); }} />
+          ) : (
+            <button className="chip syadd" aria-label="Add your own symptom" onClick={() => setAdding(true)}><Ico k="plus" s={16} /></button>
+          )}
+        </div>
+        </>
+      )}
       <label className="ntw">
         <Ico k="pen" s={18} />
         <textarea rows={1} placeholder="Add a note…" aria-label="Note" value={note} onChange={ev => {
@@ -292,22 +319,46 @@ function Today() {
   );
 }
 
-function ListCard({ icon, title, items }: { icon: string; title: string; items: string[] }) {
+/**
+ * Phase tips in one card, like the nutrition tips on Food: topic, title, text, ‹ › and Shuffle; the filter picks topics.
+ * The brand moon mark replaces the tip number; a few small marks sit at spots that change with each tip.
+ */
+function CycleTips({ p }: { p: Phase }) {
+  const tp = A_<string>(S.set.ctf), L = ctList(p.k, tp), n = L.length;
+  const i = mod(dayNo() + (S.set.cti || 0), n), x = L[i];
+  const go = (d: number) => {
+    S.set.cti = (S.set.cti || 0) + d;
+    commit();
+  };
+  const name = (k: string) => CT_TOPICS.find(y => y[0] == k)?.[1] || "";
+  // Small marks: 0–2 per tip, placed and turned from the tip's position in the list.
+  const R = (k: number) => ((Math.sin((i + 1) * 12.9898 + k * 78.233) * 43758.5453) % 1 + 1) % 1;
+  const spots = [[6, 64], [44, 90], [56, 6], [90, 74], [30, 4]];
+  const extra = Array.from({ length: Math.floor(R(1) * 3) }, (_, k) => spots[Math.floor(R(k + 2) * spots.length + k) % spots.length]);
   return (
-    <div className="card">
-      <b className="wt"><Wico k={icon} /> {title}</b>
-      <ul>{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
-    </div>
-  );
-}
-
-function Mind({ p }: { p: Phase }) {
-  const m = MIND[p.k];
-  return (
-    <div className="card">
-      <div className="ch"><b className="wt"><Wico k="mind" /> Mind &amp; brain</b><span className="pill">{m.chem}</span></div>
-      <p style={{ margin: "8px 0 0" }}>{m.fact}</p>
-      <ul>{m.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
+    <div className="card tipc ctip">
+      {extra.map(([l, t], k) => <BrandMark k="moon" key={k} s={14 + Math.round(R(k + 7) * 8)} style={{ position: "absolute", left: l + "%", top: t + "%", transform: `rotate(${Math.round(R(k + 9) * 90 - 45)}deg)` }} />)}
+      <div className="tipt">
+        <span className="eyebrow mu">{name(x.t)}</span>
+        <button className={"g s ic" + (tp.length ? " on" : "")} aria-label={`Choose tip topics${tp.length ? " (filtered)" : ""}`} onClick={() => openSheet({ t: "ctf" })}>
+          <Ico k="sliders" s={16} />
+        </button>
+      </div>
+      <div className="tips">
+        {L.map((y, j) => (
+          <div key={y.t + y.h} className={j == i ? "on" : ""} aria-hidden={j != i}>
+            <BrandMark k="moon" s={40} style={{ float: "right", margin: "2px 0 0 10px", transform: `rotate(${(j % 3) * 12 - 12}deg)` }} />
+            <b className="tiph">{y.h}</b>
+            <p>{y.b}</p>
+          </div>
+        ))}
+      </div>
+      <div className="tipf">
+        <span className="mu tipc-n">{i + 1} of {n}</span>
+        <button className="g s ic" aria-label="Previous tip" onClick={() => go(-1)}>‹</button>
+        <button className="g s ic" aria-label="Next tip" onClick={() => go(1)}>›</button>
+        <button className="g s" onClick={() => go(1 + Math.floor(Math.random() * Math.max(1, n - 1)))}>Shuffle</button>
+      </div>
     </div>
   );
 }

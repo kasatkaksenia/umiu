@@ -8,97 +8,138 @@ ovulation:{n:"Ovulation",d:"Estrogen peaks around mid-cycle.",eat:["Fibre, colou
 luteal:{n:"Luteal",d:"Progesterone rises; PMS symptoms are common in the late phase.",eat:["Resting energy use rises a little (~100–300 kcal/day), so extra hunger is normal – don’t under-eat.","Complex carbs (oats, potato, rice) and protein at each meal to steady mood and cravings.","Calcium (~1,000–1,200 mg/day) and vitamin D are linked to fewer PMS symptoms.","Limit alcohol, caffeine and excess salt if bloated or sleeping badly."],sport:["Moderate strength training, Pilates, brisk walking; regular aerobic exercise is associated with milder PMS.","Late luteal: cut intensity or volume if fatigued; heat can feel harder."],do:["Protect sleep with a wind-down routine.","Severe mood symptoms (possible PMDD) deserve a conversation with a clinician – treatment exists."]}};
 export const SYM = ["Cramps","Headache","Bloating","Fatigue","Cravings","Acne","Breast tenderness","Back pain","Nausea","Low mood","Irritability","Anxiety","Insomnia","Spotting","Brain fog","Low libido"];
 export interface Quote { e: string; t: string; q: string; a: string; s: string }
-export const QX: Quote[] = `moon|i|Even the moon takes dark nights to become full.||
-moon|c|You carry a quiet glow that never needs switching on.||
-moon|w|Nature does not hurry, yet everything is accomplished.|Lao Tzu|Taoism
-moon|w|The mind is like the moon: calm water shows it clearly.|Zen saying|Zen
-water|i|Rest is not falling behind. It is how the tide returns.||
-water|c|You are softer and stronger than you give yourself credit for.||
-water|w|Nothing in the world is softer than water, yet nothing is better at wearing down the hard.|Lao Tzu, Tao Te Ching 78|Taoism
-water|w|Do nothing that is of no use.|Miyamoto Musashi, Dokkodo|Martial arts
-grass|i|Something in you is sprouting. Water it with small steps.||
-grass|c|Your effort is quietly beautiful, and it shows.||
-grass|w|A journey of a thousand miles begins beneath one’s feet.|Lao Tzu|Taoism
-grass|w|Act as if what you do makes a difference. It does.|William James|Psychology
-moss|i|Roots first, then reach. You are doing both.||
-moss|c|You are steady in a way people feel when they’re near you.||
-moss|w|Yoga is the stilling of the fluctuations of the mind.|Patanjali, Yoga Sutras 1.2|Yoga
-moss|w|Today is victory over yourself of yesterday.|Miyamoto Musashi (attributed)|Martial arts
-ribbon|i|You don’t need to fix every feeling. Notice it, and breathe.||
-ribbon|c|Your intuition is sharper than you think. Trust it.||
-ribbon|w|You have power over your mind, not outside events. Realise this, and you will find strength.|Marcus Aurelius (paraphrase)|Stoicism
-ribbon|w|The curious paradox is that when I accept myself just as I am, then I can change.|Carl Rogers|Psychology
-petal|i|You are in full bloom. Take up space.||
-petal|c|You light up a room without trying.||
-petal|w|All that we are is the result of what we have thought.|Dhammapada (paraphrase)|Buddhism
-petal|w|Be kind to yourself first; ahimsa starts at home.|Yoga teaching|Yoga
-sun|i|Radiate, then rest. Both are power.||
-sun|c|Your energy is magnetic today. Others feel it.||
-sun|w|You have a right to your actions, but never to the fruits of action.|Bhagavad Gita 2.47 (paraphrase)|Yoga
-sun|w|In the midst of chaos, there is also opportunity.|Sun Tzu (attributed)|Martial arts
-goddess|i|Grace and strength belong together.||
-goddess|c|You are allowed to be soft and powerful at the same time.||
-goddess|w|Who looks outside, dreams; who looks inside, awakes.|Carl Jung|Psychology
-goddess|w|Peace comes from within. Do not seek it without.|Attributed to the Buddha|Buddhism
-wind|i|Let the wind carry what you can’t hold today.||
-wind|c|You handle more than anyone sees, and you do it with grace.||
-wind|w|You are the sky. Everything else is just the weather.|Zen teaching (paraphrase)|Zen
-wind|w|Breathe in, breathe out: the breath is the bridge between body and mind.|Thich Nhat Hanh (paraphrase)|Buddhism
-sun|i|Small, steady effort is a kind of fire.||
-water|i|Flow around what you can’t move.||
-petal|c|Your kindness is one of your strongest features.||
-moon|c|Your calm is a gift to the people around you.||`.split("\n").map(l=>{const[e,t,q,a,s]=l.split("|");return{e,t,q,a,s}});
-`moon|c|You are doing great, sweetheart.
-moon|c|Be proud of how far you have come.
+// Quotes: short, warm, motivating; wisdom lines from psychology, philosophy and science (with source). e|type|quote|author|tradition
+export const QX: Quote[] = `sun|i|You’re absolutely capable of creating the life you can’t stop thinking about.
+goddess|i|Decisions are portals.
+petal|c|I am not afraid to be seen trying.
+moss|i|You can do hard things.
+sun|i|What if it all works out?
+grass|i|The more you do it, the easier it becomes.
+ribbon|w|The things we do do things to us.
+grass|i|Dream big, start small, act daily.
+moss|c|Take your time.
+petal|c|I love myself.
+sun|c|I do epic shit.
+moss|w|We are what we repeatedly do. Excellence, then, is not an act but a habit.|Will Durant, on Aristotle|Philosophy
+goddess|c|I am proud of myself.
+petal|c|You are worthy of all good things.
+grass|i|It’s not hard, it’s just new.
+wind|i|Nothing changes if nothing changes.
+wind|c|Taking a different path is very brave of you.
+water|i|Just keep moving.
+sun|c|You can and you will.
+moon|i|But did you die?
+sun|i|The loudest flex? Results.
+ribbon|c|You’re doing better than your thoughts say.
+ribbon|w|Don’t believe all your thoughts.
+sun|c|I always end up in cool places, doing cool things.
+grass|i|If you fail, congratulations: most people don’t even try.
+wind|i|Do what scares you until it doesn’t.
+goddess|i|Success is a decision.
+moss|i|Discipline beats motivation every time.
+grass|i|A winner is just a loser who tried one more time.
+goddess|c|My potential has no limits.
+water|c|I forgive myself for everything.
+moss|w|Discipline is choosing your future over your impulses.
+petal|c|People like you are rare.
+moss|i|Show up every day and the results won’t have a choice.
+petal|c|Be too much!
+wind|i|Starve your distractions, feed your focus.
+wind|i|Either the fear goes away or the opportunity does.
+moon|w|Do you like the reason why you’re tired?
+sun|i|You only live once.
+goddess|c|Trust your vision.
+grass|i|1% better every day.
+sun|i|Energy is contagious.
+moss|i|Results require routine.
+water|i|I wanna see what happens if I don’t give up.
+wind|i|Who cares?
+water|w|Action cures anxiety.
+ribbon|w|You don’t have to react to everything you notice.
+sun|i|Keep doing, fear nothin’.
+goddess|w|Reality is created by the mind.
+petal|c|I’m too sexy for all this stress.
+ribbon|c|Messy authenticity over fake perfection.
+grass|i|Every try matters.
+moss|w|Discipline is self-love in action.
+water|c|It’s okay to be scared.
+water|c|It’s okay to be anxious.
+wind|c|It’s okay to be angry.
+ribbon|c|All emotions are okay.
+goddess|c|Be a people unpleaser.
+sun|i|Enjoy the now.
+wind|w|Worry is a misuse of your imagination.|Dan Zadra|Wisdom
+goddess|c|Be yourself so the people looking for you can find you.
+moon|c|Due to not wanting to, I will not. Thanks.
+ribbon|i|Life got so serious, I forgot I love dancing.
+sun|c|I’ve got my spark back.
+moon|c|May all your delulu become trululu.
+petal|c|Woke up sexy as hell again.
 moon|i|Tonight, rest is the most productive thing you can do.
-water|c|You’re on your own path, and it’s a beautiful one.
+water|i|Rest. Breathe. Begin again.
+grass|i|Tiny steps still count as steps.
+petal|i|You don’t have to be perfect to be wonderful.
+goddess|i|Grace and strength belong together.
+sun|i|Radiate, then rest. Both are power.
+water|i|Flow around what you can’t move.
+petal|i|Bloom in your own time.
+sun|i|Let today be a good day to start again.
+goddess|i|Walk like you already trust yourself.
+moon|c|You are doing great, sweetheart.
+moon|c|Be proud of how far you have come.
+water|c|You are softer and stronger than you give yourself credit for.
 water|c|There’s no one quite like you.
-water|i|You can be gentle and still go far.
-water|w|Fall seven times, stand up eight.|Japanese proverb|Zen
 grass|c|Keep going, you’re closer than you think.
 grass|c|Look at you, growing every single day.
-grass|i|Tiny steps still count as steps.
-grass|w|Chop wood, carry water. Do the next small thing with full attention.|Zen proverb|Zen
-moss|c|You’re allowed to take your time.
 moss|c|You’re stronger than you feel right now.
-moss|i|Slow and steady is still moving.
-moss|w|The posture should be steady and comfortable.|Patanjali, Yoga Sutras 2.46|Yoga
-ribbon|c|You’re doing better than you think, love.
 ribbon|c|Your pace is the right pace.
-ribbon|i|Go with the flow, then choose your direction.
-ribbon|w|We suffer more often in imagination than in reality.|Seneca|Stoicism
-petal|c|You are doing so well, honestly.
-petal|c|You make the world a little softer.
-petal|i|Bloom in your own time.
-petal|w|Better than a thousand hollow words is one word that brings peace.|Dhammapada (paraphrase)|Buddhism
+ribbon|c|Your intuition is sharper than you think. Trust it.
+petal|c|You light up a room without trying.
 sun|c|You’ve got this, and I believe in you.
-sun|c|You’re shining, even on the quiet days.
-sun|i|Let today be a good day to start again.
-sun|w|The privilege of a lifetime is to become who you truly are.|Carl Jung (attributed)|Psychology
 goddess|c|You are enough, exactly as you are.
-goddess|c|Proud of you, always.
-goddess|i|Walk like you already trust yourself.
-goddess|w|Perceive that which cannot be seen with the eye.|Miyamoto Musashi, Book of Five Rings (paraphrase)|Martial arts
-wind|c|Take a deep breath. You’re doing just fine.
-wind|c|Be kind to yourself today, you deserve it.
-wind|i|This feeling will pass. You will still be here.
-wind|w|The mind is restless, but it can be trained by practice.|Bhagavad Gita 6.35 (paraphrase)|Yoga
-sun|c|You’re a good one, and you’re doing great.
+goddess|c|You are allowed to be soft and powerful at the same time.
+wind|c|You handle more than anyone sees, and you do it with grace.
 moon|c|You deserve the same kindness you give others.
-water|i|Rest. Breathe. Begin again.
-petal|i|You don’t have to be perfect to be wonderful.
-grass|c|Keep going, sweetheart. Every step counts.
+grass|w|Act as if what you do makes a difference. It does.|William James|Psychology
+ribbon|w|The curious paradox is that when I accept myself just as I am, then I can change.|Carl Rogers|Psychology
+ribbon|w|You have power over your mind, not outside events. Realise this, and you will find strength.|Marcus Aurelius (paraphrase)|Stoicism
+wind|w|We suffer more often in imagination than in reality.|Seneca|Stoicism
+water|w|Fall seven times, stand up eight.|Japanese proverb|Zen
+water|w|Nothing in the world is softer than water, yet nothing is better at wearing down the hard.|Lao Tzu, Tao Te Ching 78|Taoism
+grass|w|A journey of a thousand miles begins with a single step.|Lao Tzu|Taoism
+moss|w|Nature does not hurry, yet everything is accomplished.|Lao Tzu|Taoism
 moss|w|The obstacle is the path.|Zen proverb|Zen
-goddess|w|Knowing yourself is the beginning of all wisdom.|Aristotle (attributed)|Philosophy`.split("\n").forEach(l=>{const[e,t,q,a,s]=l.split("|");QX.push({e,t,q,a:a||"",s:s||""})});
-`moon|g|Thank you, body, for carrying me through today.
+wind|w|You are the sky. Everything else is just the weather.|Pema Chödrön|Buddhism
+sun|w|In the midst of chaos, there is also opportunity.|Sun Tzu (attributed)|Martial arts
+goddess|w|Knowing yourself is the beginning of all wisdom.|Aristotle (attributed)|Philosophy
+goddess|w|Who looks outside, dreams; who looks inside, awakes.|Carl Jung|Psychology
+sun|w|The privilege of a lifetime is to become who you truly are.|Carl Jung (attributed)|Psychology
+wind|w|Between stimulus and response there is a space. In that space is our power to choose.|Viktor Frankl (attributed)|Psychology
+goddess|w|He who has a why to live can bear almost any how.|Friedrich Nietzsche|Philosophy
+petal|w|The happiness of your life depends on the quality of your thoughts.|Marcus Aurelius|Stoicism
+moss|w|Waste no more time arguing what a good person should be. Be one.|Marcus Aurelius|Stoicism
+grass|w|It does not matter how slowly you go, as long as you do not stop.|Confucius (attributed)|Philosophy
+grass|w|The best time to plant a tree was 20 years ago. The second best time is now.|Proverb|Wisdom
+wind|w|The cave you fear to enter holds the treasure you seek.|Joseph Campbell|Philosophy
+water|w|Motivation often comes after you start, not before. Begin, and the feeling follows.|Behavioural activation research|Psychology
+ribbon|w|Name it to tame it: putting a feeling into words calms the brain’s alarm.|Lieberman et al. 2007|Neuroscience
+grass|w|Neurons that fire together wire together. Every repeat makes it easier.|Donald Hebb 1949|Neuroscience
+moss|w|New habits take about 66 days on average to feel automatic. Be patient with day 12.|Lally et al. 2010|Psychology
+petal|w|Being kind to yourself after a mistake makes you more likely to try again.|Breines & Chen 2012|Psychology
+sun|w|Nervous? Say “I’m excited.” Your body can’t tell the two apart, and it helps.|Brooks 2014|Psychology
+grass|w|Abilities grow with effort and good strategies. That’s a growth mindset.|Carol Dweck|Psychology
+water|w|One workout can lift your mood and lower anxiety for hours afterwards.|Exercise psychology research|Science
+moon|w|Sleep turns today’s practice into tomorrow’s skill.|Walker et al. 2002|Neuroscience
+sun|w|An object in motion stays in motion. Start, and keep rolling.|Newton’s first law|Physics
+wind|w|Energy is never lost, only changed. Turn stress into fuel.|First law of thermodynamics|Physics
+grass|w|1.01 to the power of 365 is about 37. Small daily gains add up to big change.|Maths of compounding|Maths
+moon|g|Thank you, body, for carrying me through today.
 moon|g|I am grateful for this quiet moment.
 water|g|Gratitude turns what we have into enough.
-water|g|Thank you for every glass of water, every deep breath.
 grass|g|Three good things today. Start with the smallest one.
 grass|g|I’m grateful for the person I’m becoming.
 moss|g|He who knows he has enough is rich.|Lao Tzu, Tao Te Ching 33 (paraphrase)|Taoism
 moss|g|Thank you, legs and lungs, for showing up.
-ribbon|g|Receive without conceit, release without struggle.|Marcus Aurelius (paraphrase)|Stoicism
 ribbon|g|Today, I’m thankful for a little more ease.
 petal|g|Gratitude is not only the greatest of virtues, but the parent of all the others.|Cicero|Philosophy
 petal|g|Notice one beautiful thing right now, and say thank you.
@@ -107,9 +148,8 @@ sun|g|He is wise who does not grieve for what he lacks, but rejoices in what he 
 goddess|g|I thank my body for all it can do.
 goddess|g|Thank you to everyone who made today a little brighter.
 wind|g|Take a breath and thank it for being here.
-wind|g|It is not the one who has too little, but the one who craves more, who is poor.|Seneca (paraphrase)|Stoicism
-sun|g|Writing down three good things a day can lift your mood. Try it tonight.|Positive psychology (Seligman, 2005)|Psychology
-water|g|I am grateful for this body, this breath, this day.`.split("\n").forEach(l=>{const[e,t,q,a,s]=l.split("|");QX.push({e,t,q,a:a||"",s:s||""})});
+sun|g|Writing down three good things a day can lift your mood. Try it tonight.|Seligman et al. 2005|Psychology
+water|g|I am grateful for this body, this breath, this day.`.split("\n").map(l=>{const[e,t,q,a,s]=l.split("|");return{e,t,q,a:a||"",s:s||""}});
 export const EL: Record<string, string> = {moon:"Moon",water:"Water",grass:"Sprout",moss:"Earth",ribbon:"Flow",petal:"Bloom",sun:"Sun",goddess:"Goddess",wind:"Air"};
 export const TL: Record<string, string> = { i: "Inspiration", c: "Compliments", w: "Wisdom", g: "Gratitude" };
 export const PE: Record<PhaseKey, string[]> = {menstrual:["moon","water","ribbon"],follicular:["grass","moss","ribbon"],ovulation:["petal","sun","goddess"],luteal:["wind","ribbon","water","moon"]};
@@ -157,4 +197,51 @@ bs:{n:"Body scan",dur:300,d:"A 5-minute scan from feet to head, noticing sensati
 gr:{n:"5-4-3-2-1 grounding",dur:120,d:"A sensory grounding practice that anchors you in the present moment.",f:scrp([[0,"Name 5 things you can see."],[25,"Name 4 things you can feel or touch."],[50,"Name 3 things you can hear."],[75,"Name 2 things you can smell."],[95,"Name 1 thing you can taste. Then take a slow breath."]])},
 mt:{n:"Loving-kindness",dur:180,d:"A short metta meditation: silently offering good wishes to others and to yourself.",f:scrp([[0,"Settle and soften your face and shoulders."],[20,"Picture someone you care about. Silently: may you be happy, may you be healthy, may you be at ease."],[70,"Turn it to yourself: may I be kind to myself, may I be at ease."],[130,"Widen it to everyone: may all beings be well."],[170,"Rest, then open your eyes."]])}};
 // Same order as the widgets appear on the Cycle tab.
-export const WID: [string, string][] = [["per","Period tracker"],["horm","Hormone levels"],["quote","Quotes"],["today","Today"],["tips","Eat · Sports · Do"],["mind","Mind & brain"],["fact","Daily practice"],["reset","Breathing & meditation"]];
+export const WID: [string, string][] = [["per","Period tracker"],["horm","Hormone levels"],["quote","Quotes"],["today","Today"],["tips","Tips"],["fact","Daily practice"],["reset","Breathing & meditation"]];
+
+/** Titles for the phase tips (same order as PH[...].eat / sport / do and MIND[...].tips). */
+const CTH: Record<PhaseKey, { eat: string[]; sport: string[]; do: string[]; mind: string[] }> = {
+menstrual:{eat:["Refill iron","Omega-3 and magnesium","Warm and hydrated"],sport:["Gentle movement helps","Lift if you feel well","Let symptoms guide you"],do:["Ease the cramps","Sleep 7–9 hours","When to see a doctor"],mind:["Why it can feel flatter","Lower the bar","Warmth and light","Be kind to yourself"]},
+follicular:{eat:["Protein for progress","Carbs around training","Keep iron in"],sport:["Go harder this week","Add a little load","Small, personal effects"],do:["Plan focused work","Check in with yourself"],mind:["Drive and curiosity","Use the momentum","Make an if–then plan","Reward new habits"]},
+ovulation:{eat:["Colour and fibre","No need to restrict","Calcium"],sport:["Power feels good","Warm up your knees"],do:["A mid-cycle twinge","Not for contraception"],mind:["Confident and social","Be social if you like","Channel the energy","Three good things"]},
+luteal:{eat:["Hungrier is normal","Carbs and protein steady you","Calcium and vitamin D","Go easy on alcohol and salt"],sport:["Moderate and steady","Ease off late in the phase"],do:["Protect your sleep","Severe mood? Get support"],mind:["Why stress hits harder","Try cyclic sighing","Fewer decisions","Name the feeling","Steady routines"]}};
+/** Body and brain facts (biology, physics, chemistry), shown under Mind & brain in every phase. [title, text] */
+export const BODYF: [string, string][] = [
+["Your brain runs on about 20 watts","The brain is about 2% of your weight but uses about 20% of your energy, like a dim light bulb. Skipping meals can blunt focus for that reason."],
+["A little water, a lot of focus","Losing just 1–2% of body water (about 1 litre for a 60 kg person) can lower attention and mood. Sip through the day, not all at once."],
+["Breathe out to calm down","A long exhale slows the heart through the vagus nerve. Breathe out longer than you breathe in, for example in for 4, out for 6."],
+["Muscles make mood chemicals","Working muscles release myokines and raise BDNF, a protein that helps brain cells grow and connect. One reason a workout lifts your mood."],
+["Light sets your body clock","Morning light reaches special cells in your eyes that set your inner clock: more alert by day, sleepier at night. Ten minutes outside helps."],
+["Sleep cleans the brain","In deep sleep, fluid flow through the brain rises and washes out waste. That foggy feeling after a short night has a real cause."],
+["Nerves faster than a race car","Fast nerve signals travel up to about 120 m/s, over 400 km/h. That’s how your hand pulls back from heat before you even feel the pain."],
+["Your morning cortisol boost","Cortisol peaks 30–45 minutes after waking to get you going. It’s not the enemy; it’s your built-in morning coffee."],
+["Bones are alive","About 10% of your skeleton is rebuilt each year. Lifting and jumping tell bone to grow denser, which matters more with age."],
+["Your gut talks to your brain","About 90% of the body’s serotonin is made in the gut. Fibre feeds the bacteria that help keep that system healthy."],
+["Iron carries your oxygen","Each red blood cell holds about 270 million haemoglobin molecules, and each grabs oxygen with iron. Low iron means less oxygen, and you feel it as tiredness."],
+["Practice rewires you","When you repeat a skill, the nerve paths you use get insulated with myelin, so signals run faster. Practice literally speeds you up."],
+];
+export const CT_TOPICS: [string, string][] = [["eat","Eat"],["sport","Sports"],["do","Do"],["mind","Mind & brain"]];
+export interface CTip { t: string; h: string; b: string }
+/** Tips for a phase (Eat, Sports, Do, Mind & brain), optionally only some topics. */
+export function ctList(k: PhaseKey, only: string[] = []): CTip[] {
+  const x = PH[k], m = MIND[k], h = CTH[k];
+  const all: CTip[] = [
+    ...x.eat.map((b, i) => ({ t: "eat", h: h.eat[i], b })),
+    ...x.sport.map((b, i) => ({ t: "sport", h: h.sport[i], b })),
+    ...x.do.map((b, i) => ({ t: "do", h: h.do[i], b })),
+    ...[m.fact, ...m.tips].map((b, i) => ({ t: "mind", h: h.mind[i], b })),
+    ...BODYF.map(([h, b]) => ({ t: "mind", h, b })),
+  ];
+  const L = only.length ? all.filter(y => only.includes(y.t)) : all;
+  return L.length ? L : all;
+}
+
+/**
+ * What the hormone chart means today, per phase. {E} {P} {T} are estrogen, progesterone and testosterone,
+ * shown in their line colours, so the sentence doubles as the legend's explanation.
+ */
+export const HX: Record<PhaseKey, string> = {
+menstrual:"Low {E} and {P} can make energy and mood dip, mostly on days 1–2. Rest is productive now.",
+follicular:"Rising {E} is linked to more energy, a better mood and motivation, a good time to start things.",
+ovulation:"Peak {E} and a small rise in {T} help many people feel more confident, social and strong.",
+luteal:"{P} is calming but can bring tiredness and cravings; when it falls with {E} before your period, PMS symptoms can show up."};

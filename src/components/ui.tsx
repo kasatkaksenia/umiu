@@ -33,12 +33,24 @@ export function Wico({ k }: { k: string }) {
 }
 
 /** Brand mark (see BRAND in lib/icons.ts) in the current colour. */
-export function BrandMark({ k, s = 28 }: { k: "wave" | "moon"; s?: number }) {
+export function BrandMark({ k, s = 28, style }: { k: "wave" | "moon"; s?: number; style?: React.CSSProperties }) {
   const m = `var(--b-${k})`;
-  return <span className="bmark" aria-hidden="true" style={{ width: s, height: s, WebkitMaskImage: m, maskImage: m }} />;
+  return <span className="bmark" aria-hidden="true" style={{ width: s, height: s, WebkitMaskImage: m, maskImage: m, ...style }} />;
 }
 
 /** Chevron + "Back", sized so the arrow matches the text. Use inside a `q bk` button. */
+/** The comeback figure (arms up), used by the comeback strip and pop-up. */
+export function ComebackFig({ s = 60, a = "var(--h1)", b = "var(--h2)", bg = "var(--ac2)" }: { s?: number; a?: string; b?: string; bg?: string }) {
+  return (
+    <svg viewBox="0 0 120 90" width={s * 1.33} height={s} aria-hidden="true" style={{ display: "block", flex: "none" }}>
+      <circle cx="60" cy="48" r="36" fill={bg} /><circle cx="60" cy="22" r="7" fill={a} />
+      <path d="M38 36 Q60 62 82 36" stroke={a} strokeWidth="7" fill="none" strokeLinecap="round" />
+      <path d="M46 84 C46 62 74 62 74 84" stroke={b} strokeWidth="8" fill="none" strokeLinecap="round" />
+      <path d="M14 30l4 2M104 30l-4 2M20 14l3 3M100 14l-3 3" stroke={b} strokeWidth="3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /** Small (i) button that opens an explanation sheet (see Info in Sheets.tsx). */
 export function InfoButton({ k, label }: { k: string; label: string }) {
   return <button className="q ib" aria-label={label} onClick={() => openSheet({ t: "info", k })}><Ico k="info" s={20} /></button>;

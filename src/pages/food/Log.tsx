@@ -1,11 +1,9 @@
 import { useState } from "react";
-import { ai } from "../../lib/ai";
-import { MEALS, Suggestion, chooseMeal, chosenMeal, eaten, localName, mealNow, mealOf, readBarcode, searchFoods, todayLog } from "../../lib/food";
-import { FoodEntry, MealKey, S, commit, openSheet, render } from "../../lib/store";
-import { TODAY } from "../../lib/util";
+import { MEALS, chooseMeal, eaten, mealOf, todayLog } from "../../lib/food";
+import { FoodEntry, MealKey, S, commit, openSheet } from "../../lib/store";
 import { offerUndo } from "../../lib/undo";
 import { t as tt } from "../../lib/i18n";
-import { FileButton, Ico } from "../../components/ui";
+import { Ico } from "../../components/ui";
 
 
 
@@ -15,7 +13,6 @@ export function FoodLog() {
     <div className="cols c-main">
       <div className="col main">
         <Summary />
-        <AddFood />
       </div>
       <div className="col side">
         <Meals items={t} />
@@ -24,7 +21,7 @@ export function FoodLog() {
   );
 }
 
-/** Today by meal: a ring for each meal's share of the calorie goal, its foods, and "+" to add to it. Tap a meal to see and remove its foods. */
+/** Today by meal: a ring for each meal's share of the calorie goal, its foods, and "+" that opens the food search for that meal. Tap a meal to see and remove its foods. */
 function Meals({ items }: { items: FoodEntry[] }) {
   const [open, setOpen] = useState<MealKey | null>(null);
   const C = 2 * Math.PI * 21;
@@ -51,10 +48,7 @@ function Meals({ items }: { items: FoodEntry[] }) {
               </button>
               <button className="mladd" aria-label={tt("Add to {m}", { m: tt(n) })} onClick={() => {
                 chooseMeal(k);
-                render();
-                const el = document.querySelector<HTMLInputElement>(".ion-page.up:not(.ion-page-hidden) input[aria-label='Food name']");
-                el?.scrollIntoView({ behavior: "smooth", block: "center" });
-                el?.focus({ preventScroll: true });
+                openSheet({ t: "af" });
               }}><Ico k="plus" s={22} /></button>
             </div>
             {on && (L.length ? L.map(x => (
@@ -101,88 +95,3 @@ function Summary() {
 }
 
 
-/**
- * Food search (option A): one field with photo and barcode buttons inside, results with "+".
- * "+" opens the edit window (sheet "fe") with grams and nutrients; "Enter manually" opens it empty.
- */
-function AddFood() {
-  const [name, setName] = useState("");
-  const [sugs, setSugs] = useState<Suggestion[]>([]);
-  const [status, setStatus] = useState("");
-  const clear = () => {
-    setName("");
-    setSugs([]);
-  };
-  const open = (s: Suggestion | null, code?: string) => {
-    clear();
-    setStatus("");
-    openSheet({ t: "fe", s, code });
-  };
-
-  const scan = async (file: File) => {
-    setStatus("Reading barcode…");
-    const c = await readBarcode(file);
-    if (!c) {
-      setStatus("Couldn’t read a barcode. Retake the photo closer and well lit, or type the number below.");
-      return;
-    }
-    const f = S.foods[c];
-    open(f ? { ...f, h: "", saved: 1 } : null, c);
-  };
-
-  const askAI = async () => {
-    if (!ai) return;
-    const q = name.trim();
-    setSugs([]);
-    setStatus("Asking AI…");
-    try {
-      const r = await ai.json('Typical nutrition per 100 g for "' + q + '". Reply ONLY JSON {"n":"name","k":kcal,"p":protein g,"c":carbs g,"f":fat g} (numbers).');
-      open({ n: r.n || q, k: +r.k || 0, p: +r.p || 0, c: +r.c || 0, f: +r.f || 0, h: "" });
-    } catch (e: any) {
-      setStatus("Couldn’t get an estimate (" + (e?.code || "error") + ").");
-    }
-  };
-
-  const q = name.trim();
-  return (
-    <div className="card fsr">
-      {chosenMeal() && (
-        <div className="mlto">
-          <span>{tt("Adding to {m}", { m: tt(MEALS.find(m => m[0] == chosenMeal())![1]) })}</span>
-          <button className="q" aria-label="Cancel" onClick={() => { chooseMeal(null); render(); }}><Ico k="x" s={16} /></button>
-        </div>
-      )}
-      <div className="fsf">
-        <span className="fsi" aria-hidden="true"><Ico k="search" s={18} /></span>
-        <input autoComplete="off" placeholder="Search food" aria-label="Food name" value={name} onChange={e => {
-          setName(e.target.value);
-          setSugs(searchFoods(e.target.value));
-        }} />
-        <span className="fsb">
-          <FileButton className="g s ic" accept="image/*" capture onFiles={f => openSheet({ t: "mp", url: URL.createObjectURL(f[0]), file: f[0] })} label="Meal from photo"><Ico k="cam" s={18} /></FileButton>
-          <FileButton className="g s ic" accept="image/*" capture onFiles={f => scan(f[0])} label="Scan barcode"><Ico k="barcode" s={18} /></FileButton>
-        </span>
-      </div>
-      {q.length >= 2 && (
-        <div className="fres">
-          {sugs.map((x, i) => {
-            const loc = localName(x, q.toLowerCase());
-            return (
-              <div className="li" key={i}>
-                <span>{x.n}<br /><span className="mu">{loc ? loc + " · " : ""}{Math.round(x.k)} kcal · P{Math.round(x.p)} {x.saved ? "· your food" : "per 100 g"}</span></span>
-                <button className="fadd" aria-label={tt("Add {n}", { n: x.n })} onClick={() => open(x)}><Ico k="plus" s={20} /></button>
-              </div>
-            );
-          })}
-          {!sugs.length && <p className="mu" style={{ margin: "8px 0" }}>No matches.</p>}
-          {ai && <button className="q" onClick={askAI}>Ask AI to estimate “{q}”</button>}
-        </div>
-      )}
-      <div className="fsl">
-        <button className="q" onClick={() => open(q ? { n: q, k: 0, p: 0, c: 0, f: 0, h: "", saved: 1 } : null)}>Enter manually ›</button>
-        <button className="q" onClick={() => openSheet({ t: "cm" })}>Build a meal ›</button>
-      </div>
-      {status && <p className="mu" role="status" style={{ margin: "4px 0 0" }}>{status}</p>}
-    </div>
-  );
-}

@@ -95,6 +95,28 @@ Back to [AGENTS.md](../AGENTS.md). Add an entry whenever you make a non-obvious 
 | 2026-11-10 | Cycle symptoms are option A: one sideways row, chosen first, dashed “+” adds your own; the note is one line that grows | owner picked A |
 | 2026-11-10 | Goal field looks exactly like the dropdowns (no button fill); every dropdown keeps its arrow in every look | owner request; Glow signal, Desert HUD and Mist had lost the arrow |
 | 2026-11-10 | Goals button reads “Set my goals”; Progress photos explain the collage idea and how to take comparable photos | owner request |
+| 2026-11-10 | Comeback after 10+ days: no separate card or screen. A slim “Comeback week” strip sits in the workout card; “Plan ›” opens a one-time-style pop-up (sheet `cb`, dark card with a warm glow): days off, weights / sets / ramp-up numbers, Holiday or Illness switch, short tips. No next-workout preview, since we can’t know which workout they’ll pick | owner picked Welcome B + reminder strip + pop-up |
+| 2026-11-10 | Mood icons have their word underneath (option A); the chosen word is bold | owner picked A |
+| 2026-11-10 | Style chips use each look's own page background (light or dark, so the difference is obvious) with its banner colours fading in at the right edge; text and tick switch between dark and light (`lookPaint` in Sheets.tsx) | owner: "main colour of a chip should be the background colour" |
+| 2026-11-10 | Quote picture tint by look removed again (owner didn't like it). Three alternatives shown as previews: pick matching pictures per look, two-tone print, new pictures drawn from the look palette | owner feedback |
+| 2026-11-10 | Food: the search card is gone. Each meal's “+” opens a pop-up “Add to {meal}” with the search, photo and barcode; “+” on a result opens the grams window (Back returns to the search). Links renamed “New food ›” / “New meal ›” | owner request |
+| 2026-11-10 | Cycle: Eat, Sports, Do and Mind & brain merged into one Tips card like the nutrition tips (topic, title, text, ‹ ›, Shuffle, topic filter `S.set.ctf`). Each tip got a short title (`CTH` in data/cycle.ts). The brand moon mark replaces the tip number, plus 0–2 small marks at spots that change per tip. “Tip ·” removed from both tip cards; the Mind & brain widget toggle folded into Tips | owner request |
+| 2026-11-10 | Symptoms fold behind an arrow (closed by default, count stays in the label) | owner request |
+| 2026-11-10 | Mood words run along an arc under each icon (`textPath`), the chosen one bold | owner request |
+| 2026-11-10 | Hormone chart: “Today” tag instead of “Day N”, legend under the chart, and a per-phase sentence (`HX`) with the hormone names in their line colours (mixed with text colour for contrast) | owner request |
+| 2026-11-10 | How to measure: layout C (figure left, numbered steps right) with a new soft body drawing in the accent colour | owner request |
+| 2026-11-10 | Comeback pop-up uses the look's colours (solid, text, button, h1/h2 glows) instead of a fixed dark card. Strip text shortened to “−5% weights · 80% sets”, each line kept to one row, button “See plan” | owner request |
+| 2026-11-10 | Progress photos: the “For a fair look” tip moved under the Add photos button | owner request |
+| 2026-11-10 | Period tracker version 1: title row with a pill (“in 19 days”, “Day 2”, “3 days late”) and (i); big month name above the strip. Predicted days always show a dashed ring in the look's period colour (`:root:root` + `!important`, because looks restyle `.pc`), matching the legend | owner request (Glow signal showed no ring) |
+| 2026-11-10 | Hormone chart: “Day N” tag again, no (i); the “Typical pattern…” note sits under the chart; the sentence keeps only the explanation (`HX`), hormone names coloured (42% line colour + text colour, for contrast) | owner request |
+| 2026-11-10 | Quotes rewritten: sad or unclear lines removed, the owner's list added (typos fixed), plus psychology, philosophy and science lines with a source (e.g. Hebb 1949, Lally 2010, Newton's first law). Quote filter no longer shows a count | owner request |
+| 2026-11-10 | Quote pictures, options A + B: pictures whose colours fit the look (`MATCH` in qart.ts) are shown as drawn; all others are printed two-tone in the look's colours (`duoSvg`), with a text colour per look (`duoInk`) so the quote stays readable; “Another” uses the look's button colours then | owner picked A + B |
+| 2026-11-10 | Mind & brain tips include 12 body and brain facts (biology, physics, chemistry) with short examples (`BODYF`) | owner request |
+| 2026-11-10 | Profile sex = male hides the Cycle section (bottom bar and side menu); /cycle redirects to Train | owner request |
+| 2026-11-10 | Mood words: plain text under the icon in the icon's colour (`moodInk`), chosen one underlined. Symptom chips wrap like filter options, in a fixed order | owner request |
+| 2026-11-10 | Style list: light looks first, then dark; names only; chip = look background + one main colour on the right | owner request |
+| 2026-11-10 | Food pop-up: New food / New meal are buttons; gram and portion chips fit the width; focus ring drawn inside the search field. New meal asks “How much did you eat?” (portions) and logs to the chosen meal (and still saves to Recipes) | owner request |
+| 2026-11-10 | How to measure: schematic outlined figure with accent tape lines; Progress photos: short lead, two icon lines, tip box under the button. Comeback strip button: “See” | owner request |
 
 ## Lessons learned (gotchas)
 

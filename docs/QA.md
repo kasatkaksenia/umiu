@@ -112,3 +112,8 @@ With the Claude in Chrome extension connected (`/chrome` in Claude Code), Claude
 | Selected mood hard to spot (Clay tiles all coloured; Glow signal lime on lime) | Ring on the chosen one, others faded; checked 8 looks × light/dark |
 | Meal icons filled the whole ring | Ring rule no longer matches the icon svg |
 | Dropdowns had no arrow in Glow signal, Desert HUD and Mist (look background rule removed it) | Arrow forced on every `select` |
+| Comeback strip could wrap to three lines (longer text, Ukrainian) | Shorter text, each line `nowrap` + ellipsis; flow check measures it |
+| Selected mood ring touched its arc label | Arc radius 46 and more space under the icons (later replaced by plain words) |
+| Predicted period days had no ring in Glow signal, Ember, Mist, Night planner (look `.pc` rules won) | Forced dashed `--pk` ring; flow check |
+| Gram and portion chips cut off at the right of the Add pop-up | 5-column grid / wrapping chips |
+| Quote text unreadable on two-tone pictures (original ink kept) | Text colour per look for two-tone pictures |

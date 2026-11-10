@@ -58,6 +58,9 @@ const clone = <T,>(o: T): T => JSON.parse(JSON.stringify(o));
 export let S: State = clone(BLANK);
 
 export type Sheet =
+  | { t: "cb" }
+  | { t: "ctf" }
+  | { t: "af" }
   | { t: "fe"; s: { n: string; k: number; p: number; c: number; f: number; saved?: 1 } | null; code?: string }
   | { t: "info"; k: string }
   | { t: "swap"; id: string }

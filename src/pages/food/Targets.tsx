@@ -148,8 +148,11 @@ function PhotosCard() {
   return (
     <div className="card">
       <b>Progress photos</b>
-      <p style={{ margin: "6px 0 4px" }}>Add photos now and then, then put a few side by side to see how you change.</p>
-      <p className="mu" style={{ margin: "0 0 8px", fontSize: 14 }}>For a fair comparison: same light and place, same underwear, same pose (front, side, back), morning before eating, and ideally the same cycle day.</p>
+      <p className="phl">Photos show change better than the mirror.</p>
+      <ul className="phs">
+        <li><Ico k="cam" s={18} /><span>Add one every 2–4 weeks</span></li>
+        <li><Ico k="cols" s={18} /><span>Put them side by side to see how far you’ve come</span></li>
+      </ul>
       <div className="pg">
         {PHOTOS.map(p => (
           <button key={p.id} className="pt" aria-label={`${dmy(p.d)} ${p.lab || ""}`} onClick={() => openSheet({ t: "pho", id: p.id })}>
@@ -169,6 +172,7 @@ function PhotosCard() {
           setSt("Couldn’t read those photos.");
         }
       }}><Ico k="cam" /> Add photos</FileButton>
+      <p className="phtip"><b>For a fair look:</b> same spot, light and outfit, in the morning before breakfast, and on a similar cycle day if you can.</p>
       {n > 1 && (
         <div className="row" style={{ marginTop: 8 }}>
           <button onClick={showChanges}>Show my changes</button>
@@ -195,7 +199,7 @@ function TipCard() {
   return (
     <div className="card tipc">
       <div className="tipt">
-        <span className="eyebrow mu">Tip · {name(x.t)}</span>
+        <span className="eyebrow mu">{name(x.t)}</span>
         <button className={"g s ic" + (tp.length ? " on" : "")} aria-label={`Choose tip topics${tp.length ? " (filtered)" : ""}`} onClick={() => openSheet({ t: "ntf" })}>
           <Ico k="sliders" s={16} />
         </button>

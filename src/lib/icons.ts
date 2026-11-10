@@ -13,6 +13,8 @@ CI.chev='<path d="M9 6l6 6-6 6"/>';
 CI.search='<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/>';
 CI.back='<path d="M14.5 5.5L8 12l6.5 6.5"/>';
 CI.spark='<path d="M5 19C4 10 10 5 19 5C20 14 14 20 5 19Z"/><path d="M5 19L13 11"/>';
+// Two photos side by side (progress photos).
+CI.cols='<rect x="3.5" y="5" width="7.5" height="14" rx="2"/><rect x="13" y="5" width="7.5" height="14" rx="2"/>';
 Object.assign(CI,{swap:'<path d="M4 8h13M13 4l4 4-4 4M20 16H7M11 12l-4 4 4 4"/>',hist:'<circle cx="12" cy="12" r="8.500"/><path d="M12 7.500V12l3 2"/>',trash:'<path d="M5 7h14M10 7V4.500h4V7M7 7l.8 12h8.400L17 7M10 11v5M14 11v5"/>'});
 export const WIC: Record<string, [string, string]> = {};
 Object.assign(WIC, {

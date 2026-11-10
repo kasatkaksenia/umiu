@@ -299,8 +299,10 @@ select { -webkit-appearance: none; appearance: none; padding-right: 40px; backgr
 :root:root .pday.fl .pc { background: color-mix(in srgb, var(--pk) 52%, #000); color: #fff; border-color: transparent; }
 :root:root .pday.fl.f1 .pc { background: color-mix(in srgb, var(--pk) 40%, transparent); color: var(--tx); }
 :root:root .pday.fl.f2 .pc, :root:root .pday.fl.f0 .pc { background: color-mix(in srgb, var(--pk) 66%, #000); }
-.pday.per .pc { border: 1.5px dashed var(--pk); color: var(--tx); }
-.pday.fert .pc { background: color-mix(in srgb, var(--h2) 20%, transparent); }
+/* Predicted and fertile days must match the legend in every look (looks restyle .pc, so these win). */
+:root:root .pday.per .pc { border: 2px dashed var(--pk) !important; color: var(--tx); }
+:root:root .pday.fert .pc { background: color-mix(in srgb, var(--h2) 20%, transparent) !important; }
+:root:root .plg .lg-pr { border: 2px dashed var(--pk); }
 .pflow { margin-top: 8px; padding: 12px; border-radius: 18px; background: rgba(127,127,127,.08); }
 .seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 8px; padding: 3px; border-radius: 14px; background: rgba(127,127,127,.12); }
 .seg button { padding: 8px 2px; min-height: 36px; border-radius: 11px; background: none; color: var(--tx); border: 0; box-shadow: none; font-size: 14px; font-weight: 600; }
@@ -313,7 +315,12 @@ select { -webkit-appearance: none; appearance: none; padding-right: 40px; backgr
 .plg .lg-f { background: color-mix(in srgb, var(--h2) 35%, transparent); }
 .pavg { margin: 0; font-size: 13px; }
 .pmon { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; margin-top: 10px; }
-.pmon b { font-size: 15px; }
+.pmon b { font-size: 20px; }
+.pch { gap: 6px; flex-wrap: nowrap !important; }
+.pch .wt { white-space: nowrap; min-width: 0; }
+.pch .ib { margin-right: -6px; }
+.pch .wt { margin-right: auto; }
+.pch .pcd { font-weight: 800; white-space: nowrap; }
 .pmon button { min-height: 30px; padding: 4px 12px; }
 .pday:disabled { opacity: 1; cursor: default; }
 .pday.fut:not(.per):not(.fert) .pc { color: var(--mu); }
@@ -406,7 +413,7 @@ button.wbtn { position: absolute; right: 12px; top: 12px; }
 .mpb { width: 100%; margin-bottom: 8px; }
 /* Style sheet: the selected look is always clearly marked, whatever the look's own button styles. */
 .sh .opt.lko { position: relative; padding-right: 48px; }
-.sh .opt.lko.on { border-color: var(--tx) !important; box-shadow: inset 0 0 0 1.5px var(--tx) !important; background: var(--ac2) !important; }
+.sh .opt.lko.on { border-color: var(--tx) !important; box-shadow: inset 0 0 0 1.5px var(--tx) !important; }
 .lkc { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--tx); color: var(--bg); font-size: 13px; font-weight: 700; }
 
 /* ==========================================================================
@@ -567,11 +574,16 @@ button.q.ib { flex: none; margin-left: auto; min-height: 36px; width: 36px; padd
 :root:root .moods .chip.mood.clay.on .moji { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4.5px var(--tx); }
 :root:root .moods .chip.mood.on { transform: scale(1.06); }
 
-/* Style previews: a small colour orb per look (Profile row and the style list) */
-.orb { flex: none; display: block; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(127,127,127,.25); }
-.lkrow .orb { margin: 4px 4px 4px 2px; }
-.sh .opt.lko { display: flex; align-items: center; gap: 12px; text-align: left; }
-.sh .opt.lko .lkt { display: flex; flex-direction: column; min-width: 0; }
+/* Style chips are painted in each look's banner colours (lookPaint in Sheets.tsx), white text */
+:root:root .lkrow, :root:root .sh .opt.lko { border: 1px solid var(--lkb) !important; box-shadow: none; text-shadow: none; }
+:root:root .lkrow :is(b, span), :root:root .sh .opt.lko :is(b, span) { color: inherit !important; }
+:root:root .lkrow { min-height: 64px; padding: 12px 10px 12px 16px; border-radius: 20px; }
+:root:root .lkrow .nm b, :root:root .lkrow .chev { color: inherit; }
+:root:root .sh .opt.lko { display: flex !important; flex-direction: row !important; align-items: center !important; text-align: left; min-height: 72px; border-radius: 20px; margin: 8px 0; }
+.sh .opt.lko .lkt { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+.sh .opt.lko .lkt span { font-size: 14px; opacity: .92; }
+:root:root .sh .opt.lko.on { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4.5px var(--tx) !important; }
+:root:root .sh .opt.lko .lkc { background: var(--lkcb) !important; color: var(--lkcc) !important; }
 
 /* Goal field: a button that opens a sheet, styled exactly like the select fields around it in every look (no button fill) */
 :root:root button.fldb { background: rgba(127,127,127,.1) !important; border: 1px solid var(--ln) !important; border-radius: 16px !important; box-shadow: none !important; color: var(--tx) !important; font: 400 16px/1.3 var(--ff) !important; text-transform: none !important; letter-spacing: normal !important; min-height: 48px; padding: 12px 14px !important; transform: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
@@ -585,8 +597,11 @@ button.q.ib { flex: none; margin-left: auto; min-height: 36px; width: 36px; padd
 
 /* Cycle › Today: symptoms in one sideways row (chosen first, "+" adds your own), note as one growing line */
 .sylab { font-size: 13px; margin: 2px 0 6px; }
-.syrow { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px 4px; scroll-padding: 16px; }
-.syrow::-webkit-scrollbar { display: none; }
+:root:root button.q.sylab { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 40px; margin: 0; padding: 0 2px; color: var(--mu) !important; font: 400 13px/1.2 var(--ff) !important; text-transform: none !important; letter-spacing: normal !important; background: none !important; border: 0 !important; box-shadow: none !important; }
+button.sylab svg { transition: transform .2s; }
+button.sylab[aria-expanded="true"] svg { transform: rotate(180deg); }
+/* Symptoms open as wrapped chips, like the filter pop-ups. */
+.syrow { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 6px; }
 .syrow .cw, .syrow > .chip, .syrow > input { flex: none; }
 .syrow .chip { margin: 0; white-space: nowrap; }
 .syrow .cw .cwx { margin-left: -10px; margin-right: 0; }
@@ -597,7 +612,8 @@ button.q.ib { flex: none; margin-left: auto; min-height: 36px; width: 36px; padd
 .ntw textarea { flex: 1; border: 0; background: none; padding: 0; margin: 0; resize: none; font: inherit; font-size: 16px; line-height: 1.4; color: var(--tx); min-height: 0; outline: none; overflow: hidden; }
 
 /* Food search (option A): photo and barcode buttons inside the field, round "+" on results, edit sheet */
-.fsf { position: relative; }
+.fsf { position: relative; margin-top: 4px; }
+.fsf input:focus-visible, .fsf input:focus { outline-offset: -2px; }
 .fsf input { padding-left: 42px !important; padding-right: 96px !important; }
 .fsf .fsi { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--mu); display: flex; pointer-events: none; }
 .fsf .fsb { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
@@ -606,13 +622,69 @@ button.q.ib { flex: none; margin-left: auto; min-height: 36px; width: 36px; padd
 .fres .li { align-items: center; gap: 10px; }
 .fres .li > span:first-child { flex: 1; min-width: 0; }
 .fadd { flex: none; width: 40px; height: 40px; min-height: 40px; border-radius: 50%; padding: 0; margin: 0; display: grid; place-items: center; }
-.fsl { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; }
-.fsl .q { padding-left: 0; }
-.fsl .q:last-child { padding-right: 0; }
+.fsl { margin-top: 10px; }
+.fsl button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .fegrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-.fech { margin: 4px 0 8px; }
+.fech { margin: 4px 0 8px; display: grid !important; grid-template-columns: repeat(5, 1fr); gap: 6px; overflow: visible !important; }
+.fech .chip { margin: 0; padding-left: 0; padding-right: 0; text-align: center; }
+.cmamt { flex-wrap: wrap; overflow: visible !important; }
 :root:root button.fldb { justify-content: space-between !important; text-align: left !important; }
 :root:root button.fldb > span:first-child { flex: 1; min-width: 0; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-:root:root .sh .opt.lko { display: flex !important; flex-direction: row !important; align-items: center !important; }
 /* Every dropdown keeps its arrow, even in looks that restyle the field background */
 :root:root select:not(.selw select) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.5 6 6l4.5-4.5' fill='none' stroke='%23888' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: right 16px center !important; background-size: 12px 8px !important; }
+
+/* Train: comeback strip in the workout card, and its pop-up (dark card with a warm glow, same in every look) */
+.cbs { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 8px; margin: 0 0 12px; border-radius: 14px; background: linear-gradient(120deg, color-mix(in srgb, var(--h1) 18%, transparent), color-mix(in srgb, var(--h2) 18%, transparent)); }
+.cbs .cbt { flex: 1; min-width: 0; font-size: 14px; line-height: 1.3; display: flex; flex-direction: column; }
+.cbs .cbt .mu { font-size: 13px; }
+.cbs .cbt > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cbs .q { flex: none; min-height: 36px; padding: 4px 6px; font-size: 14px; white-space: nowrap; }
+.cbp { position: relative; border-radius: 26px; padding: 18px; color: var(--tx); background: radial-gradient(70% 55% at 15% 0%, color-mix(in srgb, var(--h1) 30%, transparent), transparent 70%), radial-gradient(60% 55% at 100% 35%, color-mix(in srgb, var(--h2) 24%, transparent), transparent 70%), var(--solid); border: 1px solid var(--ln); }
+.cbp .cbh { display: block; font-size: 26px; line-height: 1.1; margin: 8px 0 4px; }
+.cbp .cbm { margin: 0 0 14px; color: var(--mu); }
+.cbp .cbg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.cbp .cbg > div { border-radius: 16px; background: color-mix(in srgb, var(--tx) 6%, transparent); padding: 10px 4px; text-align: center; }
+.cbp .cbg b { display: block; font-size: 21px; line-height: 1.15; color: var(--tx); }
+.cbp .cbg span { font-size: 12px; color: var(--mu); }
+.cbp .cbr { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 12px 0; border-radius: 14px; background: color-mix(in srgb, var(--tx) 6%, transparent); }
+:root:root .cbp .cbr button { background: transparent !important; color: var(--tx) !important; border: 0 !important; box-shadow: none !important; min-height: 38px; padding: 6px 4px; border-radius: 11px; font: 600 14px/1.2 var(--ff) !important; text-transform: none !important; letter-spacing: normal !important; margin: 0; }
+:root:root .cbp .cbr button.on { background: var(--btn) !important; color: var(--btnt) !important; }
+.cbp .cbl { margin: 0 0 8px; padding-left: 18px; display: grid; gap: 6px; font-size: 15px; }
+.cbp .cbs2 { font-size: 12px; color: var(--mu); margin: 0 0 12px; }
+:root:root .cbp .cbgo { width: 100%; background: var(--btn) !important; color: var(--btnt) !important; border: 0 !important; box-shadow: none !important; text-transform: none !important; font-family: var(--ff) !important; }
+:root:root .cbp .cbx { display: block; margin: 6px auto 0; color: var(--mu) !important; font-family: var(--ff) !important; text-transform: none !important; }
+
+/* Mood: a word under each icon; the chosen one is bold */
+.moods .mdc { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.moods .mdc .chip.mood { width: 100%; }
+.moods .mdl { font: 700 12px/1.2 var(--ff); text-transform: none; letter-spacing: normal; }
+.moods .mdc.on .mdl { font-weight: 900; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+:root:root .moods.has .mdc:not(.on) .mdl { opacity: .7; }
+
+/* Quote pictures follow the style: a colour layer in the look's banner colours keeps each picture's light and shade
+   but moves its hues towards the look, so picture and app feel like one palette. */
+/* Cycle tips: brand mark instead of a number, plus a few small marks around the card. */
+.ctip { position: relative; overflow: hidden; }
+.ctip > .bmark { color: var(--ac); opacity: .16; pointer-events: none; }
+.ctip .tips .bmark { color: var(--ac); opacity: .35; }
+.ctip .tipt, .ctip .tips, .ctip .tipf { position: relative; }
+
+/* Hormone sentence: names in their line colours, readable on every look. */
+.hx { margin: 8px 0 0; line-height: 1.45; }
+.hx b { font-weight: 800; }
+
+/* How to measure (option C): figure on the left, numbered steps on the right. */
+.tpw { display: grid; grid-template-columns: 42% 1fr; gap: 14px; align-items: stretch; margin-top: 6px; }
+.tpt { border-radius: 18px; background: var(--ac2); display: grid; place-items: center; padding: 12px 6px; }
+.tpf { width: 100%; max-width: 150px; display: block; }
+.tps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; font-size: 15px; line-height: 1.35; }
+.tps li { display: flex; gap: 10px; align-items: flex-start; }
+.tpn { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--tx); color: var(--bg); font-size: 12px; font-weight: 800; display: grid; place-items: center; margin-top: 1px; }
+.tpm { text-align: center; font-size: 13px; margin: 14px 0 4px; }
+
+/* Progress photos: short lead, two icon lines, button, then the tip in a soft box. */
+.phl { margin: 6px 0 8px; font-weight: 600; }
+.phs { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
+.phs li { display: flex; align-items: center; gap: 10px; color: var(--mu); font-size: 15px; line-height: 1.3; }
+.phs li svg { flex: none; color: var(--ac); }
+.phtip { margin: 10px 0 0; padding: 10px 12px; border-radius: 14px; background: var(--ac2); font-size: 14px; line-height: 1.4; }

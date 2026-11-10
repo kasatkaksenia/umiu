@@ -53,5 +53,8 @@ function pebble(m: number) {
 const KNOWN = ["w", "gs", "dh", "px", "em", "np", "mi"];
 export const isClay = () => CLAY.has(KNOWN.includes(S.set.look) ? S.set.look : "w");
 
+/** Text colour for mood i: the icon's colour, deepened toward the text colour so the word stays readable. */
+export const moodInk = (i: number) => `color-mix(in srgb, ${C[i]} 62%, var(--tx))`;
+
 /** SVG markup (viewBox 0 0 100 100) for mood i in the current look. */
 export const moodSvg = (i: number) => (isClay() ? clay(i) : pebble(i));

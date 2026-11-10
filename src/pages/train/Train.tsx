@@ -5,7 +5,7 @@ import { fig, figSvg } from "../../lib/figures";
 import { S, UI, commit, openSheet, render, save, useStore } from "../../lib/store";
 import { comeback, dr, fin, nameOf, rmEx, rowsOf, setTxt, vol, wkDone } from "../../lib/train";
 import { TODAY, dmy } from "../../lib/util";
-import { BackTxt, Hero, Ico, Svg, Tabs, useAlert } from "../../components/ui";
+import { BackTxt, ComebackFig, Hero, Ico, Svg, Tabs, useAlert } from "../../components/ui";
 import { Page } from "../../components/layout";
 import { LANG, pn, t, tr } from "../../lib/i18n";
 import { W } from "../../lib/units";
@@ -38,7 +38,6 @@ function Workout() {
   return (
     <div className="cols c-main">
       <div className="col side">
-        <Comeback />
         <button className="card plan-card" onClick={() => r.push("/train/plan")}>
           <div className="row" style={{ alignItems: "center" }}>
             <div><b>Training plan</b><div className="mu">{t("{n}× per week", { n: pl.days })} · {sp.n}</div></div>
@@ -52,6 +51,7 @@ function Workout() {
       </div>
       <div className="col main">
         <div className="card">
+          <Comeback />
           <div className="mu eyebrow">Next workout</div>
           <div className="row" style={{ alignItems: "center", margin: "6px 0 10px" }}>
             <div style={{ minWidth: 0 }}>
@@ -116,35 +116,15 @@ function ExRow({ id }: { id: string }) {
   );
 }
 
+/** Comeback reminder after 10+ days off: one slim strip in the workout card; "Restart plan" opens the details (sheet "cb"). */
 function Comeback() {
   const c = comeback();
   if (!c) return null;
   return (
-    <div className="card">
-      <b>Welcome back</b>
-      <p className="mu" style={{ margin: "4px 0 8px" }}>{t("Your last workout was {n} ago. Here is a gentle way to restart.", { n: pn(c.g, "day") })}</p>
-      <div className="seg" role="radiogroup" aria-label="Reason for the break" style={{ gridTemplateColumns: "1fr 1fr" }}>
-        {([["hol", "Holiday or busy"], ["ill", "Illness or injury"]] as const).map(([k, l]) => (
-          <button key={k} role="radio" aria-checked={(S.set.brk || "hol") == k} className={(S.set.brk || "hol") == k ? "on" : ""} onClick={() => {
-            S.set.brk = k;
-            commit();
-          }}>{l}</button>
-        ))}
-      </div>
-      <ul style={{ margin: "8px 0" }}>
-        {c.ill && <li>Restart only when symptoms are gone and you feel normal for a day or two. Ask a clinician first after fever, heart or chest symptoms, or an injury.</li>}
-        <li>{t("Weights: start at about {a}% of your last working weights ({b}% lighter).", { a: Math.round(c.f * 100), b: Math.round((1 - c.f) * 100) })}</li>
-        <li>{t("Volume: {v} of your usual sets in the first week, with 2–3 reps left in reserve.", { v: tr(c.vol) })}</li>
-        <li>{t("Ramp up over {n} weeks: add about 5% load a session, or a set a week, until you are back at your old numbers.", { n: c.wk })}</li>
-        <li>Strength comes back faster than it was built (muscle memory), so don’t rush it.</li>
-      </ul>
-      <p className="mu" style={{ fontSize: 12, margin: "0 0 8px" }}>
-        Based on detraining and retraining research (Mujika &amp; Padilla 2000, Bosquet 2013, Seaborne 2018) and ACSM guidance. General information, not medical advice.
-      </p>
-      <button className="q" onClick={() => {
-        S.set.brkX = TODAY();
-        commit();
-      }}>Dismiss for a week</button>
+    <div className="cbs">
+      <ComebackFig s={30} />
+      <span className="cbt"><b>Comeback week</b><span className="mu">{t("−{p}% weights · {v} sets", { p: Math.round((1 - c.f) * 100), v: tr(c.vol).replace(/^about /, "") })}</span></span>
+      <button className="q" onClick={() => openSheet({ t: "cb" })}>See</button>
     </div>
   );
 }

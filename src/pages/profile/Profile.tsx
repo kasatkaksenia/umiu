@@ -6,7 +6,7 @@ import { S, commit, openSheet, useStore } from "../../lib/store";
 import { cloudOn, resetPassword, signIn, signUp } from "../../lib/cloud";
 import { LANG, LANGS, Lang, t } from "../../lib/i18n";
 import { BackButton, Page } from "../../components/layout";
-import { LookOrb, lookOf, LOOKS } from "../../sheets/Sheets";
+import { lookOf, lookPaint, LOOKS } from "../../sheets/Sheets";
 
 /** Two to four choices in one row. */
 function Seg<K extends string>({ label, items, cur, on }: { label: string; items: [K, string][]; cur: K; on: (k: K) => void }) {
@@ -55,8 +55,7 @@ export default function Profile() {
           </div>
           <div className="card">
             <b className="card-t">Style</b>
-            <button className="cx lkrow" onClick={() => openSheet({ t: "look" })} aria-label={t("Style: {n}. Show all styles", { n: t(look?.[1] || "") })}>
-              <LookOrb k={lookOf()} />
+            <button className="cx lkrow" style={lookPaint(lookOf())} onClick={() => openSheet({ t: "look" })} aria-label={t("Style: {n}. Show all styles", { n: t(look?.[1] || "") })}>
               <span className="nm"><b>{look?.[1]}</b></span>
               <span className="chev" aria-hidden="true">›</span>
             </button>

@@ -1,17 +1,17 @@
 // Every pop-up sheet in the app. The open sheet lives in UI.sheet; SheetHost draws it.
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { EX, FOC, MN, SPL } from "../data/exercises";
-import { EL, TL, WID } from "../data/cycle";
+import { CT_TOPICS, EL, TL, WID, ctList } from "../data/cycle";
 import { figSvg } from "../lib/figures";
 import { S, Sheet, UI, commit, openSheet, render, useStore } from "../lib/store";
-import { addEx, chWk, delWk, dr, ensureLib, eqOk, isCustom, planKeys, UNDO_MS, ewDo, ewLeave, ewName, ewRename, ewRm, ewUndo, ewUndoMsg, genWk, libOf, nameOf, exOrder, newWk, swapList, swapTo } from "../lib/train";
-import { MEALS, MealIng, chooseMeal, mealNow, RF, analyseMeal, gPct, gpInfo, recipesShown, resizeImage, rfChips, rfReset, searchIngredients } from "../lib/food";
+import { addEx, chWk, comeback, delWk, dr, ensureLib, eqOk, isCustom, planKeys, UNDO_MS, ewDo, ewLeave, ewName, ewRename, ewRm, ewUndo, ewUndoMsg, genWk, libOf, nameOf, exOrder, newWk, swapList, swapTo } from "../lib/train";
+import { MEALS, MealIng, Suggestion, chooseMeal, localName, mealNow, readBarcode, searchFoods, RF, analyseMeal, gPct, gpInfo, recipesShown, resizeImage, rfChips, rfReset, searchIngredients } from "../lib/food";
 import { ai } from "../lib/ai";
 import { CATS, FD } from "../data/foods";
 import { phase, qClr, qList, qTog, wOn, wTog } from "../lib/cycle";
 import { PEND, PHOTOS, delPhoto, savePending, selCollage } from "../lib/photos";
 import { A_, TODAY, dmy, download } from "../lib/util";
-import { BackTxt, Chip, ExOption, FileButton, Ico, Svg, exMatches, useAlert } from "../components/ui";
+import { BackTxt, Chip, ComebackFig, ExOption, FileButton, Ico, Svg, exMatches, useAlert } from "../components/ui";
 import { NT_TOPICS, ntList } from "../data/tips";
 import { pn, t as tt, tr } from "../lib/i18n";
 
@@ -67,15 +67,18 @@ function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode }
     }
     case "ai": return { title: "Generate a workout", body: <Generate s={s} /> };
     case "wid": return { title: "Widgets", body: <Widgets /> };
-    case "fe": return { title: s.s && !s.s.saved ? s.s.n : "Add food", body: <FoodEdit s={s.s} code={s.code} key={(s.s?.n || "") + (s.code || "")} /> };
+    case "cb": return { title: "", body: <ComebackPlan /> };
+    case "af": return { title: tt("Add to {m}", { m: tt(MEALS.find(x => x[0] == mealNow())![1]) }), body: <AddFood /> };
+    case "fe": return { title: s.s && !s.s.saved ? s.s.n : s.s ? "Add food" : "New food", head: <button className="q bk" style={{ flex: "none" }} onClick={() => openSheet({ t: "af" })}><BackTxt /></button>, body: <FoodEdit s={s.s} code={s.code} key={(s.s?.n || "") + (s.code || "")} /> };
     case "info": return { title: INFO_T[s.k] || "", body: <Info k={s.k} /> };
-    case "cm": return { title: "Add your meal", body: <CustomMeal /> };
+    case "cm": return { title: "New meal", head: <button className="q bk" style={{ flex: "none" }} onClick={() => openSheet({ t: "af" })}><BackTxt /></button>, body: <CustomMeal /> };
     case "mp": return { title: "Meal from photo", body: <MealPhoto s={s} key={s.url} /> };
     case "pnd": return { title: "Which angle is each photo?", body: <Pending /> };
     case "col": return { title: "Your progress", body: <Collages s={s} /> };
     case "csel": return { title: "Choose photos", body: <ChoosePhotos s={s} /> };
     case "qf": return { title: "Choose quotes", body: <QuoteFilter /> };
     case "ntf": return { title: "Nutrition tip topics", body: <TipFilter /> };
+    case "ctf": return { title: "Tip topics", body: <CycleTipFilter /> };
     case "rf": return { title: "Filter recipes", body: <RecipeFilter />, head: rfChips().length ? <button className="q" style={{ flex: "none" }} onClick={rfReset}>Reset</button> : null };
     case "gp": return { title: "Goal", body: <GoalPct /> };
     case "goals": return { title: "Set calorie goal manually", body: <ManualGoals /> };
@@ -285,8 +288,7 @@ function QuoteFilter() {
   const p = phase(), t = A_<string>(S.set.qt), e = A_<string>(S.set.qe);
   return (
     <>
-      <p className="mu">{tt("{n} match.", { n: pn(qList(p).length, "quote") })}</p>
-      <div className="mu" style={{ margin: "10px 0 4px" }}>Type</div>
+      <div className="mu" style={{ margin: "4px 0 4px" }}>Type</div>
       <div className="hs wrapc">
         <Chip on={!t.length} onClick={() => qClr("qt")}>All</Chip>
         {Object.entries(TL).map(([v, x]) => <Chip key={v} on={t.includes(v)} onClick={() => qTog("qt", v)}>{x}</Chip>)}
@@ -360,6 +362,23 @@ function TipFilter() {
   );
 }
 
+
+/** Topics for the Cycle tips card. */
+function CycleTipFilter() {
+  const t = A_<string>(S.set.ctf);
+  const p = phase();
+  const set = (v: string[]) => { S.set.ctf = v; S.set.cti = 0; commit(); };
+  return (
+    <>
+      {p && <p className="mu">{tr("{n} match.").replace("{n}", pn(ctList(p.k, t).length, "tip"))}</p>}
+      <div className="hs wrapc" style={{ marginTop: 8 }}>
+        <Chip on={!t.length} onClick={() => set([])}>All</Chip>
+        {CT_TOPICS.map(([v, x]) => <Chip key={v} on={t.includes(v)} onClick={() => set(t.includes(v) ? t.filter(y => y != v) : t.concat(v))}>{x}</Chip>)}
+      </div>
+      <button style={{ width: "100%", marginTop: 12 }} onClick={() => openSheet(null)}>Done</button>
+    </>
+  );
+}
 
 /**
  * Meal from a photo. With AI connected, it names the meal and lists the ingredients; without it, the owner adds
@@ -456,40 +475,66 @@ function MealPhoto({ s }: { s: Extract<Sheet, { t: "mp" }> }) {
   );
 }
 
+/** "New meal": a meal with its nutrients (saved to Recipes too), then "How much did you eat?" before it's logged to the chosen meal. */
 function CustomMeal() {
   const [f, setF] = useState({ t: "", p: "", k: "", c: "", fat: "", m: "", ing: "", st: "" });
   const [img, setImg] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
+  const [amt, setAmt] = useState<string | null>(null); // portions eaten; null = still filling in the meal
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
   const num = (v: string) => Math.round(+v) || 0;
   const lines = (v: string) => v.split("\n").map(x => x.trim()).filter(Boolean);
+  const meal = MEALS.find(x => x[0] == mealNow())![1];
   const N = (k: keyof typeof f, l: string) => (
     <div><span className="mu">{l}</span><input type="number" inputMode="decimal" aria-label={l} value={f[k]} onChange={set(k)} /></div>
   );
+  if (amt != null) {
+    const x = +amt || 0;
+    const sc = (v: string) => Math.round(num(v) * x);
+    return (
+      <>
+        <p style={{ margin: "6px 0 4px" }}><b>{f.t.trim()}</b></p>
+        <span className="mu">How much did you eat?</span>
+        <div className="hs cmamt" style={{ marginTop: 6 }}>
+          {["0.5", "1", "1.5", "2"].map(v => <Chip key={v} on={amt == v} onClick={() => setAmt(v)}>{v == "0.5" ? "½" : v == "1.5" ? "1½" : v} {tt(+v > 1 ? "portions" : "portion")}</Chip>)}
+        </div>
+        <label className="fl"><span className="mu">Portions</span>
+          <input type="number" inputMode="decimal" step="0.25" aria-label="Portions" value={amt} onChange={e => setAmt(e.target.value)} /></label>
+        <p className="mu" role="status" style={{ margin: "8px 0" }}>{sc(f.k)} kcal · P{sc(f.p)} C{sc(f.c)} F{sc(f.fat)}</p>
+        <button style={{ width: "100%" }} disabled={!(x > 0)} onClick={() => {
+          S.f.push({ d: TODAY(), n: f.t.trim().slice(0, 40), k: sc(f.k), p: sc(f.p), c: sc(f.c), f: sc(f.fat), ml: mealNow() });
+          chooseMeal(null);
+          UI.sheet = null;
+          commit();
+        }}>{tt("Add to {m}", { m: tt(meal) })}</button>
+      </>
+    );
+  }
   return (
     <>
       <input placeholder="Meal name" aria-label="Meal name" maxLength={60} value={f.t} onChange={set("t")} style={{ marginTop: 10 }} />
-      <div className="row" style={{ marginTop: 8 }}>{N("p", "Protein (g)")}{N("k", "kcal")}{N("c", "Carbs (g)")}</div>
-      <div className="row" style={{ marginTop: 8 }}>{N("fat", "Fat (g)")}{N("m", "Minutes")}</div>
+      <span className="mu" style={{ display: "block", marginTop: 10 }}>Per portion</span>
+      <div className="row" style={{ marginTop: 4 }}>{N("k", "kcal")}{N("p", "Protein (g)")}</div>
+      <div className="row" style={{ marginTop: 8 }}>{N("c", "Carbs (g)")}{N("fat", "Fat (g)")}</div>
+      <div className="row" style={{ marginTop: 8 }}>{N("m", "Minutes")}</div>
       <textarea rows={4} placeholder="Ingredients, one per line (e.g. 150 g chicken breast)" aria-label="Ingredients" value={f.ing} onChange={set("ing")} />
       <textarea rows={3} placeholder="Steps, one per line" aria-label="Steps" value={f.st} onChange={set("st")} />
-      <div className="row" style={{ marginTop: 8 }}>
-        <FileButton accept="image/*" onFiles={async fl => {
-          setImg(await resizeImage(fl[0], 360, 0.6, 1e9));
-          setMsg("Photo added ✓");
-        }}><Ico k="cam" /> Add photo</FileButton>
-        <button onClick={() => {
-          const t = f.t.trim().slice(0, 60);
-          if (!t) {
-            setMsg("Give the meal a name.");
-            return;
-          }
-          const ing = lines(f.ing);
-          S.rec.push({ t, p: num(f.p), k: num(f.k), c: num(f.c), f: num(f.fat), m: num(f.m) || 20, ing: ing.length ? ing : ["(no ingredients listed)"], st: lines(f.st), cu: 1, ...(img ? { img } : {}) });
-          UI.sheet = null;
-          commit();
-        }}>Save meal</button>
-      </div>
+      <FileButton accept="image/*" style={{ width: "100%", marginTop: 8 }} onFiles={async fl => {
+        setImg(await resizeImage(fl[0], 360, 0.6, 1e9));
+        setMsg("Photo added ✓");
+      }}><Ico k="cam" /> Add photo</FileButton>
+      <button style={{ width: "100%", marginTop: 8 }} onClick={() => {
+        const t = f.t.trim().slice(0, 60);
+        if (!t) {
+          setMsg("Give the meal a name.");
+          return;
+        }
+        const ing = lines(f.ing);
+        // Also kept in Recipes, so it can be added again later.
+        S.rec.push({ t, p: num(f.p), k: num(f.k), c: num(f.c), f: num(f.fat), m: num(f.m) || 20, ing: ing.length ? ing : ["(no ingredients listed)"], st: lines(f.st), cu: 1, ...(img ? { img } : {}) });
+        commit();
+        setAmt("1");
+      }}>Next</button>
       <p className="mu" role="status">{msg}</p>
     </>
   );
@@ -616,83 +661,175 @@ function PhotoView({ s }: { s: Extract<Sheet, { t: "pho" }> }) {
 }
 
 /* ---------- style and backup ---------- */
+// Light looks first, then dark ones (styles in theme/looks.css).
 export const LOOKS: [string, string, string][] = [
   ["w", "Clean white", "White and simple, like Apple Health"],
-  // Extra looks (styles in theme/looks.css)
-  ["gs", "Glow signal", "Black with a lime accent, magenta and sage glows, dot-matrix numbers"],
   ["dh", "Desert HUD", "Crisp white tiles, black bars and a desert-dusk sky"],
   ["px", "Pixel", "White dot grid, pixel headings, black accents"],
+  ["mi", "Mist", "Soft grey with sage glass and light, thin numbers"],
+  ["gs", "Glow signal", "Black with a lime accent, magenta and sage glows, dot-matrix numbers"],
   ["em", "Ember", "Dark, lit by a warm amber glow, with frosted panels"],
   ["np", "Night planner", "Near-black with a moody glow, gold ticks and cream buttons"],
-  ["mi", "Mist", "Soft grey with sage glass and light, thin numbers"],
 ];
-/** Banner colours of each look (light version), for the colour-orb previews. */
-export const ORB: Record<string, [string, string, string]> = { w: ["#e0507f", "#3a86d6", "#f0a020"], gs: ["#e0237d", "#8fb39c", "#d7f25b"], dh: ["#d9925a", "#5d7a96", "#6e4a3a"], px: ["#d9763a", "#8a5a7a", "#6b7a4e"], em: ["#ff6a2c", "#f5b52c", "#fff0e0"], np: ["#c99a6b", "#8a9aa8", "#e7c95b"], mi: ["#8fa38c", "#6f876f", "#b8c7b4"] };
-/** Soft sphere blended from a look's banner colours. */
-export const LookOrb = ({ k, s = 36 }: { k: string; s?: number }) => {
-  const [a, b, c] = ORB[k] || ORB.w;
-  return <span className="orb" aria-hidden="true" style={{ width: s, height: s, background: `radial-gradient(circle at 30% 30%, ${c}, transparent 55%), radial-gradient(circle at 75% 70%, ${b}, transparent 60%), ${a}` }} />;
+/** Each look's page background (light version), its one main colour, and whether it is dark. */
+const LBG: Record<string, [string, string, boolean]> = { w: ["#f2f2f7", "#ff2d55", false], dh: ["#f4f3f0", "#d9925a", false], px: ["#fbfbfa", "#d9763a", false], mi: ["#e9eae8", "#8fa38c", false], gs: ["#0a0a0b", "#d7f25b", true], em: ["#0d0705", "#ff6a2c", true], np: ["#0f0f10", "#e7c95b", true] };
+/** A look's chip: its background colour, with its main colour fading in on the right. */
+export const lookPaint = (k: string) => {
+  const [bg, a, dark] = LBG[k] || LBG.w;
+  return {
+    background: `linear-gradient(100deg, ${bg} 55%, ${a} 135%)`,
+    color: dark ? "#fff" : "#111",
+    ["--lkb" as any]: dark ? "rgba(255,255,255,.14)" : "rgba(0,0,0,.1)",
+    ["--lkcb" as any]: dark ? "#fff" : "#111",
+    ["--lkcc" as any]: dark ? "#111" : "#fff",
+  };
 };
 // Default look: Clean white (also used when a saved look was removed).
 export const lookOf = () => (LOOKS.some(l => l[0] == S.set.look) ? S.set.look : "w");
 function Look() {
   return (
     <>
-      {LOOKS.map(([k, n, d]) => (
+      {LOOKS.map(([k, n]) => (
         <button key={k} className={"opt lko" + (lookOf() == k ? " on" : "")} aria-pressed={lookOf() == k} onClick={() => {
           S.set.look = k;
           commit();
-        }}><LookOrb k={k} /><span className="lkt"><b>{n}</b><span className="mu">{d}</span></span>{lookOf() == k && <span className="lkc" aria-hidden="true">✓</span>}</button>
+        }} style={lookPaint(k)}><span className="lkt"><b>{n}</b></span>{lookOf() == k && <span className="lkc" aria-hidden="true">✓</span>}</button>
       ))}
     </>
   );
 }
 
 /* ---------- info (i) sheets ---------- */
-const INFO_T: Record<string, string> = { horm: "About this chart", bf: "How to measure" };
+const INFO_T: Record<string, string> = { per: "Period tracker", bf: "How to measure" };
 
-/** Body outline with the three tape lines for the US Navy method. */
+/** Schematic front-view body: simple outlined shapes with numbered tape lines for the US Navy method. */
 function TapeFigure({ hip }: { hip: boolean }) {
-  const tape = (y: number, x1: number, x2: number, l: string, on: boolean) => on ? (
-    <g key={l}>
-      <path d={`M${x1} ${y}q${(x2 - x1) / 2} 7 ${x2 - x1} 0`} fill="none" stroke="var(--ac)" strokeWidth="3.2" strokeLinecap="round" />
-      <path d={`M${x2 + 6} ${y + 2}H186`} stroke="var(--mu)" strokeWidth="1" strokeDasharray="2 3" />
-      <text x="190" y={y + 6} style={{ font: "700 13px var(--ff)", fill: "var(--tx)" }}>{l}</text>
+  const tape = (n: number, y: number, x1: number, x2: number) => (
+    <g key={n}>
+      <path d={`M${x1 - 3} ${y}H${x2 + 3}`} stroke="var(--ac)" strokeWidth="4" strokeLinecap="round" />
+      <circle cx="114" cy={y} r="8" fill="var(--tx)" />
+      <text x="114" y={y + 4} textAnchor="middle" style={{ font: "800 11px var(--ff)", fill: "var(--bg)" }}>{n}</text>
     </g>
-  ) : null;
+  );
   return (
-    <svg viewBox="0 0 260 250" width="100%" style={{ maxWidth: 300, display: "block", margin: "4px auto 10px" }} role="img" aria-label="Where to measure neck, waist and hips">
-      <g fill="var(--ac2)" stroke="var(--tx)" strokeWidth="1.6" strokeLinejoin="round">
-        <circle cx="100" cy="30" r="20" />
-        <path d="M90 49v12c-22 3-36 10-40 22l-8 70c-1 7 9 9 11 2l9-58 4 46c-3 12-6 30-6 46l2 50h22l6-60h1l6 60h22l2-50c0-16-3-34-6-46l4-46 9 58c2 7 12 5 11-2l-8-70c-4-12-18-19-40-22V49z" />
+    <svg viewBox="0 0 130 244" className="tpf" role="img" aria-label="Where to measure neck, waist and hips">
+      <g fill="var(--solid)" stroke="var(--tx)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round">
+        <rect x="36" y="64" width="9" height="74" rx="4.5" transform="rotate(8 40 64)" />
+        <rect x="75" y="64" width="9" height="74" rx="4.5" transform="rotate(-8 80 64)" />
+        <path d="M45 140h13l-2 92h-10zM62 140h13l-1 92h-10z" />
+        <path d="M40 60h40l-4 44 8 33H36l8-33z" />
+        <rect x="54" y="42" width="12" height="18" rx="3" />
+        <circle cx="60" cy="25" r="15" />
       </g>
-      {tape(56, 88, 112, "Neck", true)}
-      {tape(118, 66, 134, "Waist", true)}
-      {tape(152, 62, 138, "Hips", hip)}
+      {tape(1, 50, 54, 66)}
+      {tape(2, 104, 44, 76)}
+      {hip && tape(3, 134, 37, 83)}
     </svg>
   );
 }
 
 function Info({ k }: { k: string }) {
-  if (k == "horm") {
-    const p = phase();
-    return <p>{tt("Typical pattern for a {n}-day cycle, schematic and not measured.", { n: p?.L || 28 })}</p>;
-  }
+  if (k == "per") return <p>Tap a past day to mark it as a period day, tap it again to unmark it. Future days show the predicted period and fertile window.</p>;
   if (k == "bf") {
     const f = S.prof.sex == "f";
+    const steps: [string, string][] = [
+      ["Neck", "Just below the Adam’s apple, tape sloping a little down to the front."],
+      ["Waist", f ? "Narrowest point, usually just above the navel. Breathe out normally." : "At the navel. Breathe out normally, don’t pull in."],
+      ...(f ? [["Hips", "Widest part of the bottom, feet together."] as [string, string]] : []),
+    ];
     return (
       <>
-        <TapeFigure hip={f} />
-        <ol className="steps">
-          <li><b>Neck:</b> just below the Adam’s apple (larynx), tape sloping slightly down to the front.</li>
-          <li><b>Waist:</b> {f ? "at the narrowest point, usually just above the navel." : "at the navel."} Breathe out normally, don’t pull in.</li>
-          {f && <li><b>Hips:</b> around the widest part of the bottom, feet together.</li>}
-        </ol>
-        <p className="mu">Use a soft tape, snug but not pressing into the skin. Measure on bare skin in the morning, twice, and use the average.</p>
+        <div className="tpw">
+          <div className="tpt"><TapeFigure hip={f} /></div>
+          <ol className="tps">
+            {steps.map(([h, x], i) => <li key={h}><span className="tpn">{i + 1}</span><span><b>{h}</b><br />{x}</span></li>)}
+          </ol>
+        </div>
+        <p className="mu tpm">Soft tape, snug but not tight · bare skin · morning · measure twice and use the average</p>
       </>
     );
   }
   return null;
+}
+/* ---------- food: search for one meal (opened by a meal's "+" on Food › Today) ---------- */
+/**
+ * One field with photo and barcode buttons inside, results with "+".
+ * "+" opens the edit window (sheet "fe") with grams and nutrients; "New food" opens it empty, "New meal" the meal builder.
+ */
+function AddFood() {
+  const [name, setName] = useState("");
+  const [sugs, setSugs] = useState<Suggestion[]>([]);
+  const [status, setStatus] = useState("");
+  const clear = () => {
+    setName("");
+    setSugs([]);
+  };
+  const open = (s: Suggestion | null, code?: string) => {
+    clear();
+    setStatus("");
+    openSheet({ t: "fe", s, code });
+  };
+
+  const scan = async (file: File) => {
+    setStatus("Reading barcode…");
+    const c = await readBarcode(file);
+    if (!c) {
+      setStatus("Couldn’t read a barcode. Retake the photo closer and well lit, or type the number below.");
+      return;
+    }
+    const f = S.foods[c];
+    open(f ? { ...f, h: "", saved: 1 } : null, c);
+  };
+
+  const askAI = async () => {
+    if (!ai) return;
+    const q = name.trim();
+    setSugs([]);
+    setStatus("Asking AI…");
+    try {
+      const r = await ai.json('Typical nutrition per 100 g for "' + q + '". Reply ONLY JSON {"n":"name","k":kcal,"p":protein g,"c":carbs g,"f":fat g} (numbers).');
+      open({ n: r.n || q, k: +r.k || 0, p: +r.p || 0, c: +r.c || 0, f: +r.f || 0, h: "" });
+    } catch (e: any) {
+      setStatus("Couldn’t get an estimate (" + (e?.code || "error") + ").");
+    }
+  };
+
+  const q = name.trim();
+  return (
+    <div className="fsr">
+      <div className="fsf">
+        <span className="fsi" aria-hidden="true"><Ico k="search" s={18} /></span>
+        <input autoComplete="off" autoFocus placeholder="Search food" aria-label="Food name" value={name} onChange={e => {
+          setName(e.target.value);
+          setSugs(searchFoods(e.target.value));
+        }} />
+        <span className="fsb">
+          <FileButton className="g s ic" accept="image/*" capture onFiles={f => openSheet({ t: "mp", url: URL.createObjectURL(f[0]), file: f[0] })} label="Meal from photo"><Ico k="cam" s={18} /></FileButton>
+          <FileButton className="g s ic" accept="image/*" capture onFiles={f => scan(f[0])} label="Scan barcode"><Ico k="barcode" s={18} /></FileButton>
+        </span>
+      </div>
+      {q.length >= 2 && (
+        <div className="fres">
+          {sugs.map((x, i) => {
+            const loc = localName(x, q.toLowerCase());
+            return (
+              <div className="li" key={i}>
+                <span>{x.n}<br /><span className="mu">{loc ? loc + " · " : ""}{Math.round(x.k)} kcal · P{Math.round(x.p)} {x.saved ? "· your food" : "per 100 g"}</span></span>
+                <button className="fadd" aria-label={tt("Add {n}", { n: x.n })} onClick={() => open(x)}><Ico k="plus" s={20} /></button>
+              </div>
+            );
+          })}
+          {!sugs.length && <p className="mu" style={{ margin: "8px 0" }}>No matches.</p>}
+          {ai && <button className="q" onClick={askAI}>Ask AI to estimate “{q}”</button>}
+        </div>
+      )}
+      <div className="row fsl">
+        <button className="g" onClick={() => open(q ? { n: q, k: 0, p: 0, c: 0, f: 0, h: "", saved: 1 } : null)}><Ico k="plus" s={18} /> New food</button>
+        <button className="g" onClick={() => openSheet({ t: "cm" })}><Ico k="plus" s={18} /> New meal</button>
+      </div>
+      {status && <p className="mu" role="status" style={{ margin: "4px 0 0" }}>{status}</p>}
+    </div>
+  );
 }
 
 /* ---------- food: edit before adding ---------- */
@@ -748,5 +885,37 @@ function FoodEdit({ s, code }: { s: { n: string; k: number; p: number; c: number
         commit();
       }}>{per100 ? tt("Add {g} g to {m}", { g: +g || 0, m: tt(meal) }) : tt("Add to {m}", { m: tt(meal) })}</button>
     </>
+  );
+}
+
+/* ---------- comeback after a break (opened from the strip on Train) ---------- */
+function ComebackPlan() {
+  const c = comeback();
+  if (!c) return <p className="mu">You’re training regularly, no restart needed.</p>;
+  const cur = S.set.brk || "hol";
+  return (
+    <div className="cbp">
+      <ComebackFig s={58} />
+      <b className="cbh">{tt("Back after {n}", { n: pn(c.g, "day") })}</b>
+      <p className="cbm">{tt("Start about {p}% lighter this week. Muscle memory does the rest.", { p: Math.round((1 - c.f) * 100) })}</p>
+      <div className="cbg">
+        <div><b>−{Math.round((1 - c.f) * 100)}%</b><span>weights</span></div>
+        <div><b>{tr(c.vol).replace(/^about /, "")}</b><span>sets</span></div>
+        <div><b>{c.wk} wk</b><span>to ramp up</span></div>
+      </div>
+      <div className="cbr" role="radiogroup" aria-label="Reason for the break">
+        {([["hol", "Holiday or busy"], ["ill", "Illness or injury"]] as const).map(([k, l]) => (
+          <button key={k} role="radio" aria-checked={cur == k} className={cur == k ? "on" : ""} onClick={() => { S.set.brk = k; commit(); }}>{l}</button>
+        ))}
+      </div>
+      <ul className="cbl">
+        {c.ill && <li>Restart only when symptoms are gone and you feel normal for a day or two. Ask a clinician first after fever, heart or chest symptoms, or an injury.</li>}
+        <li>{tt("Add about 5% load a session, or a set a week, until you’re back at your old numbers.")}</li>
+        <li>Leave 2–3 reps in reserve in the first week.</li>
+      </ul>
+      <p className="cbs2">Based on detraining and retraining research (Mujika &amp; Padilla 2000, Bosquet 2013, Seaborne 2018) and ACSM guidance. General information, not medical advice.</p>
+      <button className="cbgo" onClick={() => { UI.sheet = null; commit(); }}>Got it</button>
+      <button className="q cbx" onClick={() => { S.set.brkX = TODAY(); UI.sheet = null; commit(); }}>Hide the reminder for a week</button>
+    </div>
   );
 }

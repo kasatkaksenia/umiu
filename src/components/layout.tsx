@@ -3,7 +3,7 @@ import { ReactNode, useEffect } from "react";
 import { IonContent, IonMenu, IonPage, useIonRouter } from "@ionic/react";
 import { useLocation } from "react-router-dom";
 import { BackTxt, Logo } from "./ui";
-import { UI, useStore } from "../lib/store";
+import { S, UI, useStore } from "../lib/store";
 import { TOAST, doUndo } from "../lib/undo";
 
 export type Tab = "train" | "food" | "cycle";
@@ -12,6 +12,8 @@ const TABS: [Tab, string, string][] = [
   ["food", "Food", '<path d="M5 19C5 9 11 5 20 5c0 9-4 15-13 15M5 19l8-8"/>'],
   ["cycle", "Cycle", '<path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z"/>'],
 ];
+/** Sections shown in the navigation: no Cycle when the profile says male. */
+const shownTabs = () => TABS.filter(t => t[0] != "cycle" || S.prof.sex != "m");
 const HOME: Record<Tab, string> = { train: "/train", food: "/food/log", cycle: "/cycle" };
 
 export function useTab(): Tab {
@@ -38,10 +40,11 @@ function NavIcon({ d }: { d: string }) {
 
 /** Floating pill at the bottom of the screen (phones and small tablets). */
 export function BottomNav() {
+  useStore();
   const tab = useTab(), go = useGoTab();
   return (
     <nav className="bnav" aria-label="Sections">
-      {TABS.map(([k, l, d]) => (
+      {shownTabs().map(([k, l, d]) => (
         <button key={k} className={tab == k ? "on" : ""} aria-label={l} aria-current={tab == k ? "page" : undefined} onClick={() => go(k)}>
           <NavIcon d={d} />
         </button>
@@ -52,13 +55,14 @@ export function BottomNav() {
 
 /** Side menu shown by the split pane on wide screens. */
 export function SideMenu() {
+  useStore();
   const tab = useTab(), go = useGoTab();
   return (
     <IonMenu contentId="main" swipeGesture={false} className="side" type="push">
       <div className="side-in">
         <div className="side-logo"><Logo height={36} /></div>
         <nav aria-label="Sections">
-          {TABS.map(([k, l, d]) => (
+          {shownTabs().map(([k, l, d]) => (
             <button key={k} className={tab == k ? "on" : ""} aria-current={tab == k ? "page" : undefined} onClick={() => go(k)}>
               <NavIcon d={d} />
               <span>{l}</span>
