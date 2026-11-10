@@ -93,7 +93,9 @@ await $(".tabs button:has-text('Shopping')").click(); await page.waitForTimeout(
 expect("recipe fills shopping list", (await $(".li").count()) >= 3, await $(".li").count());
 
 await page.waitForTimeout(400);
-await $('button[aria-label="Style"]').click(); await page.waitForTimeout(300);
+expect("no style button in the top bar", (await $('.top button[aria-label="Style"]').count()) == 0, "style button still there");
+await page.goto(URL + "#/profile"); await page.waitForTimeout(800);
+await $(".card button:has-text('Change')").click(); await page.waitForTimeout(300);
 await page.locator(".sh button:has-text('Mist')").click();
 expect("style switch", (await page.evaluate(() => document.documentElement.dataset.look)) == "mi", "look not set");
 expect("selected style is marked", (await page.locator(".sh .opt.on .lkc").count()) == 1 && /Mist/.test(await page.locator(".sh .opt.on").innerText()), "no mark");
@@ -108,7 +110,36 @@ expect("second tap unmarks the day", !(await $(".pday.today").getAttribute("clas
 await $(".pday.today").click(); await page.waitForTimeout(300);
 await $("button:has-text('Start')").click(); await page.waitForTimeout(1500);
 expect("breathing timer runs", /0:5\d/.test(await $('[role="timer"]').innerText()), await $('[role="timer"]').innerText());
+// Meal delete has Undo instead of a dialog.
+await page.goto(URL + "#/food/log"); await page.waitForTimeout(900);
+const meals = await $(".li").count();
+await $('.li button[aria-label^="Remove"]').first().click(); await page.waitForTimeout(300);
+expect("meal delete shows Undo", (await $(".li").count()) == meals - 1 && (await page.locator(".undo.toast").count()) == 1, "no undo");
+await page.locator(".undo.toast button").click(); await page.waitForTimeout(300);
+expect("Undo brings the meal back", (await $(".li").count()) == meals, await $(".li").count());
+// Workout rename lives in Change workout (no pencil).
+await page.goto(URL + "#/train"); await page.waitForTimeout(900);
+expect("no pencil on the workout title", (await $('button[aria-label="Rename workout"]').count()) == 0, "pencil still there");
+await $("button:has-text('Change workout')").click(); await page.waitForTimeout(400);
+await page.locator(".sh #wkname").fill("Leg day"); await page.locator(".sh #wkname").press("Enter"); await page.keyboard.press("Escape"); await page.waitForTimeout(500);
+expect("rename from Change workout", /Leg day/.test(await $(".wkn h2").innerText()), await $(".wkn h2").innerText());
+await page.goto(URL + "#/cycle"); await page.waitForTimeout(900);
+const arts = [];
+for (let i = 0; i < 8; i++) { arts.push(await $(".qa").getAttribute("data-art")); await $(".qa .qa-more").click(); await page.waitForTimeout(250); }
+expect("quote pictures don't repeat", new Set(arts).size == arts.length, arts.join(" "));
 expect("data saved", await page.evaluate(() => !!JSON.parse(localStorage.getItem("bloom2")).hist.length), "no history saved");
+
+// Profile: units and language.
+await page.goto(URL + "#/profile"); await page.reload(); await page.waitForTimeout(1000);
+await $('button[role=radio]:has-text("lb")').click(); await page.waitForTimeout(200);
+await page.goto(URL + "#/train/ex/mht"); await page.reload(); await page.waitForTimeout(1000);
+expect("units: sets table in lb", /lb/.test(await $(".tb thead").innerText()), await $(".tb thead").innerText());
+await page.goto(URL + "#/profile"); await page.reload(); await page.waitForTimeout(1000);
+expect("profile: no Russian, no account card", !/Русский/.test(await $(".cols").innerText()) && (await $(".card-t:has-text('Account')").count()) == 0, await $(".cols").innerText());
+await Promise.all([page.waitForEvent("load"), $('button.opt:has-text("Українська")').click()]); await page.waitForTimeout(1200);
+expect("language: chosen one filled, no tick", (await $(".opt.lng.on .lkc").count()) == 0 && /Українська/.test(await $(".opt.lng.on").innerText()), "highlight wrong");
+expect("language: Ukrainian interface", /Профіль/.test(await $("h1").innerText()), await $("h1").innerText());
+await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("bloom2")); s.set.lang = "en"; s.set.uw = "kg"; localStorage.setItem("bloom2", JSON.stringify(s)); });
 
 await b.close();
 if (errors.length) console.log(errors.join("\n"));

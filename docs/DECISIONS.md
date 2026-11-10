@@ -48,8 +48,26 @@ Back to [AGENTS.md](../AGENTS.md). Add an entry whenever you make a non-obvious 
 | 2026-11-05 | 19 exercise animations redrawn that had borrowed another exercise's movement (pull-ups, hanging raises, cable crunch, woodchop, upright row, fire hydrant, donkey kick, seated calf raise…), see the end of `exercises.ts` | they showed the wrong movement |
 | 2026-11-05 | Nutrition tips: 62 tips in 11 topics (`src/data/tips.ts`; sources kept in the data, not shown), topic filter sheet, ‹ › and Shuffle; card height = tallest tip | owner's request |
 | 2026-11-02 | QA with `playwright-core` driving installed Chrome; scripts in `qa/` | repeatable, no browser download; Claude in Chrome when connected |
+| 2026-11-09 | Spacing conventions: one scale (4/8/12/16/20/24) and one padding per element type, in a final block of `layout.css` (table in DESIGN.md › Spacing) | owner asked for consistent padding rules |
+| 2026-11-09 | Languages EN / RU / UK for the interface. Translation at render time through a custom JSX runtime (`jsxImportSource: "umiu-i18n"`, local package `src/i18n`) instead of wrapping ~500 strings by hand; content stays English for now; changing language reloads the app; informal "ты/ти" | owner chose "interface first" |
+| 2026-11-09 | Units in Profile: kg/lb and cm/in, stored metric and converted at the edges (`lib/units.ts`); food stays in grams | owner's request |
+| 2026-11-09 | Accounts with Supabase (email + password, one `user_data` row per user, RLS). Sign-in replaces device data with the account's (or uploads if the account is empty); every save syncs after 2 s; log out clears account data from the device. Off until `VITE_SUPABASE_*` are set (docs/ACCOUNTS.md) | owner chose real accounts + cloud |
+| 2026-11-09 | Profile screen (`#/profile`, person button in the top bar): account, units, language, style | owner's request |
+| 2026-11-09 | Food: barcode field placeholder "Barcode (optional)"; drawn barcode and plus icons on Scan barcode / Add meal; nutrient units in brackets "(g)" | owner's request |
 | 2026-11-09 | Removed looks Cerulean & soil (`b`), Bright pop (`p`) and Golden hour (`gh`). Default is now Urban glow; a saved removed look falls back to it. The selected look in the Style sheet is always outlined with a ✓ | owner's request |
 | 2026-11-09 | Meal from photo: full-width button in Food › Log opens a sheet with the photo, meal name, ingredients (grams each, add from the food search, remove), whole-meal grams and ½–2× portion chips, live totals, "Add to today". `analyseMeal()` in `lib/food.ts` fills it in once AI is connected (`lib/ai.ts`); until then ingredients are added by hand | owner wants photo logging; owner chose "screens now, AI later" (no server or key yet) |
+| 2026-11-10 | Three button levels app-wide: main (filled), secondary (`.g`, file buttons now with normal text colour instead of the accent), quiet (`.q`, text only: Back, Edit ›, Reset, Clear, Dismiss). The welcome-back reason is a `.seg` switch | UI review item 2 and 3, approved by the owner |
+| 2026-11-10 | Macro colours per look (`--mp/--mc/--mf`), same in bars and in the P / C / F letters of the Today list; Urban glow uses its rose / violet / teal trio | UI review item 6 |
+| 2026-11-10 | Contrast pass: every look now meets WCAG AA for text in light and dark (darker accent in Clean white, Desert HUD, Gallery, Mist; darker grey text in Clean white and Mist, lighter in Night planner; period-day and breathing-timer text fixed). Checker: `npm run qa:contrast` | UI review item 7 |
+| 2026-11-10 | Exercise rows: 56 px picture, name clamped to two lines | UI review item 8 |
+| 2026-11-10 | Deleting a logged meal or own recipe happens at once with a 5 s Undo bar (was: instant with no way back / a confirm dialog) | UX review item 4 |
+| 2026-11-10 | No pencil on the workout title; the name is edited at the top of "Change workout" | UX review item 7 |
+| 2026-11-10 | Cycle: the setup card is first until a period is logged | UX review item 8 |
+| 2026-11-10 | Quote card pictures are drawn SVG scenes (`src/lib/qart.ts`): 40 designs × 1–3 colour versions = 101 pictures, inspired by the owner's moodboard (moon on the sea, ripples, backlit leaves, word-of-the-day hills, era poster, aura orbs, deadpan cat, bath duck, sticker sky, ammonite …). Each design fits some elements and/or topics; every new quote gets a fitting picture this user hasn't seen yet (`S.set.qu`), and only when all fitting ones were seen does that set start over. Some designs carry the words themselves (text on a ripple ring, a chart, a curved line). Flow got a new concept (silk scarf); Moon uses upright Inter Tight, no italics | owner approved the previews, asked for many more that never repeat |
+| 2026-11-10 | Russian removed for now (option, dictionary column and plurals). A saved `ru` falls back to English. The old Russian strings are in git history (commit `dc0071d` onwards) | owner's request |
+| 2026-11-10 | Ukrainian rewritten as funny surzhyk with slang (Train = "Трєня", Food = "Хавчик", moods "Капець … Імба"). Medical and safety text keeps its meaning, just a lighter tone | owner's request |
+| 2026-11-10 | Profile: account card hidden (sign-in screens and sync code stay, reachable at `#/profile/account`); the chosen language is filled with the primary button colour instead of a ✓ | owner's request |
+| 2026-11-10 | Style is opened only from Profile → Style → Change. The ◐ top-bar button and the side-menu "Style" button are gone | owner's request |
 | 2026-11-09 | Style sheet no longer has the backup / restore block; the sheet and the menu button are called "Style" | owner's request |
 | 2026-11-09 | Cycle: if the next period isn't logged, the day keeps counting ("Day 36 of 28 · Period is 7 days late") for up to one extra cycle, instead of silently starting a new cycle | the first Cycle card showed a wrong day and phase when a period was late |
 | 2026-11-09 | Tick boxes are drawn by the app (soft filled square, accent fill and check when ticked) instead of the browser checkbox | owner didn't want the grey border inside the box |
@@ -61,6 +79,10 @@ Back to [AGENTS.md](../AGENTS.md). Add an entry whenever you make a non-obvious 
 
 ## Lessons learned (gotchas)
 
+- **`svg text` in base.css** sets `font-size: 7px` for every SVG text; text drawn inside quote pictures must set its size in a `style` attribute, not `font-size=`.
+- **`aspect-ratio` + `min-height`** widens a box when the min-height wins; give such boxes `width: 100%` (quote card overflowed on the iPhone SE).
+- **Class `up`** is the Ionic page class here; don't reuse it inside components.
+
 - **Ionic page stack:** pushing between sections in one `IonRouterOutlet` with `"none"`/`"replace"` left the wrong screen visible (exercise → Food → Train showed Food). Fixed with `IonTabs`. `qa:nav` guards it.
 - **Hidden screens stay in the DOM** (`.ion-page-hidden`). Selectors like `.ion-page:not(.ion-page-hidden) X` also match through the outer `#main.ion-page` wrapper: use `.ion-page.up:not(.ion-page-hidden)`. Several "bugs" during QA were test-selector mistakes; check the app state before fixing.
 - **Page backgrounds:** each `IonPage` (`.up`) carries the gradient and its `::before` layer (the old `#bgfx`), with `ion-content { --background: transparent }`, so iOS slide transitions don't show two pages through each other.
@@ -71,6 +93,8 @@ Back to [AGENTS.md](../AGENTS.md). Add an entry whenever you make a non-obvious 
 - **Sticky sheet header with `background: inherit`** showed a square light box; the sheet is now a flex column with a fixed header and a scrolling body.
 - **Swipes over the exercise demo never finished:** the demo redraws its SVG every frame, so the touched node left the DOM and `touchend` never bubbled. `.anim > * { pointer-events: none }` makes the stable `.anim` box the target.
 - **Look styles vs. state styles:** a look rule like `:root[data-look="x"] button.g` outranks state rules such as `.rbar > .fic.on`. Button rules in `looks.css` are wrapped in `:where(:root[data-look="x"])` so they only beat the plain base styles.
+- **Vite pre-bundles the JSX runtime** (`node_modules/.vite/deps`), so dictionary edits need `npx vite --force` in development. Production builds are not affected.
+- **Ionic alerts aren't React text**: use `useAlert()` (translates header, message, buttons), not `useIonAlert()`.
 - **npm 11 blocks install scripts** (esbuild warning); esbuild still works because its binary is an optional dependency.
 - **zsh had no profile;** `~/.zshrc` was created for nvm. Non-interactive shells still need `source ~/.nvm/nvm.sh`.
 - **Python 3.9** on this Mac: no backslashes inside f-string expressions; no Pillow.

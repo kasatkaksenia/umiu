@@ -1,11 +1,11 @@
 import { useRef, useState } from "react";
-import { useIonAlert } from "@ionic/react";
 import { EQL, SPL } from "../../data/exercises";
 import { S, commit, useStore } from "../../lib/store";
 import { eqClr, eqTog } from "../../lib/train";
 import { BackButton, Page } from "../../components/layout";
-import { Chip, Ico, Svg } from "../../components/ui";
+import { Chip, Ico, Svg, useAlert } from "../../components/ui";
 import { eqSvg } from "../../data/equipment-icons";
+import { pn, t } from "../../lib/i18n";
 
 export default function Plan() {
   useStore();
@@ -16,7 +16,7 @@ export default function Plan() {
   const [txt, setTxt] = useState(S.plan.set ? String(S.plan.days) : "");
   const row = useRef<HTMLDivElement>(null);
   const sp = SPL[s], f = d ? Math.round(((d * sp.f) / sp.seq.length) * 10) / 10 : 0;
-  const [alert] = useIonAlert();
+  const [alert] = useAlert();
   // Changes save as soon as they're picked. The rotation restarts only when the number of workouts
   // or the split really changes, and a workout with ticked sets is only reset after asking.
   const apply = (nd: number | null, ns: string) => {
@@ -61,7 +61,7 @@ export default function Plan() {
                 setTxt(d && d > 7 ? String(d) : "");
                 setCustom(!custom);
                 setTimeout(() => row.current && (row.current.scrollLeft = 9999), 30);
-              }} label={d && d > 7 ? `Custom: ${d} workouts, tap to change` : "Custom number of workouts"}>
+              }} label={d && d > 7 ? t("Custom: {n}, tap to change", { n: pn(d, "workout") }) : "Custom number of workouts"}>
                 {d && d > 7 ? <span className="cnum">{d}<Ico k="pen" s={13} /></span> : <Ico k="pen" s={16} />}
               </Chip>
             </div>
@@ -89,7 +89,7 @@ export default function Plan() {
             ))}
           </div>
           <p className="mu" style={{ margin: "6px 4px 12px" }}>
-            {d ? `With this split, each muscle group is trained about ${f}× a week. Changes save automatically.` : "Choose how many workouts a week to start your plan."}
+            {d ? t("With this split, each muscle group is trained about {f}× a week. Changes save automatically.", { f }) : "Choose how many workouts a week to start your plan."}
           </p>
         </div>
         <div className="col">
@@ -105,13 +105,13 @@ function EquipmentCard() {
   const [open, setOpen] = useState(false);
   // Nothing ticked and everything ticked both mean "use all equipment".
   const total = EQL.reduce((n, [, a]) => n + a.length, 0), all = !e.length || e.length >= total;
-  const items = `${e.length} item${e.length == 1 ? "" : "s"}`;
+  const items = pn(e.length, "item");
   return (
     <div className="card">
       <button className="fh eqh" aria-expanded={open} onClick={() => setOpen(!open)}>
         <span>
           <b>Available equipment</b>
-          <span className={"eqc" + (all ? "" : " on")}>{all ? "All equipment" : `${items} selected`}</span>
+          <span className={"eqc" + (all ? "" : " on")}>{all ? "All equipment" : t("{n} selected", { n: items })}</span>
         </span>
         <span aria-hidden="true">{open ? "▴" : "▾"}</span>
       </button>
@@ -119,9 +119,9 @@ function EquipmentCard() {
         <>
           <div className="eqn">
             <p>
-              {!e.length ? "Tick what your gym has to see only those exercises." : all ? "Every item is ticked." : `Exercises for ${e.length == 1 ? "this item" : `these ${items}`} plus bodyweight.`}
+              {!e.length ? "Tick what your gym has to see only those exercises." : all ? "Every item is ticked." : e.length == 1 ? "Exercises for this item plus bodyweight." : t("Exercises for these {n} plus bodyweight.", { n: items })}
             </p>
-            {e.length > 0 && <button className="g s" style={{ flex: "none" }} onClick={eqClr}>Clear</button>}
+            {e.length > 0 && <button className="q" style={{ flex: "none" }} onClick={eqClr}>Clear</button>}
           </div>
           {EQL.map(([g, a]) => (
             <div className="eqg" key={g}>

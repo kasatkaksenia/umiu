@@ -3,6 +3,8 @@ import { ALI, CATS, FD, FSRC, REC, Recipe, catOf, nz, stem } from "../data/foods
 import { S, ShopItem, commit } from "./store";
 import { TODAY } from "./util";
 import { ai } from "./ai";
+import { t as tt } from "./i18n";
+import { W } from "./units";
 
 export const allRecipes = (): Recipe[] => REC.concat(S.rec);
 
@@ -74,18 +76,18 @@ export const AC: [number, string][] = [
 export const gPct = () => Math.round((S.prof.g || 0) * 1000) / 10;
 export const gTxt = (t: number, g: number) => {
   const p = Math.round(g * 1000) / 10, kg = ((t * Math.abs(g) * 30) / 7700).toFixed(1);
-  return p < 0 ? `Fat loss ${Math.abs(p)}%, about ${kg} kg a month` : p > 0 ? `Muscle gain ${p}%, about ${kg} kg a month` : "Maintain weight (0%)";
+  return p < 0 ? tt("Fat loss {p}%, about {w} a month", { p: Math.abs(p), w: W(+kg) }) : p > 0 ? tt("Muscle gain {p}%, about {w} a month", { p, w: W(+kg) }) : tt("Maintain weight (0%)");
 };
 export function gpInfo(v: number | string) {
   const c = calc(), pc = Math.max(-30, Math.min(25, +v || 0)), t = c.t, k = Math.round(t * (1 + pc / 100)), kg = (Math.abs((t * pc) / 100) * 30) / 7700;
   let m =
     pc < 0
-      ? `Fat loss of about ${kg.toFixed(1)} kg a month (${(kg / 4.3).toFixed(2)} kg a week).`
+      ? tt("Fat loss of about {m} a month ({w} a week).", { m: W(kg), w: W(kg / 4.3, 2) })
       : pc > 0
-        ? `Weight gain of about ${kg.toFixed(1)} kg a month (${(kg / 4.3).toFixed(2)} kg a week).`
-        : "Weight stays about the same.";
-  m += ` That is ${k} kcal a day against ${t} kcal to maintain.`;
-  if (k < c.bmr) m += ` This is below your BMR (${c.bmr} kcal), which is not recommended.`;
+        ? tt("Weight gain of about {m} a month ({w} a week).", { m: W(kg), w: W(kg / 4.3, 2) })
+        : tt("Weight stays about the same.");
+  m += " " + tt("That is {k} kcal a day against {t} kcal to maintain.", { k, t });
+  if (k < c.bmr) m += " " + tt("This is below your BMR ({b} kcal), which is not recommended.", { b: c.bmr });
   return m;
 }
 

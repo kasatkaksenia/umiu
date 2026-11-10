@@ -55,6 +55,7 @@ Node comes from nvm and is not on the default PATH in fresh shells: prefix comma
 | [docs/IOS.md](docs/IOS.md) | building the iPhone app, native replacements |
 | [docs/DECISIONS.md](docs/DECISIONS.md) | why things are the way they are, lessons learned, gotchas |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | what's next, known limits |
+| [docs/ACCOUNTS.md](docs/ACCOUNTS.md) | setting up sign-in and sync (Supabase) |
 | [docs/EXERCISES.md](docs/EXERCISES.md) | every exercise grouped by equipment (generated from `src/data/exercises.ts`) |
 | [HANDOFF.md](HANDOFF.md) | history: the first single-file version and its product decisions (formulas, swap ratings, progression) |
 
@@ -74,6 +75,8 @@ Claude Code skills (in `.claude/skills/`, usable by name):
 - `src/components/ui.tsx` and `layout.tsx`: shared pieces, navigation (bottom bar on phones, side menu ≥ 900 px).
 - `src/theme/base.css` (design and four looks) and `layout.css` (responsive layout, iOS polish).
 - `src/data/`: exercises, foods, recipes, cycle content. `src/lib/`: logic per area.
+- `src/lib/i18n.ts` + `src/i18n/dict.ts`: EN / UK interface text (see DESIGN.md › Languages). `src/lib/units.ts`: kg/lb, cm/in. `src/lib/cloud.ts`: accounts and sync.
+- `src/pages/profile/`: Profile and sign-in / sign-up.
 
 ## Environment facts (owner's Mac)
 

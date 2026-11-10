@@ -1,3 +1,4 @@
+import { LANG, tr } from "./i18n";
 // Small shared helpers: dates, escaping, arrays.
 
 /** Today's date as YYYY-MM-DD in the user's local time zone. */
@@ -19,8 +20,8 @@ export const dAdd = (d: string, n: number) => {
 export const dDiff = (a: string, b: string) =>
   Math.round((new Date(b + "T12:00:00").getTime() - new Date(a + "T12:00:00").getTime()) / 864e5);
 /** "2026-11-05" → "5 Nov 2026" (the app's date format). */
-export const dmy = (d: string) => +d.slice(8, 10) + " " + ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][+d.slice(5, 7) - 1] + " " + d.slice(0, 4);
-export const dFmt = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("en", { day: "numeric", month: "short" });
+export const dmy = (d: string) => +d.slice(8, 10) + " " + tr(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][+d.slice(5, 7) - 1]) + " " + d.slice(0, 4);
+export const dFmt = (d: string) => new Date(d + "T12:00:00").toLocaleDateString(LANG, { day: "numeric", month: "short" });
 /** Whole days from a date until today (never negative). */
 export const dsince = (d: string) => Math.max(0, Math.floor((new Date(TODAY()).getTime() - new Date(d).getTime()) / 864e5));
 

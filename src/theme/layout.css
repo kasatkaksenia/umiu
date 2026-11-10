@@ -17,7 +17,7 @@ button.card { display: block; width: 100%; text-align: left; color: var(--tx); f
 button.card.li { display: flex; }
 .plan-card { cursor: pointer; }
 .cw .cwx { margin-left: -8px; margin-right: 4px; font-size: 15px; line-height: 1; padding: 4px 7px; border-radius: 50%; background: var(--ac2); color: var(--tx); border: 0; font-weight: 700; }
-.lab2 { display: block; cursor: pointer; text-align: center; padding: 11px; border-radius: 10px; background: var(--ac2); color: var(--ac); font-weight: 600; }
+.lab2 { display: block; cursor: pointer; text-align: center; padding: 11px; border-radius: 10px; background: var(--ac2); color: var(--tx); font-weight: 600; }
 .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
 .card-t { display: block; margin-bottom: 4px; }
 .anim { cursor: pointer; }
@@ -282,7 +282,7 @@ select { -webkit-appearance: none; appearance: none; padding-right: 40px; backgr
 .brw select { margin: 8px 0 0; padding: 10px 40px 10px 14px; }
 .brs { position: relative; height: 196px; display: grid; place-items: center; margin: 6px 0; }
 .brs .brc { width: 176px; height: 176px; margin: 0; transform: scale(.62); transition: transform .1s linear; }
-.brt { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 4px 12px; border-radius: 999px; background: rgba(0,0,0,.32); color: #fff; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; pointer-events: none; }
+.brt { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 4px 12px; border-radius: 999px; background: rgba(0,0,0,.58); color: #fff; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; pointer-events: none; }
 /* Instruction / description: room for three lines (longest text on iPhone SE) so nothing moves while it changes. */
 .brp { margin: 0 0 8px; min-height: calc(1.45em * 3); line-height: 1.45; text-align: center; color: var(--mu); font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { .brs .brc { transition: none; } }
@@ -295,10 +295,11 @@ select { -webkit-appearance: none; appearance: none; padding-right: 40px; backgr
 .pday.today .pw { color: var(--tx); font-weight: 700; }
 .pday.today .pc { font-weight: 700; border-color: var(--ln); }
 .pday.sel .pc { outline: 2px solid var(--tx); outline-offset: 2px; }
-.pday.fl .pc { background: var(--pk); color: #fff; border-color: transparent; }
-.pday.fl.f1 .pc { background: color-mix(in srgb, var(--pk) 55%, transparent); }
-.pday.fl.f2 .pc, .pday.fl.f0 .pc { background: color-mix(in srgb, var(--pk) 80%, transparent); }
-.pday.per .pc { border: 1.5px dashed var(--pk); color: var(--pk); }
+/* Period days: light flow = soft tint with normal text; medium / heavy = deeper period colour with white text (readable in every look). */
+:root:root .pday.fl .pc { background: color-mix(in srgb, var(--pk) 52%, #000); color: #fff; border-color: transparent; }
+:root:root .pday.fl.f1 .pc { background: color-mix(in srgb, var(--pk) 40%, transparent); color: var(--tx); }
+:root:root .pday.fl.f2 .pc, :root:root .pday.fl.f0 .pc { background: color-mix(in srgb, var(--pk) 66%, #000); }
+.pday.per .pc { border: 1.5px dashed var(--pk); color: var(--tx); }
 .pday.fert .pc { background: color-mix(in srgb, var(--h2) 20%, transparent); }
 .pflow { margin-top: 8px; padding: 12px; border-radius: 18px; background: rgba(127,127,127,.08); }
 .seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 8px; padding: 3px; border-radius: 14px; background: rgba(127,127,127,.12); }
@@ -357,7 +358,7 @@ button.bm { width: 40px; height: 40px; min-height: 40px; padding: 0; border-radi
 .swr[aria-checked="true"] i { background: var(--ac); }
 .swr[aria-checked="true"] i::after { transform: translateX(20px); }
 .swr:active { transform: none; }
-.lnk { background: none !important; border: 0 !important; color: var(--ac) !important; }
+
 /* Training plan: custom number of workouts */
 .cnum { display: inline-flex; align-items: center; gap: 5px; }
 .cust { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ln); }
@@ -407,3 +408,112 @@ button.wbtn { position: absolute; right: 12px; top: 12px; }
 .sh .opt.lko { position: relative; padding-right: 48px; }
 .sh .opt.lko.on { border-color: var(--tx) !important; box-shadow: inset 0 0 0 1.5px var(--tx) !important; background: var(--ac2) !important; }
 .lkc { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--tx); color: var(--bg); font-size: 13px; font-weight: 700; }
+
+/* ==========================================================================
+   Spacing conventions (see docs/DESIGN.md › Spacing). One scale, one value per element type.
+   Scale: 4 · 8 · 12 · 16 · 20 · 24. These rules come last so they win over older one-off values.
+   ========================================================================== */
+:root { --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 20px; --s6: 24px; --card-pad: 16px; }
+@media (min-width: 900px) { :root { --card-pad: 20px; } }
+/* Cards: same inner padding everywhere; widgets 12px apart (--vgap). */
+.card { padding: var(--card-pad); }
+/* Regular buttons (primary, secondary, label-buttons): 44px tall, 10px × 18px. */
+/* Action buttons = plain <button> (primary), button.g without .s (secondary), .dg (danger), .lab / .lab2 (file pickers). */
+:is(button:not([class]), button.g:not(.s, .ic, .lk), button.dg:not(.s), .lab, .lab2):not(.tabs *, .seg *, .bnav *, .side *, .pop *, .sg *, .tb *, .undo *) { min-height: 44px; padding: 10px 18px; }
+/* Buttons sharing a row on small phones: less side padding so two fit. */
+@media (max-width: 400px) { .row > :is(button:not([class]), button.g:not(.s, .ic), .lab, .lab2) { padding-left: 12px; padding-right: 12px; } }
+/* Small buttons: 36px (40px tap height on phones), 6px × 14px. */
+button.s:not(.ic) { padding: 6px 14px; min-height: 36px; }
+@media (max-width: 899px) { button.s:not(.ic) { min-height: 40px; } }
+/* Chips: 36px, 7px × 14px, 6px apart (3px margin each side). */
+.chip { padding: 7px 14px; min-height: 36px; margin: 3px; }
+/* Fields: 48px, 12px × 14px; consecutive fields 8px apart. */
+input:not([type=checkbox]):not(.chip), select { padding-top: 12px; padding-bottom: 12px; min-height: 48px; }
+input:not([type=checkbox]):not(.chip):not(.tb input) { padding-left: 14px; }
+.tb input[type=text] { min-height: 44px; padding-top: 10px; padding-bottom: 10px; }
+/* Options (pickable cards in sheets): 12px × 16px, 8px apart. */
+.opt { padding: 12px 16px; margin: 8px 0; }
+.opt.ox { padding: 8px 12px; }
+/* Pills (small labels): 3px × 10px. */
+.pill, .stl .pill { padding: 3px 10px; }
+/* List rows: 10px top/bottom. */
+.li { padding: 10px 0; }
+/* Text rhythm inside cards: a title, then 8px, then content. */
+.card > b:first-child, .card > .ch:first-child, .card > .card-t { margin-bottom: var(--s2); }
+
+/* Recipe cards: picture + text with 12px between, details and actions 12px below. */
+.grid-cards .card > .row:first-child { gap: var(--s3); align-items: flex-start; }
+.grid-cards .card > .row:first-child .pill { margin: var(--s1) 0; }
+.grid-cards .card details { margin-top: var(--s3); }
+.grid-cards .card details > summary { padding: var(--s1) 0; }
+.grid-cards .card details[open] > summary { margin-bottom: var(--s2); }
+.grid-cards .card > .row:last-child { margin-top: var(--s3); gap: var(--s2); }
+.nw { white-space: nowrap; }
+.row > .chip { padding: 7px 14px; }
+.chip.mood { padding: 6px 0; margin: 0; }
+@media (max-width: 400px) { .card > .mpb { font-size: 14px; line-height: 1.2; } }
+/* Top bar: Profile and Style buttons side by side */
+.top .lk + .lk { margin-left: 0; }
+.lk { display: inline-grid; place-items: center; }
+/* Profile */
+.pfr { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); align-items: center; gap: var(--s2); margin-top: var(--s2); }
+.pfr > span { font-size: 15px; }
+.pfr .seg { margin-top: 0; }
+.card .opt.lng { margin: var(--s2) 0 0; }
+/* Profile language: the chosen one is filled with the primary button colour (no tick). */
+.card .opt.lng.on { background: var(--btn) !important; color: var(--btnt) !important; border-color: var(--btn) !important; }
+.acc .seg { margin-bottom: var(--s3); }
+.fl { display: block; margin-top: var(--s3); }
+.fl > .mu { display: block; margin: 0 2px var(--s1); }
+.pw { display: flex; gap: var(--s2); align-items: center; }
+.pw input { flex: 1; min-width: 0; }
+.pw button { flex: none; }
+.pmon b::first-letter { text-transform: uppercase; }
+
+/* Quote card on a drawn picture (src/lib/qart.ts). Sizes use container width units so text scales with the card. */
+.qa { position: relative; container-type: inline-size; width: 100%; box-sizing: border-box; aspect-ratio: 45 / 31; min-height: 230px; border-radius: 30px; overflow: hidden; box-shadow: var(--sh); isolation: isolate; margin-top: var(--vgap); margin-bottom: var(--vgap); }
+.masonry > .qa { display: block; margin-top: 0; }
+.qa-art, .qa-art svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.qa-tag { position: absolute; left: 5.3cqw; top: 5.2cqw; z-index: 2; font: 600 max(10px, 2.4cqw)/1 Urbanist, sans-serif; letter-spacing: .14em; text-transform: uppercase; opacity: .8; }
+.qa-q { position: absolute; z-index: 2; margin: 0; text-wrap: balance; }
+.qa-q b { font-weight: 700; }
+.qa-a { display: block; font: 500 max(11px, 2.6cqw)/1.3 Urbanist, sans-serif; letter-spacing: 0; text-transform: none; opacity: .8; margin-top: .6em; }
+.qa-dict .qa-h { font: 300 max(20px, 6.2cqw)/1 'Inter Tight', sans-serif; letter-spacing: .42em; }
+.qa-dict .qa-ph { font: max(9px, 2.3cqw)/1.3 'Space Mono', monospace; letter-spacing: .12em; margin: .7em 0 .6em; opacity: .8; text-transform: uppercase; }
+.qa-dict .qa-def { font: max(11px, 3cqw)/1.45 'Space Mono', monospace; opacity: .95; }
+.qa-dict.qa-up .qa-h { font: 600 max(13px, 3.4cqw)/1.2 'Inter Tight', sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+.qa-dict.qa-up .qa-ph, .qa-dict.qa-up .qa-def { font-family: 'Inter Tight', sans-serif; text-transform: uppercase; letter-spacing: .06em; font-size: max(9px, 2.5cqw); }
+.qa-stk { position: absolute; z-index: 2; left: 79%; top: 72.6%; width: 22%; transform: translate(-50%, -50%) rotate(-12deg); font: 800 max(9px, 2.9cqw)/1.15 Montserrat, sans-serif; text-align: center; }
+.qa .qa-more { position: absolute; left: 4cqw; bottom: 3.6cqw; z-index: 3; margin: 0; }
+.qa .qfb { z-index: 3; }
+:root[data-look="dh"] .qa { border-radius: 14px; }
+:root[data-look="ga"] .qa { border-radius: 6px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Buttons: three levels everywhere (DESIGN.md › Buttons).
+   Main = plain <button> (filled), secondary = .g / .lab / .lab2 (soft tint), quiet = .q (text only: Back, Edit, Reset, Clear, Dismiss). */
+button.q, button.lnk { background: transparent !important; border-color: transparent !important; box-shadow: none !important; color: var(--tx) !important; font-weight: 600; padding: 8px 4px; min-height: 40px; border-radius: 8px; }
+button.q:hover { text-decoration: underline; text-underline-offset: 3px; }
+.q-t { color: var(--tx); font-weight: 600; }
+
+/* Macro colours: one trio per look, used by the bars and the P / C / F letters. */
+:root { --mp: var(--pk); --mc: var(--cr); --mf: var(--ol); }
+:root[data-look="u"] { --mp: #b85a80; --mc: #8a74b3; --mf: #3a8f8f; }
+@media (prefers-color-scheme: dark) { :root[data-look="u"]:not([data-theme="light"]) { --mp: #e093ae; --mc: #b4a3dc; --mf: #7fd0cf; } }
+:root[data-look="u"][data-theme="dark"] { --mp: #e093ae; --mc: #b4a3dc; --mf: #7fd0cf; }
+:root[data-look="dh"], :root[data-look="px"] { --mp: var(--tx); --mc: color-mix(in srgb, var(--tx) 62%, transparent); --mf: color-mix(in srgb, var(--tx) 36%, transparent); }
+:root:root .bar i.mp { background: var(--mp) !important; }
+:root:root .bar i.mc { background: var(--mc) !important; }
+:root:root .bar i.mf { background: var(--mf) !important; }
+.mt { font-weight: 700; }
+/* Letters: the macro hue mixed with the text colour so they stay readable on any card. */
+.mt.mp { color: color-mix(in srgb, var(--mp) 40%, var(--tx)); } .mt.mc { color: color-mix(in srgb, var(--mc) 40%, var(--tx)); } .mt.mf { color: color-mix(in srgb, var(--mf) 40%, var(--tx)); }
+:root[data-look="dh"] .mt, :root[data-look="px"] .mt { color: var(--tx); }
+
+/* Exercise rows: 56 px picture, name up to two lines then "…". */
+.cx .th { width: 56px; border-radius: 12px; }
+.cx .nm b { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.25; }
+
+/* Undo after a delete: floats above the bottom bar on every screen. */
+.undo.toast { position: fixed; z-index: 60; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); max-width: 520px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+@media (min-width: 900px) { .undo.toast { bottom: 24px; } }

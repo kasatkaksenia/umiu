@@ -1,24 +1,28 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { EL, HM, MF, MIND, PH, PR, SYM, TL, fmt } from "../../data/cycle";
-import { avq } from "../../lib/art";
+import { drawArt, pickArt } from "../../lib/qart";
 import { DEF_LEN, Phase, addSym, avgOf, delSym, ent, flowOf, perOn, perTog, phase, predOf, setFlow, qList, setCycle, setMood, setNote, togSym, wOn } from "../../lib/cycle";
 import { hormones } from "../../lib/figures";
 import { QX } from "../../data/cycle";
 import { S, commit, openSheet, render, useStore } from "../../lib/store";
 import { A_, TODAY, dAdd, dDiff, dayNo, dmy, mod } from "../../lib/util";
-import { Deco, Hero, Ico, MoodIcon, Svg, Wico, useArt } from "../../components/ui";
+import { Hero, Ico, MoodIcon, Svg, Wico } from "../../components/ui";
 import { Page } from "../../components/layout";
 import { MOODS } from "../../lib/moods";
+import { LANG, pn, t as tt } from "../../lib/i18n";
 
 const HERO: Record<string, string> = { menstrual: "water", follicular: "grass", ovulation: "petal", luteal: "wind" };
 
 export default function Cycle() {
   useStore();
   const p = phase();
+  // New users: the setup card comes first until a period is logged.
+  const fresh = !S.per.length && !S.cyc;
   return (
     <Page title="Cycle">
       <Hero kind={p ? HERO[p.k] : "wind"} seed={3} a="Move with" b="your cycle" tag="balance" icon="wave" />
       <div className="masonry">
+        {fresh && <Setup p={p} />}
         <Status p={p} />
         {wOn("per") && <PeriodCard p={p} />}
         {p && wOn("horm") && <Hormones p={p} />}
@@ -34,7 +38,7 @@ export default function Cycle() {
         {p && wOn("mind") && <Mind p={p} />}
         {wOn("fact") && <Fact />}
         {wOn("reset") && <Breathing />}
-        <Setup p={p} />
+        {!fresh && <Setup p={p} />}
         <LastEntries />
       </div>
       <p className="mu">
@@ -50,7 +54,7 @@ function WidgetsButton({ inline }: { inline?: boolean }) {
   );
 }
 
-const lateTxt = (n: number) => (n ? `Period is ${n} day${n == 1 ? "" : "s"} late.` : "Period is due today.");
+const lateTxt = (n: number) => (n ? tt("Period is {n} late.", { n: pn(n, "day") }) : tt("Period is due today."));
 
 function Status({ p }: { p: Phase | null }) {
   if (!p)
@@ -69,15 +73,15 @@ function Status({ p }: { p: Phase | null }) {
         <WidgetsButton inline />
       </div>
       <div className="bar" style={{ margin: "10px 0" }}><i style={{ width: `${Math.min(1, p.day / p.L) * 100}%` }} /></div>
-      <p className="mu" style={{ margin: 0 }}>{p.late != null ? `${lateTxt(p.late)} Tap the day it starts in the period tracker below.` : `${x.d} Next period in ~${p.next} days.`}</p>
+      <p className="mu" style={{ margin: 0 }}>{p.late != null ? lateTxt(p.late) + " " + tt("Tap the day it starts in the period tracker below.") : tt(x.d) + " " + tt("Next period in ~{n}.", { n: pn(p.next, "day") })}</p>
     </div>
   );
 }
 
 const FLOW = ["None", "Light", "Medium", "Heavy"];
-const WD = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("en", { weekday: "narrow" });
-const dLong = (d: string) => (d == TODAY() ? "Today" : new Date(d + "T12:00:00").toLocaleDateString("en", { weekday: "short", day: "numeric", month: "short" }));
-const MON = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("en", { month: "long", year: d.slice(0, 4) == TODAY().slice(0, 4) ? undefined : "numeric" });
+const WD = (d: string) => new Date(d + "T12:00:00").toLocaleDateString(LANG, { weekday: "narrow" });
+const dLong = (d: string) => (d == TODAY() ? "Today" : new Date(d + "T12:00:00").toLocaleDateString(LANG, { weekday: "short", day: "numeric", month: "short" }));
+const MON = (d: string) => new Date(d + "T12:00:00").toLocaleDateString(LANG, { month: "long", year: d.slice(0, 4) == TODAY().slice(0, 4) ? undefined : "numeric" });
 const MORE = 42; // days added each time the strip is scrolled near an end
 
 /**
@@ -137,11 +141,11 @@ function PeriodCard({ p }: { p: Phase | null }) {
       <p style={{ margin: "8px 0 2px" }}>
         {cur ? <>Period day <b>{dDiff(cur.s, t) + 1}</b></>
           : p?.late != null ? <b>{lateTxt(p.late)}</b>
-          : p ? <>Next period in about <b>{p.next} day{p.next == 1 ? "" : "s"}</b></>
+          : p ? <>Next period in about <b>{pn(p.next, "day")}</b></>
             : "Tap the days of your last period to start tracking."}
       </p>
       <p className="mu pavg">
-        {n ? `Average cycle ${S.cyc!.len} days, from your last ${n + 1} periods.` : `Cycle ${S.cyc?.len || DEF_LEN} days until you log two periods.`}
+        {n ? tt("Average cycle {d}, from your last {p}.", { d: pn(S.cyc!.len, "day"), p: pn(n + 1, "period") }) : tt("Cycle {d} until you log two periods.", { d: pn(S.cyc?.len || DEF_LEN, "day") })}
       </p>
       <div className="pmon">
         <b>{MON(mid)}</b>
@@ -158,7 +162,7 @@ function PeriodCard({ p }: { p: Phase | null }) {
                 perTog(d);
                 setSel(f == null ? d : null);
               }}>
-              <span className="pw">{first ? new Date(d + "T12:00:00").toLocaleDateString("en", { month: "short" }) : WD(d)}</span>
+              <span className="pw">{first ? new Date(d + "T12:00:00").toLocaleDateString(LANG, { month: "short" }) : WD(d)}</span>
               <span className="pc">{+d.slice(8)}</span>
             </button>
           );
@@ -187,7 +191,7 @@ function Hormones({ p }: { p: Phase }) {
   return (
     <div className="card">
       <b>Hormone levels</b>
-      <p className="mu" style={{ margin: "2px 0 6px" }}>Typical pattern for a {p.L}-day cycle, schematic and not measured.</p>
+      <p className="mu" style={{ margin: "2px 0 6px" }}>{tt("Typical pattern for a {n}-day cycle, schematic and not measured.", { n: p.L })}</p>
       <Svg html={hormones(S.cyc, p)} />
       <div className="lg">
         <span><i style={{ background: "var(--h1)" }} />Estrogen</span>
@@ -199,20 +203,46 @@ function Hormones({ p }: { p: Phase }) {
   );
 }
 
+/** Quote of the day on a drawn picture (src/lib/qart.ts). Each new quote gets a picture the user hasn't seen yet. */
 function QuoteCard({ p }: { p: Phase | null }) {
-  const l = qList(p), q = l[mod(dayNo() + (S.set.q || 0), l.length)], qi = QX.indexOf(q);
+  const l = qList(p), n = dayNo() + (S.set.q || 0), q = l[mod(n, l.length)], qi = QX.indexOf(q);
   const f = A_(S.set.qt).length + A_(S.set.qe).length + (S.set.qph ? 1 : 0);
-  const bg = useArt(() => avq(q.e, qi), "q" + qi);
+  const key = pickArt(q, n + ":" + qi);
+  const a = useMemo(() => drawArt(key, q), [key, q]);
+  const lay = a.lay || "plain";
+  let text = a.lower ? q.q.toLowerCase() : q.q;
+  let last = "";
+  if (a.sub) {
+    const w = text.replace(/[.!]$/, "").split(" ");
+    last = w.pop() + ".";
+    text = w.join(" ") + " ";
+  }
+  const by = q.a ? <span className="qa-a">— {q.a}{q.s ? " · " + q.s : ""}</span> : null;
+  const st = { ...a.tx, color: a.ink };
   return (
-    <div className="qc" style={bg ? { backgroundImage: bg } : undefined}>
-      <Deco seed={"q" + qi} n={1} top />
+    <div className="qa" data-art={key} style={{ color: a.ink }}>
+      <div className="qa-art" aria-hidden="true" dangerouslySetInnerHTML={{ __html: a.svg }} />
+      <span className="qa-tag" style={a.tag ? { color: a.tag } : undefined}>{EL[q.e]} · {TL[q.t]}</span>
       <button className={"qfb" + (f ? " on" : "")} aria-label={`Choose quotes${f ? " (filtered)" : ""}`} onClick={() => openSheet({ t: "qf" })}>
         <Ico k="sliders" s={18} />
       </button>
-      <span className="el">{EL[q.e]} · {TL[q.t]}</span>
-      <p>“{q.q}”</p>
-      {q.a && <span className="el" style={{ textTransform: "none", letterSpacing: 0 }}>— {q.a}{q.s ? " · " + q.s : ""}</span>}
-      <button className="s" onClick={() => {
+      {lay == "plain" && <p className="qa-q" style={st}>{text}{last && <b>{last}</b>}{by}</p>}
+      {lay == "dict" && (
+        <div className={"qa-q qa-dict" + (a.upper ? " qa-up" : "")} style={st}>
+          <div className="qa-h">{a.head}</div>
+          <div className="qa-ph">noun · {EL[q.e]} · {TL[q.t]}</div>
+          <div className="qa-def">(n.) {a.lower ? q.q.toLowerCase() : q.q}</div>
+          {by}
+        </div>
+      )}
+      {lay == "poster" && (
+        <>
+          <p className="qa-q" style={st}>{q.q.replace(/[.!]$/, "")}</p>
+          <span className="qa-stk" style={{ color: a.head }}>{a.sticker}</span>
+        </>
+      )}
+      {lay == "none" && <p className="sr-only">{q.q}{q.a ? " — " + q.a : ""}</p>}
+      <button className="s qa-more" style={{ background: a.chip[0], color: a.chip[1] }} onClick={() => {
         S.set.q = (S.set.q || 0) + 1;
         commit();
       }}>Another</button>
@@ -361,7 +391,7 @@ function Setup({ p }: { p: Phase | null }) {
   const [len, setLen] = useState(String(c?.len || DEF_LEN));
   return (
     <div className="card">
-      <b>{p ? "Update" : "Set up"} your cycle</b>
+      <b>{p ? "Update your cycle" : "Set up your cycle"}</b>
       <div className="row" style={{ marginTop: 8 }}>
         <div><span className="mu">Period started</span><input type="date" aria-label="Period started" value={start} onChange={e => setStart(e.target.value)} /></div>
         <div><span className="mu">Cycle length</span><input type="number" aria-label="Cycle length in days" value={len} onChange={e => setLen(e.target.value)} /></div>

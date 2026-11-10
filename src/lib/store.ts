@@ -88,12 +88,27 @@ export function render() {
   subs.forEach(f => f());
 }
 
+/** Called after every save (cloud sync listens here). */
+export const onSave: (() => void)[] = [];
+
 export function save() {
   try {
     localStorage.setItem(KEY, JSON.stringify(S));
   } catch {
     /* storage full or blocked: the app keeps working for this session */
   }
+  onSave.forEach(f => f());
+}
+
+/** Replace all data (cloud download, log out) without telling the cloud about it. */
+export function replaceAll(o: Partial<State> | null) {
+  merge(o || {});
+  try {
+    localStorage.setItem(KEY, JSON.stringify(S));
+  } catch {
+    /* ignore */
+  }
+  render();
 }
 
 /** Save and re-render: the usual ending of an action. */

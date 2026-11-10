@@ -8,16 +8,23 @@ import { FileButton, Ico, NumField } from "../../components/ui";
 import { showChanges } from "../../lib/photos";
 import { useState } from "react";
 import { A_, dayNo, dmy, mod } from "../../lib/util";
+import { pn, t, tr } from "../../lib/i18n";
+import { LU, W, WU, lIn, lOut, wIn, wOut } from "../../lib/units";
 
 export function Targets() {
   const r = useIonRouter();
   const p = S.prof, c = calc();
-  const F = (l: string, k: keyof Profile, step?: string) => (
-    <NumField label={l} value={(p[k] as number) || ""} step={step} min={0} onChange={v => {
-      (S.prof as any)[k] = Math.max(0, v || 0);
-      commit();
-    }} />
-  );
+  // u: "w" = body weight, "l" = length; stored metric, shown in the chosen unit.
+  const F = (l: string, k: keyof Profile, step?: string, u?: "w" | "l") => {
+    const raw = (p[k] as number) || 0, shown = !raw ? "" : u == "w" ? wOut(raw) : u == "l" ? lOut(raw) : raw;
+    return (
+      <NumField label={u ? `${tr(l)} (${u == "w" ? WU() : LU()})` : l} value={shown} step={step} min={0} onChange={v => {
+        const x = Math.max(0, v || 0);
+        (S.prof as any)[k] = u == "w" ? Math.round(wIn(x) * 100) / 100 : u == "l" ? Math.round(lIn(x) * 10) / 10 : x;
+        commit();
+      }} />
+    );
+  };
   // The multiplier field only shows when "Custom" is chosen.
   const [isC, setC] = useState(!AC.some(a => a[0] == p.act));
   return (
@@ -44,7 +51,7 @@ export function Targets() {
             </div>
             {F("Age", "a")}
           </div>
-          <div className="row" style={{ marginTop: 8 }}>{F("Height cm", "h")}{F("Weight kg", "w")}</div>
+          <div className="row" style={{ marginTop: 8 }}>{F("Height", "h", undefined, "l")}{F("Weight", "w", undefined, "w")}</div>
           <div style={{ marginTop: 8 }}>
             <span className="mu">Activity level</span>
             <select aria-label="Activity level" value={isC ? "c" : String(p.act)} onChange={e => {
@@ -70,16 +77,16 @@ export function Targets() {
               <span>{gTxt(c.t, p.g)}</span><span aria-hidden="true">▾</span>
             </button>
           </div>
-          <div className="row" style={{ marginTop: 8 }}>{F("Protein g/kg", "pk")}</div>
+          <div className="row" style={{ marginTop: 8 }}>{F("Protein (g/kg)", "pk")}</div>
           <p className="mu">
-            BMR {c.bmr} kcal → maintenance {c.t} kcal.<br />
-            Protein {p.pk} g/kg sits in the 1.6–2.2 range shown to support training gains; fat is 25% of calories (guideline 20–35%); carbs fill the rest.
+            {t("BMR {b} kcal → maintenance {m} kcal.", { b: c.bmr, m: c.t })}<br />
+            {t("Protein {p} g/kg sits in the 1.6–2.2 range shown to support training gains; fat is 25% of calories (guideline 20–35%); carbs fill the rest.", { p: p.pk })}
           </p>
           <div className="row">
             <div><b>{c.k}</b><br /><span className="mu">kcal</span></div>
-            <div><b>{c.p} g</b><br /><span className="mu">protein</span></div>
-            <div><b>{c.c} g</b><br /><span className="mu">carbs</span></div>
-            <div><b>{c.f} g</b><br /><span className="mu">fat</span></div>
+            <div><b>{c.p}</b><br /><span className="mu">protein (g)</span></div>
+            <div><b>{c.c}</b><br /><span className="mu">carbs (g)</span></div>
+            <div><b>{c.f}</b><br /><span className="mu">fat (g)</span></div>
           </div>
           <button style={{ width: "100%", marginTop: 10 }} onClick={() => {
             S.goal = { k: c.k, p: c.p, c: c.c, f: c.f };
@@ -97,7 +104,7 @@ export function Targets() {
   );
 }
 
-function BodyFat({ F }: { F: (l: string, k: keyof Profile, step?: string) => JSX.Element }) {
+function BodyFat({ F }: { F: (l: string, k: keyof Profile, step?: string, u?: "w" | "l") => JSX.Element }) {
   const p = S.prof, c = calc(), bf = navy(), def = Math.max(0, c.t - c.k);
   let body: JSX.Element;
   if (bf != null && bf > 0 && bf < 70) {
@@ -107,10 +114,10 @@ function BodyFat({ F }: { F: (l: string, k: keyof Profile, step?: string) => JSX
       const gw = lean / (1 - p.gbf / 100), lose = p.w - gw;
       goal = (
         <p className="mu" style={{ marginBottom: 0 }}>
-          Goal {p.gbf}% body fat ≈ {gw.toFixed(1)} kg, so about {lose.toFixed(1)} kg of fat to lose (lean mass kept).
+          {t("Goal {g}% body fat ≈ {w}, so about {l} of fat to lose (lean mass kept).", { g: p.gbf, w: W(gw), l: W(lose) })}{" "}
           {def > 0
-            ? ` At your current ${Math.round(p.g * -100)}% deficit (${def} kcal/day ≈ ${((def * 7) / 7700).toFixed(2)} kg/week) that takes about ${Math.ceil(lose / ((def * 7) / 7700))} weeks.`
-            : " Pick a fat-loss goal above to see a timeline."}
+            ? t("At your current {p}% deficit ({d} kcal/day ≈ {w}/week) that takes about {n}.", { p: Math.round(p.g * -100), d: def, w: W((def * 7) / 7700, 2), n: pn(Math.ceil(lose / ((def * 7) / 7700)), "week") })
+            : t("Pick a fat-loss goal above to see a timeline.")}
         </p>
       );
     } else if (p.gbf > 0) goal = <p className="mu" style={{ marginBottom: 0 }}>You are already at or below your goal body fat.</p>;
@@ -118,20 +125,20 @@ function BodyFat({ F }: { F: (l: string, k: keyof Profile, step?: string) => JSX
       <>
         <div className="row" style={{ marginTop: 8 }}>
           <div><b>{bf.toFixed(1)}%</b><br /><span className="mu">body fat · {bfCat(bf)}</span></div>
-          <div><b>{fat.toFixed(1)} kg</b><br /><span className="mu">fat mass</span></div>
-          <div><b>{lean.toFixed(1)} kg</b><br /><span className="mu">lean mass</span></div>
+          <div><b>{W(fat)}</b><br /><span className="mu">fat mass</span></div>
+          <div><b>{W(lean)}</b><br /><span className="mu">lean mass</span></div>
         </div>
         {goal}
       </>
     );
-  } else body = <p className="mu" style={{ marginBottom: 0 }}>Enter neck, waist{p.sex == "f" ? " and hip" : ""} to calculate body fat.</p>;
+  } else body = <p className="mu" style={{ marginBottom: 0 }}>{p.sex == "f" ? "Enter neck, waist and hip to calculate body fat." : "Enter neck and waist to calculate body fat."}</p>;
   return (
     <div className="card">
       <b>Body fat (US Navy method)</b>
       <p className="mu" style={{ margin: "4px 0 8px" }}>
-        Measure in cm: neck below the larynx, waist at the navel{p.sex == "f" ? ", hips at the widest point" : ""}.
+        {p.sex == "f" ? "Measure the neck below the larynx, the waist at the navel and the hips at the widest point." : "Measure the neck below the larynx and the waist at the navel."}
       </p>
-      <div className="row">{F("Neck cm", "neck")}{F("Waist cm", "waist")}{p.sex == "f" && F("Hip cm", "hip")}</div>
+      <div className="row">{F("Neck", "neck", undefined, "l")}{F("Waist", "waist", undefined, "l")}{p.sex == "f" && F("Hip", "hip", undefined, "l")}</div>
       {body}
       <div className="row" style={{ marginTop: 8 }}>{F("Goal body fat %", "gbf")}</div>
     </div>

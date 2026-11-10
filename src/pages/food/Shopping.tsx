@@ -22,11 +22,11 @@ export function Shopping() {
       </div>
       {S.shop.length > 0 && (
         <div className="row">
-          <button className="g" onClick={() => {
+          <button className="q" onClick={() => {
             S.shop = S.shop.filter(x => !x.done);
             commit();
           }}>Clear ticked</button>
-          <button className="g" onClick={() => {
+          <button className="q" onClick={() => {
             S.shop = [];
             commit();
           }}>Clear all</button>

@@ -3,7 +3,8 @@ import { ReactNode, useEffect } from "react";
 import { IonContent, IonMenu, IonPage, useIonRouter } from "@ionic/react";
 import { useLocation } from "react-router-dom";
 import { Logo } from "./ui";
-import { UI, openSheet } from "../lib/store";
+import { UI, useStore } from "../lib/store";
+import { TOAST, doUndo } from "../lib/undo";
 
 export type Tab = "train" | "food" | "cycle";
 const TABS: [Tab, string, string][] = [
@@ -65,23 +66,31 @@ export function SideMenu() {
           ))}
         </nav>
         <div className="side-foot">
-          <button className="g s" onClick={() => openSheet({ t: "look" })}>Style</button>
+          <ProfileButton label />
         </div>
       </div>
     </IonMenu>
   );
 }
 
+/** Opens Profile (units, language, style). */
+function ProfileButton({ label }: { label?: boolean }) {
+  const r = useIonRouter();
+  const ico = (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+      <circle cx="12" cy="8.5" r="3.8" /><path d="M4.5 20c1.2-3.8 4.2-5.6 7.5-5.6s6.3 1.8 7.5 5.6" />
+    </svg>
+  );
+  return label
+    ? <button className="g s ibtn" onClick={() => r.push("/profile")}>{ico} Profile</button>
+    : <button className="lk" aria-label="Profile" onClick={() => r.push("/profile")}>{ico}</button>;
+}
+
 export function TopBar() {
   return (
     <div className="top">
       <span className="brand"><Logo /></span>
-      <button className="lk" aria-label="Style" onClick={() => openSheet({ t: "look" })}>
-        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2" />
-          <path d="M12 3a9 9 0 010 18z" fill="currentColor" />
-        </svg>
-      </button>
+      <ProfileButton />
     </div>
   );
 }
@@ -103,10 +112,22 @@ export function Page({ children, wide, title }: { children: ReactNode; wide?: bo
   );
 }
 
+/** "Removed … · Undo" for a few seconds after a delete. */
+export function UndoToast() {
+  useStore();
+  if (!TOAST) return null;
+  return (
+    <div className="undo toast" role="status">
+      <span>{TOAST.m}</span>
+      <button onClick={doUndo}>Undo</button>
+    </div>
+  );
+}
+
 /** "‹ Back" button that returns to the previous screen (or to `fallback`). */
 export function BackButton({ fallback }: { fallback: string }) {
   const r = useIonRouter();
   return (
-    <button className="g s" onClick={() => (r.canGoBack() ? r.goBack() : r.push(fallback, "back", "replace"))}>‹ Back</button>
+    <button className="q" onClick={() => (r.canGoBack() ? r.goBack() : r.push(fallback, "back", "replace"))}>‹ Back</button>
   );
 }

@@ -1,19 +1,19 @@
 // Every pop-up sheet in the app. The open sheet lives in UI.sheet; SheetHost draws it.
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { useIonAlert } from "@ionic/react";
 import { EX, FOC, MN, SPL } from "../data/exercises";
 import { EL, TL, WID } from "../data/cycle";
 import { figSvg } from "../lib/figures";
 import { S, Sheet, UI, commit, openSheet, render, useStore } from "../lib/store";
-import { addEx, chWk, delWk, dr, ensureLib, eqOk, isCustom, planKeys, UNDO_MS, ewDo, ewLeave, ewRename, ewRm, ewUndo, ewUndoMsg, genWk, libOf, nameOf, exOrder, newWk, swapList, swapTo } from "../lib/train";
+import { addEx, chWk, delWk, dr, ensureLib, eqOk, isCustom, planKeys, UNDO_MS, ewDo, ewLeave, ewName, ewRename, ewRm, ewUndo, ewUndoMsg, genWk, libOf, nameOf, exOrder, newWk, swapList, swapTo } from "../lib/train";
 import { MealIng, RF, analyseMeal, gPct, gpInfo, recipesShown, resizeImage, rfChips, rfReset, searchIngredients } from "../lib/food";
 import { ai } from "../lib/ai";
 import { CATS, FD } from "../data/foods";
 import { phase, qClr, qList, qTog, wOn, wTog } from "../lib/cycle";
 import { PEND, PHOTOS, delPhoto, savePending, selCollage } from "../lib/photos";
 import { A_, TODAY, dmy, download } from "../lib/util";
-import { Chip, ExOption, FileButton, Ico, Svg, exMatches } from "../components/ui";
+import { Chip, ExOption, FileButton, Ico, Svg, exMatches, useAlert } from "../components/ui";
 import { NT_TOPICS, ntList } from "../data/tips";
+import { pn, t as tt, tr } from "../lib/i18n";
 
 export function SheetHost() {
   useStore();
@@ -53,16 +53,16 @@ export function SheetHost() {
 /** head: replaces the header's Close button (null = no button; the sheet closes from its own button or a tap outside). */
 function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode } {
   switch (s.t) {
-    case "swap": return { title: "Swap " + EX[s.id][0], body: <SwapList id={s.id} ok={k => !dr().ids.includes(k)} pick={k => swapTo(s.id, k)} key={s.id} /> };
+    case "swap": return { title: tr("Swap") + " " + EX[s.id][0], body: <SwapList id={s.id} ok={k => !dr().ids.includes(k)} pick={k => swapTo(s.id, k)} key={s.id} /> };
     case "add": return { title: "Add exercises", body: <AddMany ok={k => !dr().ids.includes(k)} done={addEx} name={nameOf(dr().n)} /> };
     case "wk": return { title: "Choose workout", body: <ChooseWorkout /> };
     case "ew": return libOf(s.k)
-      ? { title: "Edit workout", body: <EditWorkout k={s.k} key={s.k} />, head: <button className="g s" style={{ flex: "none" }} onClick={() => { ewLeave(s.k); openSheet({ t: "wk" }); }}>‹ Back</button> }
+      ? { title: "Edit workout", body: <EditWorkout k={s.k} key={s.k} />, head: <button className="q" style={{ flex: "none" }} onClick={() => { ewLeave(s.k); openSheet({ t: "wk" }); }}>‹ Back</button> }
       : { title: "Choose workout", body: <ChooseWorkout /> };
     case "ewp": {
       const L = libOf(s.k) || { ids: [] as string[], n: "" };
       return s.m == "swap"
-        ? { title: "Swap " + EX[s.id!][0], body: <SwapList id={s.id!} ok={k => !L.ids.includes(k)} pick={k => ewDo(s.k, "swap", s.id!, k)} /> }
+        ? { title: tr("Swap") + " " + EX[s.id!][0], body: <SwapList id={s.id!} ok={k => !L.ids.includes(k)} pick={k => ewDo(s.k, "swap", s.id!, k)} /> }
         : { title: "Add exercises", body: <AddMany ok={k => !L.ids.includes(k)} done={ks => ewDo(s.k, "add", "", ks)} name={L.n} /> };
     }
     case "ai": return { title: "Generate a workout", body: <Generate s={s} /> };
@@ -74,7 +74,7 @@ function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode }
     case "csel": return { title: "Choose photos", body: <ChoosePhotos s={s} /> };
     case "qf": return { title: "Choose quotes", body: <QuoteFilter /> };
     case "ntf": return { title: "Nutrition tip topics", body: <TipFilter /> };
-    case "rf": return { title: "Filter recipes", body: <RecipeFilter />, head: rfChips().length ? <button className="g s lnk" style={{ flex: "none" }} onClick={rfReset}>Reset</button> : null };
+    case "rf": return { title: "Filter recipes", body: <RecipeFilter />, head: rfChips().length ? <button className="q" style={{ flex: "none" }} onClick={rfReset}>Reset</button> : null };
     case "gp": return { title: "Goal", body: <GoalPct /> };
     case "goals": return { title: "Set calorie goal manually", body: <ManualGoals /> };
     case "look": case "data": return { title: "Style", body: <Look /> };
@@ -134,7 +134,7 @@ function AddMany({ ok, done, name }: { ok: (k: string) => boolean; done: (ks: st
       {!main.length && !more.length && !has.length && <p className="mu">No exercises match “{q}”.</p>}
       <div className="addbar">
         <button style={{ width: "100%" }} disabled={!sel.length} onClick={() => done(sel)}>
-          {sel.length ? `Add ${sel.length} exercise${sel.length > 1 ? "s" : ""}` : "Tap exercises to select"}
+          {sel.length ? tt("Add {n}", { n: pn(sel.length, "exercise") }) : "Tap exercises to select"}
         </button>
       </div>
     </>
@@ -142,18 +142,22 @@ function AddMany({ ok, done, name }: { ok: (k: string) => boolean; done: (ks: st
 }
 
 function ChooseWorkout() {
-  const [alert] = useIonAlert();
+  const [alert] = useAlert();
   ensureLib();
   const cur = dr().n, pk = planKeys();
+  const [nm, setNm] = useState(nameOf(cur));
   // Only the workouts of the current plan (split × workouts per week), plus the ones the owner made.
   const list = [...pk.map(k => libOf(k)).filter(Boolean), ...S.lib!.filter(w => isCustom(w.k))] as NonNullable<ReturnType<typeof libOf>>[];
   const ask = (w: (typeof list)[number]) => alert({
-    header: `Delete “${w.n}”?`,
+    header: tt("Delete “{n}”?", { n: w.n }),
     message: "This removes it from your workout list. Your logged history stays.",
     buttons: [{ text: "Cancel", role: "cancel" }, { text: "Delete", role: "destructive", handler: () => delWk(w.k) }],
   });
   return (
     <>
+      <label className="mu" htmlFor="wkname" style={{ display: "block", margin: "4px 0 6px" }}>Name of your next workout</label>
+      <input id="wkname" maxLength={32} value={nm} onChange={e => setNm(e.target.value)} onBlur={() => ewName(cur, nm)}
+        onKeyDown={e => e.key == "Enter" && (e.target as HTMLInputElement).blur()} style={{ marginBottom: 14 }} />
       <p className="mu" style={{ margin: "4px 0 6px" }}>{SPL[S.plan.split].n} · {S.plan.days}× per week</p>
       <p className="mu" style={{ margin: "0 0 8px", fontSize: 13 }}>Tap a workout to edit it. “Do next” picks the one you train next.</p>
       {list.map(w => (
@@ -178,7 +182,7 @@ function ChooseWorkout() {
 
 /** Edit a workout. Every change saves at once; an Undo bar shows for a few seconds after each one. */
 function EditWorkout({ k }: { k: string }) {
-  const [alert] = useIonAlert();
+  const [alert] = useAlert();
   const L = libOf(k)!;
   const [name, setName] = useState(L.n);
   const [, tick] = useState(0);
@@ -189,7 +193,7 @@ function EditWorkout({ k }: { k: string }) {
     return () => clearTimeout(t);
   }, [um, L.ids.join(), L.n]);
   const askRm = (id: string) => alert({
-    header: `Remove “${EX[id][0]}”?`,
+    header: tt("Remove “{n}”?", { n: EX[id][0] }),
     message: "It comes off this workout. You can add it back any time.",
     buttons: [{ text: "Cancel", role: "cancel" }, { text: "Remove", role: "destructive", handler: () => ewRm(k, id) }],
   });
@@ -202,7 +206,7 @@ function EditWorkout({ k }: { k: string }) {
           <Svg as="span" className="oth" style={{ flex: "none", width: 64 }} html={figSvg(id, 1)} />
           <div style={{ flex: 1, minWidth: 0 }}>
             <b>{EX[id][0]}</b>
-            <div className="mu">{EX[id][1].split(",").map(m => MN[m]).join(", ")}</div>
+            <div className="mu">{EX[id][1].split(",").map(m => tr(MN[m])).join(", ")}</div>
           </div>
           <button className="g s ic" aria-label={`Swap ${EX[id][0]}`} onClick={() => openSheet({ t: "ewp", k, m: "swap", id })}>⇄</button>
           <button className="g s ic" aria-label={`Remove ${EX[id][0]}`} onClick={() => askRm(id)}>✕</button>
@@ -279,7 +283,7 @@ function QuoteFilter() {
   const p = phase(), t = A_<string>(S.set.qt), e = A_<string>(S.set.qe);
   return (
     <>
-      <p className="mu">{qList(p).length} quotes match.</p>
+      <p className="mu">{tt("{n} match.", { n: pn(qList(p).length, "quote") })}</p>
       <div className="mu" style={{ margin: "10px 0 4px" }}>Type</div>
       <div className="hs wrapc">
         <Chip on={!t.length} onClick={() => qClr("qt")}>All</Chip>
@@ -330,7 +334,7 @@ function RecipeFilter() {
         <b>Favourites only</b><i aria-hidden="true" />
       </button>
       <button style={{ width: "100%", marginTop: 12 }} disabled={!n} onClick={() => openSheet(null)}>
-        {n ? `Show ${n} recipe${n == 1 ? "" : "s"}` : "No recipes match"}
+        {n ? tt("Show {n}", { n: pn(n, "recipe") }) : "No recipes match"}
       </button>
     </>
   );
@@ -344,7 +348,7 @@ function TipFilter() {
   };
   return (
     <>
-      <p className="mu">{ntList(t).length} tips match.</p>
+      <p className="mu">{tr("{n} match.").replace("{n}", pn(ntList(t).length, "tip"))}</p>
       <div className="hs wrapc" style={{ marginTop: 8 }}>
         <Chip on={!t.length} onClick={() => { S.set.ntf = []; S.set.nti = 0; commit(); }}>All</Chip>
         {NT_TOPICS.map(([v, x]) => <Chip key={v} on={t.includes(v)} onClick={() => tog(v)}>{x}</Chip>)}
@@ -463,8 +467,8 @@ function CustomMeal() {
   return (
     <>
       <input placeholder="Meal name" aria-label="Meal name" maxLength={60} value={f.t} onChange={set("t")} style={{ marginTop: 10 }} />
-      <div className="row" style={{ marginTop: 8 }}>{N("p", "Protein g")}{N("k", "kcal")}{N("c", "Carbs g")}</div>
-      <div className="row" style={{ marginTop: 8 }}>{N("fat", "Fat g")}{N("m", "Minutes")}</div>
+      <div className="row" style={{ marginTop: 8 }}>{N("p", "Protein (g)")}{N("k", "kcal")}{N("c", "Carbs (g)")}</div>
+      <div className="row" style={{ marginTop: 8 }}>{N("fat", "Fat (g)")}{N("m", "Minutes")}</div>
       <textarea rows={4} placeholder="Ingredients, one per line (e.g. 150 g chicken breast)" aria-label="Ingredients" value={f.ing} onChange={set("ing")} />
       <textarea rows={3} placeholder="Steps, one per line" aria-label="Steps" value={f.st} onChange={set("st")} />
       <div className="row" style={{ marginTop: 8 }}>
@@ -610,7 +614,7 @@ function PhotoView({ s }: { s: Extract<Sheet, { t: "pho" }> }) {
 }
 
 /* ---------- style and backup ---------- */
-const LOOKS: [string, string, string][] = [
+export const LOOKS: [string, string, string][] = [
   ["u", "Urban glow", "City dusk and soft bokeh in blush and mauve"],
   ["w", "Clean white", "White and simple, like Apple Health"],
   // Extra looks (styles in theme/looks.css)

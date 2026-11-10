@@ -5,6 +5,8 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
+    "jsxImportSource": "umiu-i18n",
+    "paths": { "umiu-i18n/*": ["./src/i18n/*"] },
     "strict": true,
     "noImplicitAny": false,
     "skipLibCheck": true,

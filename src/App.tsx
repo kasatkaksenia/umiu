@@ -4,13 +4,14 @@ import { IonApp, IonRouterOutlet, IonSplitPane, IonTabBar, IonTabButton, IonTabs
 import { IonReactHashRouter } from "@ionic/react-router";
 import { useStore } from "./lib/store";
 import { loadPhotos } from "./lib/photos";
-import { BottomNav, SideMenu } from "./components/layout";
+import { BottomNav, SideMenu, UndoToast } from "./components/layout";
 import { SheetHost, lookOf } from "./sheets/Sheets";
 import Train from "./pages/train/Train";
 import { ExerciseHistory, ExerciseScreen } from "./pages/train/Exercise";
 import Plan from "./pages/train/Plan";
 import Food from "./pages/food/Food";
 import Cycle from "./pages/cycle/Cycle";
+import Profile, { Account } from "./pages/profile/Profile";
 
 // iOS look everywhere (page transitions, alerts), so the web app feels like the future iPhone app.
 setupIonicReact({ mode: "ios", swipeBackEnabled: true });
@@ -42,6 +43,8 @@ export default function App() {
                 <Route exact path="/train/ex/:id/history" component={ExerciseHistory} />
                 <Route exact path="/food/:sub?" component={Food} />
                 <Route exact path="/cycle" component={Cycle} />
+                <Route exact path="/profile" component={Profile} />
+                <Route exact path="/profile/account" component={Account} />
                 <Route exact path="/"><Redirect to="/train" /></Route>
               </IonRouterOutlet>
               <IonTabBar slot="bottom" className="hidden-tabbar">
@@ -54,6 +57,7 @@ export default function App() {
         </IonSplitPane>
         <BottomNav />
         <SheetHost />
+        <UndoToast />
       </IonReactHashRouter>
     </IonApp>
   );

@@ -3,8 +3,10 @@ import { CD, EQ, EQN, EX, FM, MN, PL, SPL } from "../data/exercises";
 import { S, UI, Draft, SetRow, render, save, commit, LoggedSet } from "./store";
 import { TODAY, dsince } from "./util";
 import { ai } from "./ai";
+import { pn, t as tt, tr } from "./i18n";
+import { W } from "./units";
 
-export const muscles = (list: string) => list.split(",").filter(Boolean).map(m => MN[m]).join(", ");
+export const muscles = (list: string) => list.split(",").filter(Boolean).map(m => tr(MN[m])).join(", ");
 
 /* ---------- workout library ---------- */
 export const libOf = (k: string) => S.lib?.find(x => x.k == k);
@@ -93,8 +95,8 @@ export const vol = (w: { it: { id: string; s: LoggedSet[] }[] }) =>
   Math.round(w.it.reduce((a, x) => a + (CD[x.id] ? 0 : x.s.reduce((b, s) => b + s.w * s.r, 0)), 0));
 export const setTxt = (id: string, s: LoggedSet) =>
   CD[id]
-    ? `${s.r} min · ${s.w} ${(CD[id][1] || [])[1] && /level/.test(CD[id][1][1]) ? "level" : "km/h"}${CD[id].length > 2 ? " · " + (s.i || 0) + "% incline" : ""}`
-    : `${s.w} kg × ${s.r}`;
+    ? `${s.r} ${tr("min")} · ${s.w} ${tr((CD[id][1] || [])[1] && /level/.test(CD[id][1][1]) ? "level" : "km/h")}${CD[id].length > 2 ? " · " + (s.i || 0) + "% " + tr("incline") : ""}`
+    : `${W(s.w)} × ${s.r}`;
 
 /* ---------- sets of the draft ---------- */
 export function rowsOf(id: string): SetRow[] {
@@ -322,25 +324,25 @@ const LOWER = new Set(["gl", "qd", "ha", "ca", "ad", "lb"]);
 export function adv(id: string) {
   const e = EX[id];
   if (CD[id])
-    return "Build time before speed: add about 5–10% duration per week, keep most sessions at a conversational effort, and add one harder interval session a week if you like. Guidelines: 150–300 min of moderate activity a week (ACSM).";
+    return tt("Build time before speed: add about 5–10% duration per week, keep most sessions at a conversational effort, and add one harder interval session a week if you like. Guidelines: 150–300 min of moderate activity a week (ACSM).");
   const L = lastE(id), [lo, hi] = e[3].split("-").map(Number);
-  if (!L) return `First time: choose a weight you can lift for ${lo}–${hi} reps with 1–3 reps left in reserve.`;
+  if (!L) return tt("First time: choose a weight you can lift for {lo}–{hi} reps with 1–3 reps left in reserve.", { lo, hi });
   const l = L.x, w = Math.max(...l.s.map(s => s.w)), gap = dsince(L.d), b = brk(gap);
   const low = e[1].split(",").some(m => LOWER.has(m)), pct = low ? 0.05 : 0.025;
   let t: string;
   if (b) {
     const nw = rndW(w * b.f);
-    t = `It has been ${gap} days since you did this. Restart at about ${nw} kg (${b.v} than your last ${w} kg)${b.sets ? " with one set fewer" : ""}, keep 2–3 reps in reserve, then add about 5% a session until you are back to ${w} kg.`;
+    t = tt(b.sets ? "It has been {gap} since you did this. Restart at about {nw} ({v} than your last {w}) with one set fewer, keep 2–3 reps in reserve, then add about 5% a session until you are back to {w}." : "It has been {gap} since you did this. Restart at about {nw} ({v} than your last {w}), keep 2–3 reps in reserve, then add about 5% a session until you are back to {w}.", { gap: pn(gap, "day"), nw: W(nw), v: tr(b.v), w: W(w) });
   } else if (l.s.every(s => s.r >= hi)) {
     const st = w < 20 ? 0.5 : w < 60 ? 1 : 2.5, n = Math.max(w + st, rndW(w * (1 + pct)));
-    t = `All sets reached ${hi} reps. Try ${n} kg next (about +${low ? 5 : 2.5}%, within the 2–10% range ACSM suggests), and aim for ${lo}–${hi} reps again.`;
-  } else if (l.s.some(s => s.r < lo)) t = `Some sets were under ${lo} reps. Keep ${w} kg (or drop about 5%) and rebuild your reps.`;
-  else t = `Keep ${w} kg and add a rep per set until every set reaches ${hi}, then increase the load (double progression).`;
+    t = tt("All sets reached {hi} reps. Try {n} next (about +{p}%, within the 2–10% range ACSM suggests), and aim for {lo}–{hi} reps again.", { hi, lo, n: W(n), p: low ? 5 : 2.5 });
+  } else if (l.s.some(s => s.r < lo)) t = tt("Some sets were under {lo} reps. Keep {w} (or drop about 5%) and rebuild your reps.", { lo, w: W(w) });
+  else t = tt("Keep {w} and add a rep per set until every set reaches {hi}, then increase the load (double progression).", { hi, w: W(w) });
   const hs = S.hist.filter(h => h.it.some(y => y.id == id)).slice(-4);
   if (!b && hs.length >= 4) {
     const top = (h: (typeof hs)[0]) => Math.max(...h.it.find(y => y.id == id)!.s.map(s => s.w * (1 + s.r / 30)));
     if (top(hs[3]) <= top(hs[0]))
-      t += " Your last 4 sessions show no progress. Consider a lighter deload week (about 10% less weight) or swapping to a similar exercise.";
+      t += " " + tt("Your last 4 sessions show no progress. Consider a lighter deload week (about 10% less weight) or swapping to a similar exercise.");
   }
   return t;
 }

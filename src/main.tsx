@@ -22,6 +22,7 @@ import "@fontsource/silkscreen/400.css";
 import "@fontsource/montserrat/400.css";
 import "@fontsource/montserrat/500.css";
 import "@fontsource/montserrat/600.css";
+import "@fontsource/montserrat/800.css";
 
 import "./theme/base.css";
 import "./theme/layout.css";
@@ -29,6 +30,8 @@ import "./theme/looks.css";
 
 import { initIcons } from "./lib/icons";
 import App from "./App";
+import { initCloud } from "./lib/cloud";
 
 initIcons();
+initCloud();
 createRoot(document.getElementById("root")!).render(<App />);

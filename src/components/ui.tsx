@@ -6,6 +6,8 @@ import { mb, av } from "../lib/art";
 import { figSvg } from "../lib/figures";
 import { EX } from "../data/exercises";
 import { eqLbl, muscles } from "../lib/train";
+import { AlertOptions, useIonAlert } from "@ionic/react";
+import { tr } from "../lib/i18n";
 
 /** Render trusted, generated SVG markup (figures, charts) inside an element. */
 export function Svg({ html, className, style, as: Tag = "div" }: { html: string; className?: string; style?: React.CSSProperties; as?: any }) {
@@ -187,4 +189,15 @@ export function NumField({ label, value, onChange, step, min, max, inputMode = "
         onBlur={() => onChange(+txt)} onKeyDown={e => (e.key == "Enter" ? onChange(+txt) : e.key == "-" && min != null && min >= 0 && e.preventDefault())} />
     </div>
   );
+}
+
+/** useIonAlert with the header, message and button texts translated (Ionic draws alerts outside the JSX runtime). */
+export function useAlert() {
+  const [show] = useIonAlert();
+  return [(o: AlertOptions) => show({
+    ...o,
+    header: o.header && tr(o.header),
+    message: typeof o.message == "string" ? tr(o.message) : o.message,
+    buttons: o.buttons?.map(b => (typeof b == "string" ? tr(b) : { ...b, text: b.text && tr(b.text) })),
+  })] as const;
 }

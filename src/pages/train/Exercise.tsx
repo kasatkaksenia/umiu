@@ -8,6 +8,7 @@ import { adv, cleanNum, dr, muscles, rowOp, rowsOf, setDone, setTxt, setVal } fr
 import { BackButton, Page } from "../../components/layout";
 import { FigAnim, Svg } from "../../components/ui";
 import { dmy } from "../../lib/util";
+import { WU, isLb, wIn, wOut } from "../../lib/units";
 
 export function ExerciseScreen() {
   useStore();
@@ -33,7 +34,7 @@ export function ExerciseScreen() {
               <div className="mu">
                 Main: {muscles(e[1])}
                 {e[2] && <><br />Helping: {muscles(e[2])}</>}
-                <br />{CD[id] ? "Cardio: log time and speed" : "Target: " + e[3] + " reps"}
+                <br />{CD[id] ? "Cardio: log time and speed" : <>Target: {e[3]} reps</>}
               </div>
             </div>
             <p style={{ margin: "8px 0 0" }}>
@@ -118,7 +119,7 @@ function SetsTable({ id }: { id: string }) {
   // [field, column heading, keyboard, accessible name]
   const cols: [("r" | "w" | "i"), string, "numeric" | "decimal", string][] = C
     ? C.map(c => [c[0] as "r" | "w" | "i", c[1], "decimal", c[1]])
-    : [["w", "kg", "decimal", "Weight"], ["r", "Reps", "numeric", "Reps"]];
+    : [["w", WU(), "decimal", "Weight"], ["r", "Reps", "numeric", "Reps"]];
   const unit = C ? "block" : "set";
   return (
     <table className="tb">
@@ -156,10 +157,13 @@ function SetsTable({ id }: { id: string }) {
 
 /** One cell of the sets table. Keeps the typed text (e.g. "62." on the way to "62.5") and stores the number. */
 function SetInput({ id, j, k, im, label, value }: { id: string; j: number; k: "r" | "w" | "i"; im: "numeric" | "decimal"; label: string; value: number | "" | undefined }) {
-  const shown = value == null ? "" : String(value);
+  // Weights are stored in kg and shown in the chosen unit (kg or lb).
+  const conv = k == "w" && !CD[id] && isLb();
+  const shown = value == null || value === "" ? "" : String(conv ? wOut(+value, 2) : value);
   const [txt, setTxt] = useState(shown);
   useEffect(() => {
-    if (txt === "" ? shown !== "" : +txt !== +shown) setTxt(shown);
+    // Only replace what's typed when the stored value really changed (lb ↔ kg rounding is ignored).
+    if (txt === "" ? shown !== "" : Math.abs(+txt - +shown) > (conv ? 0.06 : 0)) setTxt(shown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shown]);
   return (
@@ -167,7 +171,8 @@ function SetInput({ id, j, k, im, label, value }: { id: string; j: number; k: "r
       onChange={ev => {
         const v = cleanNum(id, k, ev.target.value);
         setTxt(v);
-        setVal(id, j, k, v == "." ? "" : v);
+        const n = v == "." ? "" : v;
+        setVal(id, j, k, conv && n !== "" ? String(Math.round(wIn(+n) * 1000) / 1000) : n);
       }} />
   );
 }

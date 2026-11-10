@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { useIonAlert, useIonRouter } from "@ionic/react";
+import { useIonRouter } from "@ionic/react";
 import { CD, EX, SPL } from "../../data/exercises";
 import { fig, figSvg } from "../../lib/figures";
 import { S, UI, commit, openSheet, render, save, useStore } from "../../lib/store";
-import { comeback, dr, ewName, fin, nameOf, rmEx, rowsOf, setTxt, vol, wkDone } from "../../lib/train";
+import { comeback, dr, fin, nameOf, rmEx, rowsOf, setTxt, vol, wkDone } from "../../lib/train";
 import { TODAY, dmy } from "../../lib/util";
-import { Hero, Ico, Svg, Tabs } from "../../components/ui";
+import { Hero, Ico, Svg, Tabs, useAlert } from "../../components/ui";
 import { Page } from "../../components/layout";
+import { LANG, pn, t, tr } from "../../lib/i18n";
+import { W } from "../../lib/units";
 
 export default function Train() {
   useStore();
@@ -39,12 +41,12 @@ function Workout() {
         <Comeback />
         <button className="card plan-card" onClick={() => r.push("/train/plan")}>
           <div className="row" style={{ alignItems: "center" }}>
-            <div><b>Training plan</b><div className="mu">{pl.days}× per week · {sp.n}</div></div>
-            <span style={{ flex: "none", color: "var(--ac)", fontWeight: 600 }}>Edit ›</span>
+            <div><b>Training plan</b><div className="mu">{t("{n}× per week", { n: pl.days })} · {sp.n}</div></div>
+            <span className="q-t" style={{ flex: "none" }}>Edit ›</span>
           </div>
           <div className="dots">
             {Array.from({ length: pl.days }, (_, i) => <i key={i} className={i < done ? "on" : ""} />)}
-            <span className="mu">{Math.min(done, pl.days)} of {pl.days} this week</span>
+            <span className="mu">{t("{a} of {b} this week", { a: Math.min(done, pl.days), b: pl.days })}</span>
           </div>
         </button>
       </div>
@@ -54,7 +56,7 @@ function Workout() {
           <div className="row" style={{ alignItems: "center", margin: "6px 0 10px" }}>
             <div style={{ minWidth: 0 }}>
               <WorkoutName k={D.n} />
-              <div className="mu">{D.ids.length} exercises · {sets} sets</div>
+              <div className="mu">{pn(D.ids.length, "exercise")} · {pn(sets, "set")}</div>
             </div>
             <Svg className="wfig" html={fig([...P].join(), [...Q].filter(x => !P.has(x)).join())} />
           </div>
@@ -73,30 +75,9 @@ function Workout() {
   );
 }
 
-/** Workout title; the pencil turns it into a text field. */
+/** Workout title. It is renamed in "Change workout". */
 function WorkoutName({ k }: { k: string }) {
-  const [edit, setEdit] = useState(false);
-  const [txt, setTxt] = useState("");
-  const done = () => {
-    ewName(k, txt);
-    setEdit(false);
-  };
-  if (edit)
-    return (
-      <div className="wkn">
-        <input autoFocus maxLength={32} aria-label="Workout name" value={txt} onChange={e => setTxt(e.target.value)} onBlur={done}
-          onKeyDown={e => e.key == "Enter" && done()} />
-      </div>
-    );
-  return (
-    <div className="wkn">
-      <h2>{nameOf(k)}</h2>
-      <button className="g s ic" aria-label="Rename workout" onClick={() => {
-        setTxt(nameOf(k));
-        setEdit(true);
-      }}>✎</button>
-    </div>
-  );
+  return <div className="wkn"><h2>{nameOf(k)}</h2></div>;
 }
 
 function ExRow({ id }: { id: string }) {
@@ -111,7 +92,7 @@ function ExRow({ id }: { id: string }) {
       <Svg className="th" html={figSvg(id, 0)} />
       <div className="nm">
         <b>{e[0]}</b>
-        <span className="mu">{n}/{rows.length} {CD[id] ? "blocks · cardio" : "sets · " + e[3] + " reps"}</span>
+        <span className="mu">{n}/{rows.length} {CD[id] ? "blocks · cardio" : <>sets · {e[3]} reps</>}</span>
       </div>
       <button className="bm" aria-label={`Menu for ${e[0]}`} aria-expanded={menu} onClick={ev => {
         ev.stopPropagation();
@@ -141,10 +122,10 @@ function Comeback() {
   return (
     <div className="card">
       <b>Welcome back</b>
-      <p className="mu" style={{ margin: "4px 0 8px" }}>Your last workout was {c.g} days ago. Here is a gentle way to restart.</p>
-      <div className="row wrapr" style={{ gap: 6 }}>
+      <p className="mu" style={{ margin: "4px 0 8px" }}>{t("Your last workout was {n} ago. Here is a gentle way to restart.", { n: pn(c.g, "day") })}</p>
+      <div className="seg" role="radiogroup" aria-label="Reason for the break" style={{ gridTemplateColumns: "1fr 1fr" }}>
         {([["hol", "Holiday or busy"], ["ill", "Illness or injury"]] as const).map(([k, l]) => (
-          <button key={k} className={"chip" + ((S.set.brk || "hol") == k ? " on" : "")} onClick={() => {
+          <button key={k} role="radio" aria-checked={(S.set.brk || "hol") == k} className={(S.set.brk || "hol") == k ? "on" : ""} onClick={() => {
             S.set.brk = k;
             commit();
           }}>{l}</button>
@@ -152,15 +133,15 @@ function Comeback() {
       </div>
       <ul style={{ margin: "8px 0" }}>
         {c.ill && <li>Restart only when symptoms are gone and you feel normal for a day or two. Ask a clinician first after fever, heart or chest symptoms, or an injury.</li>}
-        <li>Weights: start at about {Math.round(c.f * 100)}% of your last working weights ({Math.round((1 - c.f) * 100)}% lighter).</li>
-        <li>Volume: {c.vol} of your usual sets in the first week, with 2–3 reps left in reserve.</li>
-        <li>Ramp up over {c.wk} weeks: add about 5% load a session, or a set a week, until you are back at your old numbers.</li>
+        <li>{t("Weights: start at about {a}% of your last working weights ({b}% lighter).", { a: Math.round(c.f * 100), b: Math.round((1 - c.f) * 100) })}</li>
+        <li>{t("Volume: {v} of your usual sets in the first week, with 2–3 reps left in reserve.", { v: tr(c.vol) })}</li>
+        <li>{t("Ramp up over {n} weeks: add about 5% load a session, or a set a week, until you are back at your old numbers.", { n: c.wk })}</li>
         <li>Strength comes back faster than it was built (muscle memory), so don’t rush it.</li>
       </ul>
       <p className="mu" style={{ fontSize: 12, margin: "0 0 8px" }}>
         Based on detraining and retraining research (Mujika &amp; Padilla 2000, Bosquet 2013, Seaborne 2018) and ACSM guidance. General information, not medical advice.
       </p>
-      <button className="g s" onClick={() => {
+      <button className="q" onClick={() => {
         S.set.brkX = TODAY();
         commit();
       }}>Dismiss for a week</button>
@@ -184,7 +165,7 @@ function History() {
         <div className="card">
           <div className="row">
             <button className="g s" style={{ flex: "none" }} aria-label="Previous month" onClick={() => mv(-1)}>‹</button>
-            <b style={{ textAlign: "center" }}>{new Date(y, mo - 1).toLocaleString("en", { month: "long", year: "numeric" })}</b>
+            <b style={{ textAlign: "center" }}>{new Date(y, mo - 1).toLocaleString(LANG, { month: "long", year: "numeric" })}</b>
             <button className="g s" style={{ flex: "none" }} aria-label="Next month" onClick={() => mv(1)}>›</button>
           </div>
           <div className="cal mu" style={{ margin: "8px 0 2px" }}>{"MTWTFSS".split("").map((d, i) => <span key={i}>{d}</span>)}</div>
@@ -203,14 +184,14 @@ function History() {
         </div>
       </div>
       <div className="col">
-        <h2>{S.set.hd ? "Workouts on " + dmy(S.set.hd) : "Recent workouts"}</h2>
+        <h2>{S.set.hd ? t("Workouts on {d}", { d: dmy(S.set.hd) }) : "Recent workouts"}</h2>
         {L.length ? L.map(([w, i]) => (
           <button key={i} className="card li" onClick={() => {
             S.set.hw = i;
             save();
             render();
           }}>
-            <span><b>{w.n}</b><br /><span className="mu">{dmy(w.d)} · {w.it.length} exercises · {vol(w)} kg volume</span></span>
+            <span><b>{w.n}</b><br /><span className="mu">{dmy(w.d)} · {pn(w.it.length, "exercise")} · {t("{v} volume", { v: W(vol(w), 0) })}</span></span>
             <span>›</span>
           </button>
         )) : <p className="mu">No workouts yet.</p>}
@@ -220,11 +201,11 @@ function History() {
 }
 
 function WorkoutDetail() {
-  const [alert] = useIonAlert();
+  const [alert] = useAlert();
   const w = S.hist[S.set.hw];
   return (
     <>
-      <button className="g s" onClick={() => {
+      <button className="q" onClick={() => {
         S.set.hw = null;
         commit();
       }}>‹ Back</button>
@@ -236,7 +217,7 @@ function WorkoutDetail() {
               <Svg style={{ flex: "none", width: 80 }} html={fig(EX[x.id][1], EX[x.id][2])} />
               <div>
                 <b>{EX[x.id][0]}</b>
-                {x.s.map((s, j) => <div className="li" key={j}><span className="mu">Set {j + 1}</span><span>{setTxt(x.id, s)}</span></div>)}
+                {x.s.map((s, j) => <div className="li" key={j}><span className="mu">{t("Set {n}", { n: j + 1 })}</span><span>{setTxt(x.id, s)}</span></div>)}
               </div>
             </div>
           </div>

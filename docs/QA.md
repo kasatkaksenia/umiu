@@ -96,4 +96,12 @@ With the Claude in Chrome extension connected (`/chrome` in Claude Code), Claude
 | Cycle: with no data, the widgets button sat on top of the text (`button.ic` made it `position: relative`) | `button.wbtn { position: absolute }` |
 | Cycle: a late period silently wrapped into a new cycle ("Day 8, follicular") | Counts on and shows "Period is N days late" |
 | Looks: theme rules for `input` also restyled the tick boxes (Glow signal tick invisible) | Theme input rules skip `type=checkbox` |
+| Russian labels overflowed (Food tabs, Train banner, Scan barcode / Add meal on SE) | Shorter Russian/Ukrainian wording in `dict.ts` |
+| Spacing rule for buttons also hit tab-bar buttons (Food tabs overflowed) | Rule limited to action buttons (plain, `.g`, `.lab`, `.lab2`) |
 | "+ Add meal" had no outline in outlined themes while "Scan barcode" did | Removed the old `border: 0` from `button.lab2` |
+| Quote card wider than the iPhone SE screen | `aspect-ratio` with `min-height` widened it; added `width: 100%` |
+| Text inside quote pictures rendered at 7 px | Global `svg text` rule; sizes now set inline |
+| "Bloom" dictionary text showed as a white box | Reused class `up` (Ionic page); renamed to `qa-up` |
+| Many texts below 4.5:1 (Mist grey text, Clean white / Desert HUD / Gallery accents, period-day numbers) | Token fixes per look; `qa/contrast.mjs` checks every look |
+| Undo bar appeared once per loaded screen | Rendered once in `App.tsx` |
+| Mist's grey day style hid period colours | Period-day rules use higher specificity |

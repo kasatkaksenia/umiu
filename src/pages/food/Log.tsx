@@ -3,6 +3,8 @@ import { ai } from "../../lib/ai";
 import { Suggestion, eaten, localName, readBarcode, searchFoods, todayLog } from "../../lib/food";
 import { S, commit, openSheet } from "../../lib/store";
 import { TODAY } from "../../lib/util";
+import { offerUndo } from "../../lib/undo";
+import { t as tt } from "../../lib/i18n";
 import { FileButton, Ico } from "../../components/ui";
 
 type Macros = { k: number; p: number; c: number; f: number };
@@ -23,10 +25,12 @@ export function FoodLog() {
           {t.length ? t.map(x => (
             <div className="li" key={S.f.indexOf(x)}>
               <span>{x.n}</span>
-              <span className="mu">{x.k} kcal · P{x.p} C{x.c || 0} F{x.f || 0}</span>
+              <span className="mu">{x.k} kcal · <b className="mt mp">P</b>{x.p} <b className="mt mc">C</b>{x.c || 0} <b className="mt mf">F</b>{x.f || 0}</span>
               <button className="g s" aria-label={`Remove ${x.n}`} onClick={() => {
-                S.f.splice(S.f.indexOf(x), 1);
+                const i = S.f.indexOf(x);
+                S.f.splice(i, 1);
                 commit();
+                offerUndo(tt("Removed “{n}”", { n: x.n }), () => S.f.splice(i, 0, x));
               }}>✕</button>
             </div>
           )) : <span className="mu">Nothing logged today.</span>}
@@ -50,10 +54,10 @@ function Summary() {
       </div>
       <div className="mac">
         <div className="mu" style={{ marginBottom: 6 }}>Eaten {kc} of {G.k} kcal</div>
-        {([["Protein", "p", "var(--pk)"], ["Carbs", "c", "var(--cr)"], ["Fat", "f", "var(--ol)"]] as const).map(([l, k, c]) => (
+        {([["Protein", "p", "mp"], ["Carbs", "c", "mc"], ["Fat", "f", "mf"]] as const).map(([l, k, c]) => (
           <div className="mi" key={k}>
-            <div className="mh"><span>{l}</span><span><b>{eaten(k)}</b> / {G[k]} g</span></div>
-            <div className="bar"><i style={{ width: `${Math.min(100, (eaten(k) / (G[k] || 1)) * 100)}%`, background: c }} /></div>
+            <div className="mh"><span>{l} (g)</span><span><b>{eaten(k)}</b> / {G[k]}</span></div>
+            <div className="bar"><i className={c} style={{ width: `${Math.min(100, (eaten(k) / (G[k] || 1)) * 100)}%` }} /></div>
           </div>
         ))}
       </div>
@@ -150,8 +154,8 @@ function AddFood() {
       {/* Meal from a photo gets its own full-width button so the row below keeps two equal buttons. */}
       <FileButton className="lab2 mpb" accept="image/*" capture onFiles={f => openSheet({ t: "mp", url: URL.createObjectURL(f[0]), file: f[0] })}><Ico k="cam" /> Meal from photo</FileButton>
       <div className="row">
-        <FileButton className="lab2" accept="image/*" capture onFiles={f => scan(f[0])}>▮▮ Scan barcode</FileButton>
-        <button className="lab2" onClick={() => openSheet({ t: "cm" })}>+ Add meal</button>
+        <FileButton className="lab2" accept="image/*" capture onFiles={f => scan(f[0])}><Ico k="barcode" /> Scan barcode</FileButton>
+        <button className="lab2" onClick={() => openSheet({ t: "cm" })}><Ico k="plus" /> Add meal</button>
       </div>
       <p className="mu" role="status">{status}</p>
 
@@ -188,11 +192,11 @@ function AddFood() {
         </div>
       )}
       <div className="row" style={{ marginTop: 6 }}>
-        {([["k", "kcal"], ["p", "P g"], ["c", "C g"], ["f", "F g"]] as const).map(([k, l]) => (
+        {([["k", "kcal"], ["p", "P (g)"], ["c", "C (g)"], ["f", "F (g)"]] as const).map(([k, l]) => (
           <input key={k} type="number" inputMode="decimal" placeholder={l} aria-label={l} value={mac[k]} onChange={e => setMac({ ...mac, [k]: e.target.value })} />
         ))}
       </div>
-      <input placeholder="Barcode (optional – remembered for next time)" aria-label="Barcode" value={code} onChange={e => setCode(e.target.value)} style={{ marginTop: 6 }} />
+      <input placeholder="Barcode (optional)" aria-label="Barcode" value={code} onChange={e => setCode(e.target.value)} style={{ marginTop: 6 }} />
       <button style={{ width: "100%", marginTop: 8 }} onClick={add}>Add</button>
     </div>
   );

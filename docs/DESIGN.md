@@ -56,6 +56,43 @@ The logo (`<Logo>`) is "umiu" in Shantell Sans 500, converted to SVG shapes with
 
 Always use tokens, never raw colours, so all looks and dark mode keep working. Check new UI in at least the default look (Urban glow), one always-dark look (e.g. Glow signal) and dark mode (`QA_DARK=1`).
 
+## Spacing (one rule per element type)
+
+Scale: **4 · 8 · 12 · 16 · 20 · 24 px** (`--s1`…`--s6` in `layout.css`). The rules sit in the
+"Spacing conventions" block at the end of `layout.css`, so they win over older one-off values.
+Use these; don't add new paddings to single elements.
+
+| Element | Size | Padding | Gap / margin |
+|---|---|---|---|
+| Card (`.card`) | — | 16 px (20 px ≥ 900 px) | 12 px between cards (`--vgap`) |
+| Action button (plain `button`, `button.g`, `.lab`, `.lab2`) | min 44 px tall | 10 × 18 px (12 px sides on phones when buttons share a row) | 8 px between |
+| Small button (`button.s`) | 36 px (40 px on phones) | 6 × 14 px | 8 px |
+| Icon button (`button.ic`) | 32–36 px round | 0 | 8 px |
+| Chip (`.chip`) | 36 px | 7 × 14 px | 6 px (3 px margin each side) |
+| Field (`input`, `select`) | 48 px | 12 × 14 px | 8 px between fields |
+| Option card (`.opt`) | — | 12 × 16 px (8 × 12 px for exercise rows `.opt.ox`) | 8 px |
+| Pill (`.pill`) | — | 3 × 10 px | — |
+| List row (`.li`) | — | 10 px top / bottom | — |
+| Card title → content | — | — | 8 px |
+| Recipe card | picture ↔ text 12 px; text → details 12 px; details → actions 12 px | | |
+
+## Buttons (three levels)
+
+| Level | Markup | Looks like | Use for |
+|---|---|---|---|
+| Main | plain `<button>` | filled (`--btn`) | the one key action of a card: Finish workout, Save, Add, Done |
+| Secondary | `button.g`, `.lab`, `.lab2` | soft tint, normal text colour | other actions: Add exercise, Change workout, Scan barcode, Shuffle |
+| Quiet | `button.q` (`.lnk` is an alias) | text only | navigation and low-stakes actions: ‹ Back, Edit ›, Reset, Clear, Dismiss |
+
+At most one main button per card. A choice between options is a `.seg` switch, not buttons or chips.
+Deletes don't ask first: they happen at once and show "Removed … · Undo" for 5 s (`offerUndo()` in `src/lib/undo.ts`).
+
+## Colour and contrast
+
+- All text must reach 4.5:1 (3:1 for large text) in every look, light and dark. Check with `npm run qa:contrast` (`DARK=1` for dark mode).
+- Macro colours: `--mp` / `--mc` / `--mf` (protein, carbs, fat), one trio per look; bars use classes `mp|mc|mf`, letters `.mt.mp` etc.
+- Period days: light flow is a soft tint with normal text; medium and heavy are the period colour deepened with black, with white text.
+
 ## Components and patterns
 
 - Card: `.card` (clickable: `<button class="card">`). Slim variant `.card.slim`.
@@ -70,6 +107,19 @@ Always use tokens, never raw colours, so all looks and dark mode keep working. C
 - Small round icon buttons: `className="g s ic"` (32px, 44px tap area). Button with a leading icon: add `ibtn`.
 - Drop-downs: plain `<select>`; the arrow is drawn by CSS, inset 16px from the right.
 - Confirmations: `useIonAlert`; the app styles it in `layout.css` (font, colours, pill buttons).
+
+## Languages and units
+
+- Interface text is English in the code and translated at render time (`src/lib/i18n.ts`, dictionary
+  `src/i18n/dict.ts`, custom JSX runtime in `src/i18n/`). JSX text, `placeholder`, `aria-label`, `title`
+  and `alt` are translated automatically. Sentences with numbers use `t("… {n} …", { n })`, plural nouns
+  `pn(n, "day")`, alerts `useAlert()` from `ui.tsx`. New text: add it to `dict.ts` (en → uk). Ukrainian is
+  written as playful surzhyk with current slang ("трєня", "хавчик", "імба"), not academic language;
+  safety and medical lines stay clear. Russian was removed for now.
+  Content (exercises, recipes, tips, quotes) stays English for now. After editing `dict.ts`, restart the
+  dev server with `--force` (Vite caches the runtime).
+- Units: everything is stored metric; `src/lib/units.ts` converts for display and input
+  (`W(kg)`, `wOut`, `wIn`, `lOut`, `lIn`). Food stays in grams.
 
 ## iOS rules (don't break these)
 

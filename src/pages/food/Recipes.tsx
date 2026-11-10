@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { useIonAlert, useIonRouter } from "@ionic/react";
+import { useIonRouter } from "@ionic/react";
 import { REC, Recipe } from "../../data/foods";
 import { ai } from "../../lib/ai";
 import { allRecipes, favTog, inShop, logRecipe, recipesShown, rfChips, toShop } from "../../lib/food";
 import { dish } from "../../lib/figures";
 import { S, commit, openSheet } from "../../lib/store";
 import { Ico, Svg } from "../../components/ui";
+import { pn, t as tt } from "../../lib/i18n";
+import { offerUndo } from "../../lib/undo";
 
 export function Recipes() {
   const fav = S.fav || [], all = recipesShown(), chips = rfChips();
@@ -31,7 +33,7 @@ export function Recipes() {
     <>
       {/* Count and the filter button; the filters themselves live in a pop-up. */}
       <div className="rbar">
-        <b className="rcount">{all.length} recipe{all.length == 1 ? "" : "s"}</b>
+        <b className="rcount">{pn(all.length, "recipe")}</b>
         {ai && <button className="g s ibtn" onClick={moreIdeas}><Ico k="spark" s={16} /> New ideas</button>}
         <button className={"g s fic" + (chips.length ? " on" : "")} aria-label={`Filters${chips.length ? `, ${chips.length} active` : ""}`} onClick={() => openSheet({ t: "rf" })}>
           <Ico k="sliders" s={18} />
@@ -54,7 +56,6 @@ export function Recipes() {
 
 function RecipeCard({ r, i, fav }: { r: Recipe; i: number; fav: boolean }) {
   const ir = useIonRouter();
-  const [alert] = useIonAlert();
   const sv = inShop(r.t);
   return (
     <div className="card">
@@ -64,7 +65,7 @@ function RecipeCard({ r, i, fav }: { r: Recipe; i: number; fav: boolean }) {
           <b>{r.t}</b>{r.cu ? <> <span className="pill">yours</span></> : null}
           <br /><span className="pill">{r.p} g protein</span>
           <div className="mu" style={{ marginTop: 6 }}>
-            {r.k} kcal · {r.m || "?"} min<br />carbs {r.c} g · fat {r.f} g · {r.ing.length} ingredients
+            <span className="nw">{r.k} kcal</span> · <span className="nw">{r.m || "?"} min</span><br /><span className="nw">carbs {r.c} g</span> · <span className="nw">fat {r.f} g</span> · <span className="nw">{r.ing.length} ingredients</span>
           </div>
         </div>
         <button className={"hrt" + (fav ? " on" : "")} aria-label={fav ? "Remove from favourites" : "Add to favourites"} aria-pressed={fav} onClick={() => favTog(r)}>
@@ -85,15 +86,12 @@ function RecipeCard({ r, i, fav }: { r: Recipe; i: number; fav: boolean }) {
           ir.push("/food/log", "none", "replace");
         }}>Log meal</button>
         {r.cu ? (
-          <button className="g ic" aria-label="Delete meal" onClick={() => alert({
-            header: "Delete this meal?",
-            buttons: [{ text: "Cancel", role: "cancel" }, {
-              text: "Delete", role: "destructive", handler: () => {
-                S.rec.splice(i - REC.length, 1);
-                commit();
-              },
-            }],
-          })}>✕</button>
+          <button className="g ic" aria-label="Delete meal" onClick={() => {
+            const j = i - REC.length, x = S.rec[j];
+            S.rec.splice(j, 1);
+            commit();
+            offerUndo(tt("Deleted “{n}”", { n: x.t }), () => S.rec.splice(j, 0, x));
+          }}>✕</button>
         ) : null}
       </div>
     </div>
