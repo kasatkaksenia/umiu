@@ -1,7 +1,7 @@
 // Every pop-up sheet in the app. The open sheet lives in UI.sheet; SheetHost draws it.
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { EX, FOC, MN, SPL } from "../data/exercises";
-import { CT_TOPICS, EL, TL, WID, ctList } from "../data/cycle";
+import { EL, TL, WID } from "../data/cycle";
 import { figSvg } from "../lib/figures";
 import { S, Sheet, UI, commit, openSheet, render, useStore } from "../lib/store";
 import { addEx, chWk, comeback, delWk, dr, ensureLib, eqOk, isCustom, planKeys, UNDO_MS, ewDo, ewLeave, ewName, ewRename, ewRm, ewUndo, ewUndoMsg, genWk, libOf, nameOf, exOrder, newWk, swapList, swapTo } from "../lib/train";
@@ -37,9 +37,11 @@ export function SheetHost() {
   }, [s?.t]);
   if (!s) return null;
   const { title, body, head } = content(s);
+  // Adding food happens in a centred window of fixed size: it doesn't grow or jump while results load.
+  const mid = ["af", "fe", "cm"].includes(s.t);
   return (
-    <div className="ov" onClick={close}>
-      <div className="sh" role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={box} onClick={e => e.stopPropagation()}>
+    <div className={"ov" + (mid ? " ovc" : "")} onClick={close}>
+      <div className={"sh" + (mid ? " shc" : "")} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={box} onClick={e => e.stopPropagation()}>
         <div className="row sh-head">
           <b style={{ fontSize: 18 }}>{title}</b>
           {head !== undefined ? head : <button className="g s" style={{ flex: "none" }} onClick={close}>{s.t == "ewp" ? "Back" : "Close"}</button>}
@@ -78,7 +80,6 @@ function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode }
     case "csel": return { title: "Choose photos", body: <ChoosePhotos s={s} /> };
     case "qf": return { title: "Choose quotes", body: <QuoteFilter /> };
     case "ntf": return { title: "Nutrition tip topics", body: <TipFilter /> };
-    case "ctf": return { title: "Tip topics", body: <CycleTipFilter /> };
     case "rf": return { title: "Filter recipes", body: <RecipeFilter />, head: rfChips().length ? <button className="q" style={{ flex: "none" }} onClick={rfReset}>Reset</button> : null };
     case "gp": return { title: "Goal", body: <GoalPct /> };
     case "goals": return { title: "Set calorie goal manually", body: <ManualGoals /> };
@@ -362,23 +363,6 @@ function TipFilter() {
   );
 }
 
-
-/** Topics for the Cycle tips card. */
-function CycleTipFilter() {
-  const t = A_<string>(S.set.ctf);
-  const p = phase();
-  const set = (v: string[]) => { S.set.ctf = v; S.set.cti = 0; commit(); };
-  return (
-    <>
-      {p && <p className="mu">{tr("{n} match.").replace("{n}", pn(ctList(p.k, t).length, "tip"))}</p>}
-      <div className="hs wrapc" style={{ marginTop: 8 }}>
-        <Chip on={!t.length} onClick={() => set([])}>All</Chip>
-        {CT_TOPICS.map(([v, x]) => <Chip key={v} on={t.includes(v)} onClick={() => set(t.includes(v) ? t.filter(y => y != v) : t.concat(v))}>{x}</Chip>)}
-      </div>
-      <button style={{ width: "100%", marginTop: 12 }} onClick={() => openSheet(null)}>Done</button>
-    </>
-  );
-}
 
 /**
  * Meal from a photo. With AI connected, it names the meal and lists the ingredients; without it, the owner adds
@@ -671,18 +655,12 @@ export const LOOKS: [string, string, string][] = [
   ["em", "Ember", "Dark, lit by a warm amber glow, with frosted panels"],
   ["np", "Night planner", "Near-black with a moody glow, gold ticks and cream buttons"],
 ];
-/** Each look's page background (light version), its one main colour, and whether it is dark. */
-const LBG: Record<string, [string, string, boolean]> = { w: ["#f2f2f7", "#ff2d55", false], dh: ["#f4f3f0", "#d9925a", false], px: ["#fbfbfa", "#d9763a", false], mi: ["#e9eae8", "#8fa38c", false], gs: ["#0a0a0b", "#d7f25b", true], em: ["#0d0705", "#ff6a2c", true], np: ["#0f0f10", "#e7c95b", true] };
-/** A look's chip: its background colour, with its main colour fading in on the right. */
-export const lookPaint = (k: string) => {
-  const [bg, a, dark] = LBG[k] || LBG.w;
-  return {
-    background: `linear-gradient(100deg, ${bg} 55%, ${a} 135%)`,
-    color: dark ? "#fff" : "#111",
-    ["--lkb" as any]: dark ? "rgba(255,255,255,.14)" : "rgba(0,0,0,.1)",
-    ["--lkcb" as any]: dark ? "#fff" : "#111",
-    ["--lkcc" as any]: dark ? "#111" : "#fff",
-  };
+/** Each look's page background (light version) and its one main colour. */
+const LBG: Record<string, [string, string]> = { w: ["#f2f2f7", "#ff2d55"], dh: ["#f4f3f0", "#d9925a"], px: ["#fbfbfa", "#d9763a"], mi: ["#e9eae8", "#8fa38c"], gs: ["#0a0a0b", "#d7f25b"], em: ["#0d0705", "#ff6a2c"], np: ["#0f0f10", "#e7c95b"] };
+/** A look's circle: its background colour blending into its main colour. */
+export const lookDot = (k: string) => {
+  const [bg, a] = LBG[k] || LBG.w;
+  return { background: `linear-gradient(135deg, ${bg} 30%, ${a} 85%)` };
 };
 // Default look: Clean white (also used when a saved look was removed).
 export const lookOf = () => (LOOKS.some(l => l[0] == S.set.look) ? S.set.look : "w");
@@ -693,14 +671,14 @@ function Look() {
         <button key={k} className={"opt lko" + (lookOf() == k ? " on" : "")} aria-pressed={lookOf() == k} onClick={() => {
           S.set.look = k;
           commit();
-        }} style={lookPaint(k)}><span className="lkt"><b>{n}</b></span>{lookOf() == k && <span className="lkc" aria-hidden="true">✓</span>}</button>
+        }}><span className="lkd" style={lookDot(k)} aria-hidden="true" /><span className="lkt"><b>{n}</b></span>{lookOf() == k && <span className="lkc" aria-hidden="true">✓</span>}</button>
       ))}
     </>
   );
 }
 
 /* ---------- info (i) sheets ---------- */
-const INFO_T: Record<string, string> = { per: "Period tracker", bf: "How to measure" };
+const INFO_T: Record<string, string> = { bf: "How to measure" };
 
 /** Schematic front-view body: simple outlined shapes with numbered tape lines for the US Navy method. */
 function TapeFigure({ hip }: { hip: boolean }) {
@@ -729,7 +707,6 @@ function TapeFigure({ hip }: { hip: boolean }) {
 }
 
 function Info({ k }: { k: string }) {
-  if (k == "per") return <p>Tap a past day to mark it as a period day, tap it again to unmark it. Future days show the predicted period and fertile window.</p>;
   if (k == "bf") {
     const f = S.prof.sex == "f";
     const steps: [string, string][] = [

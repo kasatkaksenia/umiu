@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { CT_TOPICS, EL, HX, MF, PH, PR, SYM, TL, ctList, fmt } from "../../data/cycle";
+import { BODYF, EL, HX, MF, MIND, PH, PR, SYM, TL, fmt } from "../../data/cycle";
 import { artFits, drawArt, duoInk, duoSvg, pickArt } from "../../lib/qart";
 import { lookOf } from "../../sheets/Sheets";
 import { DEF_LEN, Phase, addSym, avgOf, delSym, ent, flowOf, perOn, perTog, phase, predOf, setFlow, qList, setCycle, setMood, setNote, togSym, wOn } from "../../lib/cycle";
@@ -7,7 +7,7 @@ import { hormones } from "../../lib/figures";
 import { QX } from "../../data/cycle";
 import { S, commit, openSheet, render, useStore } from "../../lib/store";
 import { A_, TODAY, dAdd, dDiff, dayNo, dmy, mod } from "../../lib/util";
-import { BrandMark, Hero, Ico, InfoButton, MoodIcon, Svg, Wico } from "../../components/ui";
+import { Hero, Ico, InfoButton, MoodIcon, Svg, Wico } from "../../components/ui";
 import { Page } from "../../components/layout";
 import { useIonRouter } from "@ionic/react";
 import { MOODS, isClay, moodInk } from "../../lib/moods";
@@ -34,10 +34,16 @@ export default function Cycle() {
         {p && wOn("horm") && <Hormones p={p} />}
         {wOn("quote") && <QuoteCard p={p} />}
         {wOn("today") && <Today />}
-        {p && wOn("tips") && <CycleTips p={p} />}
+        {p && wOn("tips") && (
+          <>
+            <ListCard icon="eat" title="Eat" items={PH[p.k].eat} />
+            <ListCard icon="sport" title="Sports" items={PH[p.k].sport} />
+            <ListCard icon="do" title="Do" items={PH[p.k].do} />
+          </>
+        )}
+        {p && wOn("mind") && <Mind p={p} />}
         {wOn("fact") && <Fact />}
         {wOn("reset") && <Breathing />}
-        <LastEntries />
       </div>
       <p className="mu">
         Educational information based on general guidance and published studies (e.g. ACOG, Cochrane, Elliott-Sale 2020, Balban 2023). Hormone curves are typical patterns; yours will differ. This isn’t medical advice. See a clinician for severe, unusual or worsening symptoms or mood changes.
@@ -99,11 +105,12 @@ function PeriodCard({ p }: { p: Phase | null }) {
     const c = strip.current?.children;
     return c && c.length > 1 ? (c[1] as HTMLElement).offsetLeft - (c[0] as HTMLElement).offsetLeft : 44;
   };
+  // Today about in the middle, rounded to a whole day so no half-cut day sits at the left edge.
   const toToday = (smooth?: boolean) => {
-    const st = strip.current, el = st?.querySelector<HTMLElement>(".pday.today");
-    if (!st || !el || !st.clientWidth) return false;
-    const a = st.getBoundingClientRect(), b = el.getBoundingClientRect();
-    st.scrollTo({ left: st.scrollLeft + b.left - a.left - (a.width - b.width) / 2, behavior: smooth ? "smooth" : "auto" });
+    const st = strip.current;
+    if (!st || !st.clientWidth) return false;
+    const w = stride(), i = days.indexOf(t), n = Math.floor(st.clientWidth / w / 2);
+    st.scrollTo({ left: Math.max(0, (i - n) * w), behavior: smooth ? "smooth" : "auto" });
     return true;
   };
   // Start with today in the middle; the page may still be hidden while Ionic animates it in.
@@ -141,11 +148,10 @@ function PeriodCard({ p }: { p: Phase | null }) {
             : p?.late != null ? (p.late ? tt("{n} late", { n: pn(p.late, "day") }) : tt("Due today"))
             : p ? tt("in {n}", { n: pn(p.next, "day") }) : tt("Not set")}
         </span>
-        <InfoButton k="per" label="How the period tracker works" />
       </div>
       <div className="pmon">
         <b>{MON(mid)}</b>
-        {away && <button className="g s" onClick={() => toToday(true)}>Today</button>}
+        {away && <button className="ptd" onClick={() => toToday(true)}>Today</button>}
       </div>
       <div className="pstrip" ref={strip} onScroll={onScroll} role="group" aria-label="Days: tap to mark or unmark a period day">
         {days.map(d => {
@@ -173,7 +179,9 @@ function PeriodCard({ p }: { p: Phase | null }) {
             ))}
           </div>
         </div>
-      ) : null}
+      ) : (
+        <p className="mu phint">Tap a day to mark it as a period day, tap again to unmark. Scroll back to add earlier periods.</p>
+      )}
       <div className="plg mu" aria-hidden="true">
         <span><i className="lg-p" />Period</span><span><i className="lg-pr" />Predicted</span><span><i className="lg-f" />Fertile window</span>
       </div>
@@ -189,6 +197,7 @@ function Hormones({ p }: { p: Phase }) {
   return (
     <div className="card">
       <b>Hormone levels</b>
+      <p className="mu" style={{ margin: "2px 0 6px" }}>{tt("Typical pattern for a {n}-day cycle, schematic and not measured.", { n: p.L })}</p>
       <Svg html={hormones(S.cyc, p)} />
       <div className="lg">
         {Object.values(HC).map(([n, c]) => <span key={n}><i style={{ background: c }} />{n}</span>)}
@@ -201,7 +210,6 @@ function Hormones({ p }: { p: Phase }) {
           return <b key={i} style={{ color: `color-mix(in srgb, ${c} 42%, var(--tx))` }}>{i == 1 && !parts[0] ? n : n.toLowerCase()}</b>;
         })}
       </p>
-      <p className="mu" style={{ margin: "6px 0 0", fontSize: 13 }}>{tt("Typical pattern for a {n}-day cycle, schematic and not measured.", { n: p.L })}</p>
     </div>
   );
 }
@@ -319,46 +327,24 @@ function Today() {
   );
 }
 
-/**
- * Phase tips in one card, like the nutrition tips on Food: topic, title, text, ‹ › and Shuffle; the filter picks topics.
- * The brand moon mark replaces the tip number; a few small marks sit at spots that change with each tip.
- */
-function CycleTips({ p }: { p: Phase }) {
-  const tp = A_<string>(S.set.ctf), L = ctList(p.k, tp), n = L.length;
-  const i = mod(dayNo() + (S.set.cti || 0), n), x = L[i];
-  const go = (d: number) => {
-    S.set.cti = (S.set.cti || 0) + d;
-    commit();
-  };
-  const name = (k: string) => CT_TOPICS.find(y => y[0] == k)?.[1] || "";
-  // Small marks: 0–2 per tip, placed and turned from the tip's position in the list.
-  const R = (k: number) => ((Math.sin((i + 1) * 12.9898 + k * 78.233) * 43758.5453) % 1 + 1) % 1;
-  const spots = [[6, 64], [44, 90], [56, 6], [90, 74], [30, 4]];
-  const extra = Array.from({ length: Math.floor(R(1) * 3) }, (_, k) => spots[Math.floor(R(k + 2) * spots.length + k) % spots.length]);
+function ListCard({ icon, title, items }: { icon: string; title: string; items: string[] }) {
   return (
-    <div className="card tipc ctip">
-      {extra.map(([l, t], k) => <BrandMark k="moon" key={k} s={14 + Math.round(R(k + 7) * 8)} style={{ position: "absolute", left: l + "%", top: t + "%", transform: `rotate(${Math.round(R(k + 9) * 90 - 45)}deg)` }} />)}
-      <div className="tipt">
-        <span className="eyebrow mu">{name(x.t)}</span>
-        <button className={"g s ic" + (tp.length ? " on" : "")} aria-label={`Choose tip topics${tp.length ? " (filtered)" : ""}`} onClick={() => openSheet({ t: "ctf" })}>
-          <Ico k="sliders" s={16} />
-        </button>
-      </div>
-      <div className="tips">
-        {L.map((y, j) => (
-          <div key={y.t + y.h} className={j == i ? "on" : ""} aria-hidden={j != i}>
-            <BrandMark k="moon" s={40} style={{ float: "right", margin: "2px 0 0 10px", transform: `rotate(${(j % 3) * 12 - 12}deg)` }} />
-            <b className="tiph">{y.h}</b>
-            <p>{y.b}</p>
-          </div>
-        ))}
-      </div>
-      <div className="tipf">
-        <span className="mu tipc-n">{i + 1} of {n}</span>
-        <button className="g s ic" aria-label="Previous tip" onClick={() => go(-1)}>‹</button>
-        <button className="g s ic" aria-label="Next tip" onClick={() => go(1)}>›</button>
-        <button className="g s" onClick={() => go(1 + Math.floor(Math.random() * Math.max(1, n - 1)))}>Shuffle</button>
-      </div>
+    <div className="card">
+      <b className="wt"><Wico k={icon} /> {title}</b>
+      <ul>{items.map((t, i) => <li key={i}>{t}</li>)}</ul>
+    </div>
+  );
+}
+
+/** Mind & brain for the phase, plus one body or brain fact that changes each day. */
+function Mind({ p }: { p: Phase }) {
+  const m = MIND[p.k], [fh, fb] = BODYF[mod(dayNo(), BODYF.length)];
+  return (
+    <div className="card">
+      <div className="ch"><b className="wt"><Wico k="mind" /> Mind &amp; brain</b><span className="pill">{m.chem}</span></div>
+      <p style={{ margin: "8px 0 0" }}>{m.fact}</p>
+      <ul>{m.tips.map((t, i) => <li key={i}>{t}</li>)}</ul>
+      <div className="bfact"><b>{fh}</b><span>{fb}</span></div>
     </div>
   );
 }
@@ -449,22 +435,6 @@ function Setup() {
         <div><span className="mu">Cycle length</span><input type="number" aria-label="Cycle length in days" value={len} onChange={e => setLen(e.target.value)} /></div>
       </div>
       <button style={{ width: "100%", marginTop: 10 }} onClick={() => setCycle(start, +len || DEF_LEN)}>Save</button>
-    </div>
-  );
-}
-
-function LastEntries() {
-  const hist = Object.keys(S.cl).sort().reverse().slice(0, 7).map(d => [d, S.cl[d]] as const).filter(([, x]) => x.m || x.sy.length);
-  if (!hist.length) return null;
-  return (
-    <div className="card">
-      <b>Last entries</b>
-      {hist.map(([d, x]) => (
-        <div className="li" key={d}>
-          <span className="hm">{dmy(d)} {x.m ? <MoodIcon i={x.m - 1} s={18} /> : null}</span>
-          <span className="mu" style={{ textAlign: "right" }}>{x.sy.join(", ")}</span>
-        </div>
-      ))}
     </div>
   );
 }

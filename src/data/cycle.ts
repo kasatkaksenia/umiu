@@ -197,14 +197,8 @@ bs:{n:"Body scan",dur:300,d:"A 5-minute scan from feet to head, noticing sensati
 gr:{n:"5-4-3-2-1 grounding",dur:120,d:"A sensory grounding practice that anchors you in the present moment.",f:scrp([[0,"Name 5 things you can see."],[25,"Name 4 things you can feel or touch."],[50,"Name 3 things you can hear."],[75,"Name 2 things you can smell."],[95,"Name 1 thing you can taste. Then take a slow breath."]])},
 mt:{n:"Loving-kindness",dur:180,d:"A short metta meditation: silently offering good wishes to others and to yourself.",f:scrp([[0,"Settle and soften your face and shoulders."],[20,"Picture someone you care about. Silently: may you be happy, may you be healthy, may you be at ease."],[70,"Turn it to yourself: may I be kind to myself, may I be at ease."],[130,"Widen it to everyone: may all beings be well."],[170,"Rest, then open your eyes."]])}};
 // Same order as the widgets appear on the Cycle tab.
-export const WID: [string, string][] = [["per","Period tracker"],["horm","Hormone levels"],["quote","Quotes"],["today","Today"],["tips","Tips"],["fact","Daily practice"],["reset","Breathing & meditation"]];
+export const WID: [string, string][] = [["per","Period tracker"],["horm","Hormone levels"],["quote","Quotes"],["today","Today"],["tips","Eat · Sports · Do"],["mind","Mind & brain"],["fact","Daily practice"],["reset","Breathing & meditation"]];
 
-/** Titles for the phase tips (same order as PH[...].eat / sport / do and MIND[...].tips). */
-const CTH: Record<PhaseKey, { eat: string[]; sport: string[]; do: string[]; mind: string[] }> = {
-menstrual:{eat:["Refill iron","Omega-3 and magnesium","Warm and hydrated"],sport:["Gentle movement helps","Lift if you feel well","Let symptoms guide you"],do:["Ease the cramps","Sleep 7–9 hours","When to see a doctor"],mind:["Why it can feel flatter","Lower the bar","Warmth and light","Be kind to yourself"]},
-follicular:{eat:["Protein for progress","Carbs around training","Keep iron in"],sport:["Go harder this week","Add a little load","Small, personal effects"],do:["Plan focused work","Check in with yourself"],mind:["Drive and curiosity","Use the momentum","Make an if–then plan","Reward new habits"]},
-ovulation:{eat:["Colour and fibre","No need to restrict","Calcium"],sport:["Power feels good","Warm up your knees"],do:["A mid-cycle twinge","Not for contraception"],mind:["Confident and social","Be social if you like","Channel the energy","Three good things"]},
-luteal:{eat:["Hungrier is normal","Carbs and protein steady you","Calcium and vitamin D","Go easy on alcohol and salt"],sport:["Moderate and steady","Ease off late in the phase"],do:["Protect your sleep","Severe mood? Get support"],mind:["Why stress hits harder","Try cyclic sighing","Fewer decisions","Name the feeling","Steady routines"]}};
 /** Body and brain facts (biology, physics, chemistry), shown under Mind & brain in every phase. [title, text] */
 export const BODYF: [string, string][] = [
 ["Your brain runs on about 20 watts","The brain is about 2% of your weight but uses about 20% of your energy, like a dim light bulb. Skipping meals can blunt focus for that reason."],
@@ -220,21 +214,6 @@ export const BODYF: [string, string][] = [
 ["Iron carries your oxygen","Each red blood cell holds about 270 million haemoglobin molecules, and each grabs oxygen with iron. Low iron means less oxygen, and you feel it as tiredness."],
 ["Practice rewires you","When you repeat a skill, the nerve paths you use get insulated with myelin, so signals run faster. Practice literally speeds you up."],
 ];
-export const CT_TOPICS: [string, string][] = [["eat","Eat"],["sport","Sports"],["do","Do"],["mind","Mind & brain"]];
-export interface CTip { t: string; h: string; b: string }
-/** Tips for a phase (Eat, Sports, Do, Mind & brain), optionally only some topics. */
-export function ctList(k: PhaseKey, only: string[] = []): CTip[] {
-  const x = PH[k], m = MIND[k], h = CTH[k];
-  const all: CTip[] = [
-    ...x.eat.map((b, i) => ({ t: "eat", h: h.eat[i], b })),
-    ...x.sport.map((b, i) => ({ t: "sport", h: h.sport[i], b })),
-    ...x.do.map((b, i) => ({ t: "do", h: h.do[i], b })),
-    ...[m.fact, ...m.tips].map((b, i) => ({ t: "mind", h: h.mind[i], b })),
-    ...BODYF.map(([h, b]) => ({ t: "mind", h, b })),
-  ];
-  const L = only.length ? all.filter(y => only.includes(y.t)) : all;
-  return L.length ? L : all;
-}
 
 /**
  * What the hormone chart means today, per phase. {E} {P} {T} are estrogen, progesterone and testosterone,

@@ -287,7 +287,9 @@ select { -webkit-appearance: none; appearance: none; padding-right: 40px; backgr
 .brp { margin: 0 0 8px; min-height: calc(1.45em * 3); line-height: 1.45; text-align: center; color: var(--mu); font-size: 15px; }
 @media (prefers-reduced-motion: reduce) { .brs .brc { transition: none; } }
 /* Period tracker (Apple Health style): day strip, flow buttons, legend */
-.pstrip { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 8px -6px 0; padding: 4px 6px 6px; scroll-snap-type: x proximity; }
+/* Endless strip: whole days only, the first visible day lines up with the month name (snap to the start of a day). */
+.pstrip { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin: 8px 0 0; padding: 4px 0 6px; scroll-snap-type: x mandatory; }
+.pstrip .pday { scroll-snap-align: start; }
 .pstrip::-webkit-scrollbar { display: none; }
 .pday { flex: none; width: 40px; padding: 0; background: none; border: 0; box-shadow: none; color: var(--tx); display: flex; flex-direction: column; align-items: center; gap: 4px; scroll-snap-align: center; min-height: 0; font-weight: 500; }
 .pday .pw { font-size: 11px; color: var(--mu); line-height: 1; }
@@ -575,15 +577,11 @@ button.q.ib { flex: none; margin-left: auto; min-height: 36px; width: 36px; padd
 :root:root .moods .chip.mood.on { transform: scale(1.06); }
 
 /* Style chips are painted in each look's banner colours (lookPaint in Sheets.tsx), white text */
-:root:root .lkrow, :root:root .sh .opt.lko { border: 1px solid var(--lkb) !important; box-shadow: none; text-shadow: none; }
-:root:root .lkrow :is(b, span), :root:root .sh .opt.lko :is(b, span) { color: inherit !important; }
-:root:root .lkrow { min-height: 64px; padding: 12px 10px 12px 16px; border-radius: 20px; }
-:root:root .lkrow .nm b, :root:root .lkrow .chev { color: inherit; }
-:root:root .sh .opt.lko { display: flex !important; flex-direction: row !important; align-items: center !important; text-align: left; min-height: 72px; border-radius: 20px; margin: 8px 0; }
-.sh .opt.lko .lkt { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
-.sh .opt.lko .lkt span { font-size: 14px; opacity: .92; }
-:root:root .sh .opt.lko.on { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4.5px var(--tx) !important; }
-:root:root .sh .opt.lko .lkc { background: var(--lkcb) !important; color: var(--lkcc) !important; }
+/* Style list and Profile row: plain chip with a round swatch (look background → main colour). */
+:root:root .lkrow { min-height: 64px; padding: 12px 10px 12px 14px; border-radius: 20px; gap: 12px; }
+:root:root .sh .opt.lko { display: flex !important; flex-direction: row !important; align-items: center !important; gap: 12px; text-align: left; min-height: 60px; border-radius: 20px; margin: 8px 0; }
+.lkd { flex: none; width: 34px; height: 34px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+.sh .opt.lko .lkt { display: flex; flex-direction: column; min-width: 0; }
 
 /* Goal field: a button that opens a sheet, styled exactly like the select fields around it in every look (no button fill) */
 :root:root button.fldb { background: rgba(127,127,127,.1) !important; border: 1px solid var(--ln) !important; border-radius: 16px !important; box-shadow: none !important; color: var(--tx) !important; font: 400 16px/1.3 var(--ff) !important; text-transform: none !important; letter-spacing: normal !important; min-height: 48px; padding: 12px 14px !important; transform: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
@@ -663,11 +661,10 @@ button.sylab[aria-expanded="true"] svg { transform: rotate(180deg); }
 
 /* Quote pictures follow the style: a colour layer in the look's banner colours keeps each picture's light and shade
    but moves its hues towards the look, so picture and app feel like one palette. */
-/* Cycle tips: brand mark instead of a number, plus a few small marks around the card. */
-.ctip { position: relative; overflow: hidden; }
-.ctip > .bmark { color: var(--ac); opacity: .16; pointer-events: none; }
-.ctip .tips .bmark { color: var(--ac); opacity: .35; }
-.ctip .tipt, .ctip .tips, .ctip .tipf { position: relative; }
+/* Mind & brain: one body or brain fact under the tips. */
+.bfact { margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: var(--ac2); display: flex; flex-direction: column; gap: 2px; font-size: 14px; line-height: 1.4; }
+/* Period tracker "Today": small pill, same family as the countdown pill. */
+:root:root button.ptd { min-height: 30px; padding: 4px 12px; margin: 0; border-radius: 99px; border: 1px solid var(--ln) !important; background: var(--ac2) !important; color: var(--tx) !important; box-shadow: none !important; font: 700 13px/1 var(--ff) !important; text-transform: none !important; letter-spacing: normal !important; }
 
 /* Hormone sentence: names in their line colours, readable on every look. */
 .hx { margin: 8px 0 0; line-height: 1.45; }
@@ -683,8 +680,14 @@ button.sylab[aria-expanded="true"] svg { transform: rotate(180deg); }
 .tpm { text-align: center; font-size: 13px; margin: 14px 0 4px; }
 
 /* Progress photos: short lead, two icon lines, button, then the tip in a soft box. */
-.phl { margin: 6px 0 8px; font-weight: 600; }
+.pht { display: block; max-width: 17em; font-size: 18px; line-height: 1.25; margin-bottom: 10px; text-wrap: balance; }
 .phs { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 8px; }
 .phs li { display: flex; align-items: center; gap: 10px; color: var(--mu); font-size: 15px; line-height: 1.3; }
 .phs li svg { flex: none; color: var(--ac); }
 .phtip { margin: 10px 0 0; padding: 10px 12px; border-radius: 14px; background: var(--ac2); font-size: 14px; line-height: 1.4; }
+
+/* Centred food window (Add to meal, food amount, new meal): fixed size, rounded on all sides, only the list scrolls. */
+.ov.ovc { z-index: 100; align-items: center; padding: max(12px, env(safe-area-inset-top, 0px)) 12px max(12px, env(safe-area-inset-bottom, 0px)); }
+:root:root .sh.shc { background: var(--solid) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; height: min(640px, 84dvh); max-height: none; border-radius: 28px; padding-bottom: 16px; animation: sh-pop .2s cubic-bezier(.2, .8, .2, 1); }
+.sh.shc .sh-body { flex: 1; }
+@keyframes sh-pop { from { transform: scale(.96); opacity: 0; } }

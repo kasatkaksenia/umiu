@@ -117,3 +117,5 @@ With the Claude in Chrome extension connected (`/chrome` in Claude Code), Claude
 | Predicted period days had no ring in Glow signal, Ember, Mist, Night planner (look `.pc` rules won) | Forced dashed `--pk` ring; flow check |
 | Gram and portion chips cut off at the right of the Add pop-up | 5-column grid / wrapping chips |
 | Quote text unreadable on two-tone pictures (original ink kept) | Text colour per look for two-tone pictures |
+| Half-cut day at the left of the period strip looked like a gap | Snap to whole days |
+| Food window: tab bar showed on top, Clean white window see-through | Solid window, z-index above the tab bar |

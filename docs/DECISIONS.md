@@ -117,6 +117,13 @@ Back to [AGENTS.md](../AGENTS.md). Add an entry whenever you make a non-obvious 
 | 2026-11-10 | Style list: light looks first, then dark; names only; chip = look background + one main colour on the right | owner request |
 | 2026-11-10 | Food pop-up: New food / New meal are buttons; gram and portion chips fit the width; focus ring drawn inside the search field. New meal asks “How much did you eat?” (portions) and logs to the chosen meal (and still saves to Recipes) | owner request |
 | 2026-11-10 | How to measure: schematic outlined figure with accent tape lines; Progress photos: short lead, two icon lines, tip box under the button. Comeback strip button: “See” | owner request |
+| 2026-11-10 | Cycle tips back to separate Eat / Sports / Do / Mind & brain cards (combined card and its filter removed). Mind & brain shows one body or brain fact a day (`BODYF`). Last entries card removed | owner request |
+| 2026-11-10 | Period tracker: tap hint back in the widget (no (i)); strip starts on a whole day (snap to day start, today about in the middle) so no half-cut day at the left; Today is a small pill button | owner request |
+| 2026-11-10 | Hormone note back above the chart under the title | owner request |
+| 2026-11-10 | Style list back to plain chips with a round swatch: gradient from the look's background to its main colour (`lookDot`) | owner request |
+| 2026-11-10 | Food: Add to meal, food amount and New meal open as a centred window of fixed size (solid, above the tab bar), so nothing grows or jumps while typing | owner request (Yazio-like) |
+| 2026-11-10 | 12 new quote pictures in the same grainy style: dunes, jellyfish, kite, cloud nap, citrus, mountain lake, arch window, planet, sprout pot, big wave, fireflies, balloon; added to the look-match lists | owner request |
+| 2026-11-10 | Progress photos: the title is “Photos show change better than the mirror” (no full stop) | owner request |
 
 ## Lessons learned (gotchas)
 

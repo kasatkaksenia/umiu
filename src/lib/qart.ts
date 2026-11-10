@@ -462,6 +462,91 @@ ${sparkle(70, 60, 10, P[5])}${sparkle(380, 240, 10, P[5])}${sparkle(330, 158, 7,
 <text text-anchor="middle" style="font:700 ${q.q.length > 40 ? 19 : 26}px Urbanist,sans-serif;fill:#fff"><textPath href="#qcp" startOffset="50%">${t}</textPath></text>${grain(0.5)}`),
       tx: {}, lay: "none", ink: "#fff", chip: light };
   } },
+  // ——— Added Nov 2026: more scenes in the same soft, grainy style ———
+  { id: "dunes", fit: ["sun", "wind", "moss", "t:i"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#f7d9b8", "#f2b48a", "#e9a070", "#d98858", "#c26a40", "#fff3e0", "#5a2a14"], ["#e8d8f0", "#d8b8d8", "#c89ac0", "#b07aa8", "#8a5a8a", "#fff6e8", "#3a1a3a"], ["#1c2440", "#3a3a60", "#5a4a70", "#7a5a7a", "#9a6a70", "#f6e6c0", "#fff6ea"]][p];
+    const d = (y: number, c: string, k: number) => `<path d="M-10 ${y}C${90 + k * 20} ${y - 50} ${200 - k * 10} ${y - 40} ${260 + k * 10} ${y - 8}S400 ${y - 50} 460 ${y - 20}V320H-10z" fill="${c}"/>`;
+    return { svg: svg(`<defs>${lin("qdu", [P[0], P[1]])}</defs>${bg("url(#qdu)")}<circle cx="320" cy="120" r="46" fill="${P[5]}" opacity=".95"/><circle cx="320" cy="120" r="80" fill="${P[5]}" opacity=".35" filter="url(#qa-b14)"/>${d(220, P[2], 0)}${d(255, P[3], 1)}${d(290, P[4], 2)}${grain(0.5)}`),
+      tx: { ...TL, width: "56%", font: `700 ${fz(q.q.length, 5.2)}/1.1 ${F.tight}`, letterSpacing: "-.01em" }, ink: P[6], chip: dark(P[6]) };
+  } },
+  { id: "jellyfish", fit: ["water", "moon", "ribbon"], pals: 3, draw: (p, R, q) => {
+    const P = [["#0b1a2e", "#123a5a", "#ffb3d9", "#ff7fbf"], ["#0a1418", "#0f3a3a", "#b3fff0", "#5fe0c8"], ["#1a0e2a", "#3a1a5a", "#ffd9a8", "#ffaa5a"]][p];
+    let t = "";
+    for (let i = 0; i < 7; i++) { const x = 300 + i * 9 - 27; t += `<path d="M${x} 150q${-12 + R() * 24} 40 ${R() * 10 - 5} 80t${R() * 10 - 5} 70" stroke="${P[2]}" stroke-width="${2 + (i % 2)}" fill="none" opacity=".75"/>`; }
+    let b = "";
+    for (let i = 0; i < 26; i++) b += `<circle cx="${R() * 450}" cy="${R() * 310}" r="${0.8 + R() * 2}" fill="#fff" opacity="${0.2 + R() * 0.5}"/>`;
+    return { svg: svg(`<defs>${lin("qje", [P[0], P[1]])}${rad("qjg", [[0, P[2], 0.9], [1, P[3], 0]])}</defs>${bg("url(#qje)")}${b}<circle cx="300" cy="120" r="90" fill="url(#qjg)" filter="url(#qa-b14)"/>${t}<path d="M250 150q0-70 50-72t50 72q-25-10-50 0t-50 0z" fill="${P[2]}" opacity=".9"/><path d="M262 140q4-40 38-46" stroke="#fff" stroke-width="3" fill="none" opacity=".6"/>${grain(0.35)}`),
+      tx: { ...TL, width: "48%", font: `600 ${fz(q.q.length, 5)}/1.12 ${F.tight}` }, ink: "#ffffff", chip: light };
+  } },
+  { id: "kite", fit: ["wind", "ribbon", "t:i", "t:c"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#bfe0f6", "#eef6fb", "#ff5a7a", "#ffc24a", "#1a2a40"], ["#ffe1c7", "#fff5ea", "#3a7bd5", "#ff8a3a", "#2a1a10"], ["#d9f0dc", "#f6fbf2", "#7a4ad8", "#ff6aa8", "#14261a"]][p];
+    return { svg: svg(`<defs>${lin("qki", [P[0], P[1]])}</defs>${bg("url(#qki)")}<g filter="url(#qa-b6)" fill="#fff" opacity=".8"><ellipse cx="90" cy="250" rx="90" ry="26"/><ellipse cx="380" cy="270" rx="110" ry="30"/></g>
+<path d="M330 60l46 52-46 78-46-78z" fill="${P[2]}"/><path d="M330 60v130M284 112h92" stroke="#fff" stroke-width="2" opacity=".7"/><path d="M330 190c-20 30 20 50-6 80s16 40-10 60" stroke="${P[3]}" stroke-width="3" fill="none"/>${[0, 1, 2].map(i => `<path d="M${324 - i * 4} ${222 + i * 34}l-10 -6 0 12z" fill="${P[3]}"/>`).join("")}${grain(0.3)}`),
+      tx: { ...BL, width: "56%", font: `700 ${fz(q.q.length, 5)}/1.1 ${F.tight}` }, ink: P[4], chip: dark(P[4]) };
+  } },
+  { id: "cloudNap", fit: ["wind", "t:c", "t:g", "moon"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#ffd6e0", "#d6e6ff", "#ffffff", "#3a2a5a"], ["#ffe8b8", "#ffd0c0", "#fffaf2", "#5a2a1a"], ["#2a2a5a", "#5a4a8a", "#e8e0ff", "#ffffff"]][p];
+    const c = (x: number, y: number, k: number) => `<g transform="translate(${x} ${y}) scale(${k})" fill="${P[2]}"><circle cx="-40" cy="0" r="30"/><circle cx="0" cy="-18" r="40"/><circle cx="44" cy="-4" r="32"/><rect x="-70" y="0" width="146" height="30" rx="15"/></g>`;
+    return { svg: svg(`<defs>${lin("qcn", [P[0], P[1]], 1, 1)}</defs>${bg("url(#qcn)")}${c(330, 220, 1.3)}${c(90, 270, 0.8)}<g opacity=".9">${c(400, 90, 0.5)}</g>
+<g transform="translate(330 172)" fill="${P[3]}"><circle cx="-26" cy="-8" r="8"/><path d="M-18-4q30-8 50 4q-24 4-50 2z"/></g><text x="358" y="140" style="font:700 16px Urbanist,sans-serif;fill:${P[3]}" opacity=".7">z z</text>${grain(0.35)}`),
+      tx: { ...TL, width: "52%", font: `600 ${fz(q.q.length, 5)}/1.12 ${F.tight}` }, ink: P[3], chip: dark(P[3]) };
+  } },
+  { id: "citrus", fit: ["sun", "t:c", "t:i", "petal"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#ffe9a8", "#ff9a3a", "#ffd27a", "#fff6dc", "#3a1a08"], ["#ffd3dc", "#ff4a6a", "#ff9aaa", "#fff0f2", "#3a0a14"], ["#e6f7c8", "#8acb2a", "#c6e87a", "#f8ffe8", "#1a2a06"]][p];
+    let seg = "";
+    for (let i = 0; i < 10; i++) seg += `<path d="M0 0L${(118 * Math.cos((i * Math.PI) / 5)).toFixed(1)} ${(118 * Math.sin((i * Math.PI) / 5)).toFixed(1)}A118 118 0 0 1 ${(118 * Math.cos(((i + 1) * Math.PI) / 5)).toFixed(1)} ${(118 * Math.sin(((i + 1) * Math.PI) / 5)).toFixed(1)}z" fill="${P[2]}" stroke="${P[3]}" stroke-width="7"/>`;
+    return { svg: svg(`${bg(P[0])}<g transform="translate(350 230) rotate(12)"><circle r="140" fill="${P[1]}"/><circle r="128" fill="${P[3]}"/>${seg}<circle r="10" fill="${P[3]}"/></g>${grain(0.35)}`),
+      tx: { ...TL, width: "50%", font: `800 ${fz(q.q.length, 5.4)}/1.05 ${F.block}`, letterSpacing: "-.02em" }, ink: P[4], chip: dark(P[4]) };
+  } },
+  { id: "mountainLake", fit: ["water", "moss", "t:w", "wind"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#f6d8c8", "#c8d8ec", "#8a9ab8", "#5a6a8a", "#ffffff", "#20283a"], ["#0e1830", "#2a3a6a", "#3a4a7a", "#1a2448", "#f6e8c8", "#f6f0ff"], ["#e8f0e0", "#c8dcc8", "#7a9a7a", "#4a6a4a", "#ffffff", "#14261a"]][p];
+    const m = `M-10 200L110 70l60 60 70-90 110 160H-10z`;
+    return { svg: svg(`<defs>${lin("qml", [P[0], P[1]])}</defs>${bg("url(#qml)")}<circle cx="360" cy="70" r="22" fill="${P[4]}" opacity=".9"/><path d="${m}" fill="${P[2]}"/><path d="M110 70l20 24-14 6-6-30zM240 40l26 34-18 4z" fill="${P[4]}" opacity=".8"/><path d="M-10 200L460 200V320H-10z" fill="${P[3]}"/><path d="${m}" fill="${P[2]}" opacity=".35" transform="translate(0 400) scale(1 -1)"/>${[0, 1, 2, 3].map(i => `<path d="M${40 + i * 90} ${230 + i * 18}h${50 - i * 6}" stroke="${P[4]}" stroke-width="2" opacity=".5"/>`).join("")}${grain(0.4)}`),
+      tx: { ...TR, width: "50%", font: `500 ${fz(q.q.length, 4.4)}/1.15 ${F.serif}` }, ink: P[5], chip: dark(P[5]) };
+  } },
+  { id: "archWindow", fit: ["sun", "goddess", "t:g", "petal"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#f4e6d8", "#ffd9a8", "#ffb070", "#7a8a5a", "#3a2a1a"], ["#e8e4f4", "#c8d8ff", "#8aa8ff", "#6a8a6a", "#1a1a3a"], ["#f6e0e4", "#ffd0dc", "#ff8aa8", "#5a7a4a", "#3a1020"]][p];
+    return { svg: svg(`<defs>${lin("qaw", [P[1], P[2]])}${lin("qbm", ["#fff", "#fff0"], 1, 1)}</defs>${bg(P[0])}<path d="M260 300V130a80 80 0 01160 0v170z" fill="url(#qaw)"/><path d="M340 50v250M260 180h160" stroke="${P[0]}" stroke-width="8"/>
+<path d="M260 300l-120 10 40-60z" fill="url(#qbm)" opacity=".5"/><g fill="${P[3]}"><path d="M300 300c-6-30 4-60 20-76-2 30-8 56-10 76z"/><ellipse cx="330" cy="230" rx="10" ry="22" transform="rotate(30 330 230)"/><ellipse cx="296" cy="244" rx="9" ry="20" transform="rotate(-30 296 244)"/></g><rect x="286" y="290" width="40" height="20" rx="4" fill="${P[2]}"/>${grain(0.4)}`),
+      tx: { ...TL, width: "46%", font: `600 ${fz(q.q.length, 4.8)}/1.12 ${F.tight}` }, ink: P[4], chip: dark(P[4]) };
+  } },
+  { id: "planet", fit: ["moon", "goddess", "t:i", "t:w"], pals: 3, draw: (p, R, q) => {
+    const P = [["#0c0a1e", "#2a1a4a", "#ff9ac8", "#ffd1a8", "#f6f0ff"], ["#05141a", "#0a3a3a", "#7affd4", "#d9ff7a", "#f0fffa"], ["#1a0a08", "#4a1a10", "#ffb04a", "#ffe08a", "#fff6e8"]][p];
+    let st = "";
+    for (let i = 0; i < 40; i++) st += `<circle cx="${R() * 450}" cy="${R() * 310}" r="${0.6 + R() * 1.6}" fill="#fff" opacity="${0.3 + R() * 0.6}"/>`;
+    return { svg: svg(`<defs>${lin("qpl", [P[0], P[1]], 1, 1)}${lin("qpb", [P[2], P[3]], 1, 1)}</defs>${bg("url(#qpl)")}${st}<circle cx="320" cy="170" r="110" fill="${P[2]}" opacity=".35" filter="url(#qa-b28)"/>
+<ellipse cx="320" cy="170" rx="130" ry="26" fill="none" stroke="${P[3]}" stroke-width="6" opacity=".55" transform="rotate(-18 320 170)"/><circle cx="320" cy="170" r="70" fill="url(#qpb)"/><path d="M262 140q60 20 116 0M256 176q64 20 128 0" stroke="#fff" stroke-width="4" opacity=".25" fill="none"/><path d="M190 200a130 26 -18 0 0 255 -60" fill="none" stroke="${P[3]}" stroke-width="6" transform="rotate(-18 320 170)" opacity="0"/>${grain(0.3)}`),
+      tx: { ...TL, width: "42%", font: `600 ${fz(q.q.length, 5)}/1.12 ${F.tight}` }, ink: P[4], chip: light };
+  } },
+  { id: "sproutPot", fit: ["grass", "t:g", "t:i", "moss"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#eaf4e0", "#d0e8c0", "#d9784a", "#4a9a4a", "#1a2a14"], ["#fff0e0", "#ffe0c8", "#5a7ad8", "#5aaa5a", "#2a1a0a"], ["#f4e8f6", "#e8d0f0", "#e05a8a", "#4a8a5a", "#2a1430"]][p];
+    return { svg: svg(`<defs>${lin("qsp", [P[0], P[1]])}</defs>${bg("url(#qsp)")}<circle cx="330" cy="150" r="90" fill="#fff" opacity=".5" filter="url(#qa-b14)"/><rect x="200" y="270" width="250" height="40" fill="${P[1]}" opacity=".8"/>
+<path d="M290 220h80l-10 66h-60z" fill="${P[2]}"/><rect x="284" y="212" width="92" height="16" rx="5" fill="${P[2]}"/><path d="M330 212c0-40-4-70 0-100" stroke="${P[3]}" stroke-width="5" fill="none" stroke-linecap="round"/>
+<path d="M330 150c-30-6-48-26-50-50 28 2 48 22 50 50z" fill="${P[3]}"/><path d="M331 124c26-6 42-24 44-46-26 2-42 20-44 46z" fill="${P[3]}"/>${grain(0.35)}`),
+      tx: { ...TL, width: "50%", font: `600 ${fz(q.q.length, 5)}/1.12 ${F.tight}` }, ink: P[4], chip: dark(P[4]) };
+  } },
+  { id: "bigWave", fit: ["water", "t:i", "wind"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#f4ecdc", "#1a4a7a", "#4a8ac8", "#ffffff", "#0e2440"], ["#ffe8d8", "#c8402a", "#ff7a5a", "#fff6ee", "#3a0e06"], ["#e8f4f0", "#0a5a5a", "#3aa89a", "#ffffff", "#062a2a"]][p];
+    return { svg: svg(`${bg(P[0])}<circle cx="110" cy="90" r="34" fill="${P[2]}" opacity=".35"/><path d="M-10 320V210c60-20 120-110 210-120 80-8 120 50 90 90-20-40-80-40-90 10-6 40 40 60 80 50 60-14 90-60 180-60V320z" fill="${P[1]}"/>
+<path d="M200 90c80-8 120 50 90 90-20-40-80-40-90 10" fill="none" stroke="${P[3]}" stroke-width="6" stroke-linecap="round"/>${[0, 1, 2, 3, 4].map(i => `<circle cx="${210 + i * 16}" cy="${84 - (i % 2) * 8}" r="5" fill="${P[3]}"/>`).join("")}<path d="M-10 270c80-20 160 20 240 0s160-20 240 0" stroke="${P[2]}" stroke-width="4" fill="none" opacity=".7"/>${grain(0.45)}`),
+      tx: { ...TR, width: "40%", top: "10cqw", font: `800 ${fz(q.q.length, 4.6)}/1.08 ${F.block}`, textTransform: "uppercase", letterSpacing: "-.01em" }, ink: P[4], chip: dark(P[4]) };
+  } },
+  { id: "fireflies", fit: ["moon", "grass", "t:g", "t:w"], pals: 3, draw: (p, R, q) => {
+    const P = [["#0a1420", "#14283a", "#1a3a24", "#f6f08a"], ["#140a20", "#2a1440", "#24183a", "#ffc8f0"], ["#0a1a14", "#123a2a", "#0e2a1a", "#c8ffb0"]][p];
+    let f = "";
+    for (let i = 0; i < 22; i++) { const x = R() * 450, y = 60 + R() * 220, r = 2 + R() * 3; f += `<circle cx="${x}" cy="${y}" r="${r * 4}" fill="${P[3]}" opacity=".18" filter="url(#qa-b6)"/><circle cx="${x}" cy="${y}" r="${r}" fill="${P[3]}"/>`; }
+    let g = "";
+    for (let i = 0; i < 60; i++) { const x = i * 7.6; g += `<path d="M${x} 320q${2 + R() * 6} -${30 + R() * 50} ${R() * 12 - 6} -${50 + R() * 50}" stroke="${P[2]}" stroke-width="3" fill="none"/>`; }
+    return { svg: svg(`<defs>${lin("qff", [P[0], P[1]])}</defs>${bg("url(#qff)")}${g}${f}${grain(0.3)}`),
+      tx: { ...TL, width: "60%", font: `500 ${fz(q.q.length, 4.6)}/1.15 ${F.serif}` }, ink: "#ffffff", chip: light };
+  } },
+  { id: "balloon", fit: ["wind", "t:i", "sun", "t:c"], pals: 3, draw: (p, _R, q) => {
+    const P = [["#ffe6d0", "#cfe4ff", "#ff5a5a", "#ffd04a", "#ffffff", "#2a1a3a"], ["#e0f0ff", "#fff0f6", "#3a8aff", "#ff8ac8", "#ffffff", "#0e1a3a"], ["#2a1a4a", "#ff9a7a", "#ffd04a", "#ff5a8a", "#fff0e0", "#ffffff"]][p];
+    const st = [0, 1, 2, 3, 4].map(i => `<path d="M330 40C${270 + i * 30} 40 ${270 + i * 30} 150 ${310 + i * 10} 182" stroke="${P[4]}" stroke-width="2" opacity=".5" fill="none"/>`).join("");
+    return { svg: svg(`<defs>${lin("qba", [P[0], P[1]])}${lin("qbb", [P[2], P[3]], 1, 0)}</defs>${bg("url(#qba)")}<g filter="url(#qa-b6)" fill="#fff" opacity=".75"><ellipse cx="80" cy="260" rx="110" ry="28"/><ellipse cx="360" cy="290" rx="120" ry="26"/></g>
+<path d="M330 30c-50 0-76 40-70 80 6 36 40 58 54 76h32c14-18 48-40 54-76 6-40-20-80-70-80z" fill="url(#qbb)"/>${st}<path d="M314 186l4 12h24l4-12" stroke="${P[5]}" stroke-width="2" fill="none" opacity=".6"/><rect x="316" y="198" width="28" height="20" rx="4" fill="#8a5a3a"/>${grain(0.3)}`),
+      tx: { ...TL, width: "48%", font: `700 ${fz(q.q.length, 5)}/1.1 ${F.tight}` }, ink: P[5], chip: dark(P[5]) };
+  } },
   { id: "buddhaHills", fit: ["t:w", "moss", "wind"], pals: 2, draw: (p, R, q) => {
     const P = [{ sky: ["#c6ccc6", "#dfe2dc"], h: [["#a8b49a", "#7a8a6a"], ["#6a8a3a", "#3a5a1a"], ["#5a7a2a", "#2a4a12"]], f: "#222624" }, { sky: ["#d6cfc6", "#ece6de"], h: [["#c4b49a", "#9a8a6a"], ["#a08a5a", "#6a5a2a"], ["#8a7442", "#4a3a12"]], f: "#2a221c" }][p];
     return { svg: svg(`<defs>${lin("qbh", P.sky)}</defs>${bg("url(#qbh)")}${hills(P.h, R, 0.35)}
@@ -507,13 +592,13 @@ export function pickArt(q: Quote, token: string): string {
 /* ---------- matching the look (owner picked options A + B) ---------- */
 /** Pictures whose own colours already fit each look; they are shown as drawn. */
 const MATCH: Record<string, string[]> = {
-  w: ["silk", "lotus", "driedPetals", "backlitLeaf", "bigLeaf", "eraPoster", "curvedBlobs", "echoes", "auraHands", "mossTree"],
-  dh: ["sunrise", "arch", "statue", "ammonite", "auraHands", "bigLeaf", "mossTree", "eraPoster", "conch", "palmStorm", "windExposure", "buddhaHills"],
-  px: ["arch", "echoes", "windExposure", "eraPoster", "statue", "mossTree", "driedPetals", "ammonite"],
-  mi: ["hillsDict", "mistDict", "grassWaves", "buddhaHills", "vortex", "chart", "bigLeaf", "driedPetals", "hexGlass", "mossTree", "backlitLeaf"],
-  gs: ["florescence", "auraGrain", "nightPool", "moonPhases", "track", "hexGlass", "dancers", "bunnyChill", "starField"],
-  em: ["sunrise", "florescence", "nightPool", "auraGrain", "dancers", "moonCatch", "ammonite", "bunnyChill", "conch"],
-  np: ["nightPool", "moonPhases", "moonCatch", "florescence", "auraGrain", "bunnyChill", "dancers", "statue"],
+  w: ["silk", "lotus", "driedPetals", "backlitLeaf", "bigLeaf", "eraPoster", "curvedBlobs", "echoes", "auraHands", "mossTree", "kite", "cloudNap", "citrus", "archWindow", "sproutPot", "balloon"],
+  dh: ["sunrise", "arch", "statue", "ammonite", "auraHands", "bigLeaf", "mossTree", "eraPoster", "conch", "palmStorm", "windExposure", "buddhaHills", "dunes", "archWindow", "bigWave", "mountainLake", "citrus"],
+  px: ["arch", "echoes", "windExposure", "eraPoster", "statue", "mossTree", "driedPetals", "ammonite", "bigWave", "citrus", "kite", "sproutPot"],
+  mi: ["hillsDict", "mistDict", "grassWaves", "buddhaHills", "vortex", "chart", "bigLeaf", "driedPetals", "hexGlass", "mossTree", "backlitLeaf", "mountainLake", "sproutPot", "cloudNap"],
+  gs: ["florescence", "auraGrain", "nightPool", "moonPhases", "track", "hexGlass", "dancers", "bunnyChill", "starField", "jellyfish", "planet", "fireflies"],
+  em: ["sunrise", "florescence", "nightPool", "auraGrain", "dancers", "moonCatch", "ammonite", "bunnyChill", "conch", "dunes", "planet", "jellyfish", "fireflies"],
+  np: ["nightPool", "moonPhases", "moonCatch", "florescence", "auraGrain", "bunnyChill", "dancers", "statue", "planet", "jellyfish", "fireflies", "mountainLake"],
 };
 /**
  * Two-tone print per look: shadow colour, highlight colour, text colour. Light looks print light-to-pastel with dark text,

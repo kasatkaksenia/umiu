@@ -147,8 +147,7 @@ function PhotosCard() {
   const n = PHOTOS.length;
   return (
     <div className="card">
-      <b>Progress photos</b>
-      <p className="phl">Photos show change better than the mirror.</p>
+      <b className="pht">Photos show change better than the mirror</b>
       <ul className="phs">
         <li><Ico k="cam" s={18} /><span>Add one every 2–4 weeks</span></li>
         <li><Ico k="cols" s={18} /><span>Put them side by side to see how far you’ve come</span></li>
