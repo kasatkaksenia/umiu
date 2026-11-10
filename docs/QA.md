@@ -105,3 +105,5 @@ With the Claude in Chrome extension connected (`/chrome` in Claude Code), Claude
 | Many texts below 4.5:1 (Mist grey text, Clean white / Desert HUD / Gallery accents, period-day numbers) | Token fixes per look; `qa/contrast.mjs` checks every look |
 | Undo bar appeared once per loaded screen | Rendered once in `App.tsx` |
 | Mist's grey day style hid period colours | Period-day rules use higher specificity |
+| Night planner banner stayed medium weight when set to bold | Manrope 700 wasn't loaded; added it (and Montserrat 700) |
+| New Back label would read "Спина" (body part) in Ukrainian | `BackTxt` picks the word by language |

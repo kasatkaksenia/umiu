@@ -1,13 +1,13 @@
 // Small building blocks shared by every screen.
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { CI, WIC, hsh } from "../lib/icons";
-import { MOODS } from "../lib/moods";
+import { moodSvg } from "../lib/moods";
 import { mb, av } from "../lib/art";
 import { figSvg } from "../lib/figures";
 import { EX } from "../data/exercises";
 import { eqLbl, muscles } from "../lib/train";
 import { AlertOptions, useIonAlert } from "@ionic/react";
-import { tr } from "../lib/i18n";
+import { LANG, tr } from "../lib/i18n";
 
 /** Render trusted, generated SVG markup (figures, charts) inside an element. */
 export function Svg({ html, className, style, as: Tag = "div" }: { html: string; className?: string; style?: React.CSSProperties; as?: any }) {
@@ -37,9 +37,14 @@ export function BrandMark({ k, s = 28 }: { k: "wave" | "moon"; s?: number }) {
   return <span className="bmark" aria-hidden="true" style={{ width: s, height: s, WebkitMaskImage: m, maskImage: m }} />;
 }
 
-/** Mood emoji (fluffy character), i = 0 (awful) … 4 (great). */
+/** Chevron + "Back", sized so the arrow matches the text. Use inside a `q bk` button. */
+// "Back" alone is also a body part in the dictionary (Спина), so the button text is chosen here.
+// "Back" alone is also a body part in the dictionary (Спина), so the button text is chosen here.
+export const BackTxt = () => <><Ico k="back" s={18} /><span>{LANG == "uk" ? "Назад" : "Back"}</span></>;
+
+/** Mood icon (Clay glyph or Squishy pebble, by look), i = 0 (awful) … 4 (great). */
 export function MoodIcon({ i, s = 26 }: { i: number; s?: number }) {
-  return <svg className="moji" width={s} height={s} viewBox="0 0 32 32" aria-hidden="true" dangerouslySetInnerHTML={{ __html: MOODS[i].svg }} />;
+  return <svg className="moji" width={s} height={s} viewBox="0 0 100 100" aria-hidden="true" dangerouslySetInnerHTML={{ __html: moodSvg(i) }} />;
 }
 
 // "umiu" set in Shantell Sans 500 (SIL Open Font License), turned into shapes; each letter rides a gentle wave

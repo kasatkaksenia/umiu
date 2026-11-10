@@ -11,7 +11,7 @@ import { CATS, FD } from "../data/foods";
 import { phase, qClr, qList, qTog, wOn, wTog } from "../lib/cycle";
 import { PEND, PHOTOS, delPhoto, savePending, selCollage } from "../lib/photos";
 import { A_, TODAY, dmy, download } from "../lib/util";
-import { Chip, ExOption, FileButton, Ico, Svg, exMatches, useAlert } from "../components/ui";
+import { BackTxt, Chip, ExOption, FileButton, Ico, Svg, exMatches, useAlert } from "../components/ui";
 import { NT_TOPICS, ntList } from "../data/tips";
 import { pn, t as tt, tr } from "../lib/i18n";
 
@@ -57,7 +57,7 @@ function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode }
     case "add": return { title: "Add exercises", body: <AddMany ok={k => !dr().ids.includes(k)} done={addEx} name={nameOf(dr().n)} /> };
     case "wk": return { title: "Choose workout", body: <ChooseWorkout /> };
     case "ew": return libOf(s.k)
-      ? { title: "Edit workout", body: <EditWorkout k={s.k} key={s.k} />, head: <button className="q" style={{ flex: "none" }} onClick={() => { ewLeave(s.k); openSheet({ t: "wk" }); }}>‹ Back</button> }
+      ? { title: "Edit workout", body: <EditWorkout k={s.k} key={s.k} />, head: <button className="q bk" style={{ flex: "none" }} onClick={() => { ewLeave(s.k); openSheet({ t: "wk" }); }}><BackTxt /></button> }
       : { title: "Choose workout", body: <ChooseWorkout /> };
     case "ewp": {
       const L = libOf(s.k) || { ids: [] as string[], n: "" };

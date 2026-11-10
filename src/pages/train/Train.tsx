@@ -5,7 +5,7 @@ import { fig, figSvg } from "../../lib/figures";
 import { S, UI, commit, openSheet, render, save, useStore } from "../../lib/store";
 import { comeback, dr, fin, nameOf, rmEx, rowsOf, setTxt, vol, wkDone } from "../../lib/train";
 import { TODAY, dmy } from "../../lib/util";
-import { Hero, Ico, Svg, Tabs, useAlert } from "../../components/ui";
+import { BackTxt, Hero, Ico, Svg, Tabs, useAlert } from "../../components/ui";
 import { Page } from "../../components/layout";
 import { LANG, pn, t, tr } from "../../lib/i18n";
 import { W } from "../../lib/units";
@@ -205,10 +205,10 @@ function WorkoutDetail() {
   const w = S.hist[S.set.hw];
   return (
     <>
-      <button className="q" onClick={() => {
+      <button className="q bk" onClick={() => {
         S.set.hw = null;
         commit();
-      }}>‹ Back</button>
+      }}><BackTxt /></button>
       <h2>{w.n} <span className="mu">{dmy(w.d)}</span></h2>
       <div className="grid-cards">
         {w.it.map((x, k) => (

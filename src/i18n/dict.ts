@@ -7,6 +7,7 @@ export const D: Record<string, string> = {
   "Cycle": "Цикл",
   "Sections": "Розділи",
   "Style": "Вайб",
+  "Style: {n}. Show all styles": "Вайб: {n}. Показати всі",
   "Profile": "Профіль",
   "‹ Back": "‹ Назад",
   "Back": "Спина",

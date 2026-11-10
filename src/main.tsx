@@ -10,6 +10,7 @@ import "@fontsource/urbanist/600.css";
 import "@fontsource/urbanist/700.css";
 import "@fontsource/manrope/400.css";
 import "@fontsource/manrope/600.css";
+import "@fontsource/manrope/700.css";
 /* Fonts of the extra looks: the browser only downloads a file when a look uses it. */
 import "@fontsource/inter-tight/300.css";
 import "@fontsource/inter-tight/400.css";
@@ -22,6 +23,7 @@ import "@fontsource/silkscreen/400.css";
 import "@fontsource/montserrat/400.css";
 import "@fontsource/montserrat/500.css";
 import "@fontsource/montserrat/600.css";
+import "@fontsource/montserrat/700.css";
 import "@fontsource/montserrat/800.css";
 
 import "./theme/base.css";

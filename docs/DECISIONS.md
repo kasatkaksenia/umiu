@@ -76,6 +76,10 @@ Back to [AGENTS.md](../AGENTS.md). Add an entry whenever you make a non-obvious 
 | 2026-11-06 | Recipe filters live in one pop-up (meal chips, four segmented limit rows reusing `.seg`, Favourites switch, "Show N recipes", Reset in the header). The screen keeps the count, the filter button and removable chips for active filters | owner approved the preview |
 | 2026-11-06 | Workouts per week: any whole number ≥ 1 (was capped at 14). Custom opens a labelled field with "per week" and a Set button; a custom value shows as "10 ✎" | owner's request |
 | 2026-11-06 | Exercise swipe listens on the whole screen (`.ion-page`), not just the cards | swipe on the header / empty space did nothing |
+| 2026-11-10 | Mood icons: Clay glyphs in the crisp light looks (w, dh, px, ga, mi), Squishy pebbles in the glowy/dark ones (u, gs, sl, em, np) | owner asked for half and half; split chosen so each set sits on the looks it suits |
+| 2026-11-10 | Back uses a chevron icon (stroke 2.4, 18 px) beside the text instead of "‹" | the glyph sat small and high next to the word |
+| 2026-11-10 | Profile › Style is one tappable row like an exercise row (colour swatch, name, description, ›) that opens the full list | owner request |
+| 2026-11-10 | Banner titles bold in every look but Pixel; Manrope and Montserrat 700 are now loaded so Night planner and Still life really render bold | owner request |
 
 ## Lessons learned (gotchas)
 
@@ -97,5 +101,6 @@ Back to [AGENTS.md](../AGENTS.md). Add an entry whenever you make a non-obvious 
 - **Ionic alerts aren't React text**: use `useAlert()` (translates header, message, buttons), not `useIonAlert()`.
 - **npm 11 blocks install scripts** (esbuild warning); esbuild still works because its binary is an optional dependency.
 - **zsh had no profile;** `~/.zshrc` was created for nvm. Non-interactive shells still need `source ~/.nvm/nvm.sh`.
+- **"Back" in the dictionary means the body part** (Спина) for the muscle maps, so the Back button text is chosen in `BackTxt`, not through the dictionary.
 - **Python 3.9** on this Mac: no backslashes inside f-string expressions; no Pillow.
 - **`cap:sync`** must use the native build (`build:native`), or assets point at `/umiu/` and the iOS app is blank.

@@ -517,3 +517,23 @@ button.q:hover { text-decoration: underline; text-underline-offset: 3px; }
 /* Undo after a delete: floats above the bottom bar on every screen. */
 .undo.toast { position: fixed; z-index: 60; left: 16px; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 92px); max-width: 520px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
 @media (min-width: 900px) { .undo.toast { bottom: 24px; } }
+
+/* Back: chevron icon instead of the "‹" glyph, centred on the text and the same weight */
+button.q.bk { display: inline-flex; align-items: center; gap: 2px; padding-left: 0; }
+button.q.bk .ci { flex: none; stroke-width: 2.4; margin-left: -2px; }
+
+/* Main banners: bold text in every look except Pixel */
+:root:root:not([data-look="px"]) .hero h1 { font-weight: 700; }
+
+/* Profile › Style: one row like an exercise row; tap opens the full list of looks */
+.lkrow { width: 100%; text-align: left; font: inherit; color: var(--tx); margin: 0; }
+.lkrow .th { flex: none; width: 56px; height: 56px; border-radius: 12px; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; background: var(--bg); border: 1px solid var(--ln); }
+.lkrow .th i { display: block; }
+.lkrow .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.lkrow .nm .mu { font-size: 13px; line-height: 1.3; }
+.lkrow .chev { flex: none; color: var(--mu); padding: 0 6px; }
+
+/* Mood icons: Clay glyphs bring their own tinted tile, so the chip behind them is hidden; the chosen one gets a ring */
+:root:root .chip.mood.clay, :root:root .chip.mood.clay.on { background: transparent !important; border-color: transparent !important; box-shadow: none !important; padding: 2px 0; }
+.chip.mood.clay .moji { width: 46px; height: 46px; border-radius: 13px; }
+:root:root .chip.mood.clay.on .moji { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--tx); }

@@ -2,7 +2,7 @@
 import { ReactNode, useEffect } from "react";
 import { IonContent, IonMenu, IonPage, useIonRouter } from "@ionic/react";
 import { useLocation } from "react-router-dom";
-import { Logo } from "./ui";
+import { BackTxt, Logo } from "./ui";
 import { UI, useStore } from "../lib/store";
 import { TOAST, doUndo } from "../lib/undo";
 
@@ -124,10 +124,10 @@ export function UndoToast() {
   );
 }
 
-/** "‹ Back" button that returns to the previous screen (or to `fallback`). */
+/** "Back" button that returns to the previous screen (or to `fallback`). */
 export function BackButton({ fallback }: { fallback: string }) {
   const r = useIonRouter();
   return (
-    <button className="q" onClick={() => (r.canGoBack() ? r.goBack() : r.push(fallback, "back", "replace"))}>‹ Back</button>
+    <button className="q bk" onClick={() => (r.canGoBack() ? r.goBack() : r.push(fallback, "back", "replace"))}><BackTxt /></button>
   );
 }

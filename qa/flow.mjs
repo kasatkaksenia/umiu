@@ -16,7 +16,7 @@ expect("weight allows one decimal point", (await $('input[aria-label="Weight set
 await $('input[aria-label="Set 1 done"]').check();
 await $('button[aria-label="Add set"]').click();
 expect("add set adds a row", (await $(".tb tbody tr").count()) == 4, await $(".tb tbody tr").count());
-await $("button:has-text('‹ Back')").click(); await page.waitForTimeout(700);
+await $("button.bk").click(); await page.waitForTimeout(700);
 expect("row shows ticked set", /1\/4 sets/.test(await $(".cx .nm").first().innerText()), await $(".cx .nm").first().innerText());
 await $("button:has-text('+ Add exercise')").click(); await page.waitForTimeout(300);
 await page.locator('.sh input[aria-label="Search exercises"]').fill("curl");
@@ -42,7 +42,7 @@ await page.locator("ion-alert button:has-text('Remove')").click(); await page.wa
 expect("edit: remove saves at once", (await page.locator(".sh .row.wr").count()) == exBefore - 1, await page.locator(".sh .row.wr").count());
 await page.locator(".sh .undo button:has-text('Undo')").click(); await page.waitForTimeout(200);
 expect("edit: undo puts it back", (await page.locator(".sh .row.wr").count()) == exBefore, await page.locator(".sh .row.wr").count());
-expect("edit: one header button, no Done", (await page.locator(".sh button:has-text('Done'), .sh button:has-text('Save')").count()) == 0 && (await page.locator(".sh-head button").innerText()) == "‹ Back", await page.locator(".sh-head button").innerText());
+expect("edit: one header button, no Done", (await page.locator(".sh button:has-text('Done'), .sh button:has-text('Save')").count()) == 0 && (await page.locator(".sh-head button.bk").count()) == 1, await page.locator(".sh-head button").innerText());
 await page.locator(".sh-head button").click(); await page.waitForTimeout(300);
 await page.locator(".sh .row.wr", { hasText: wk2name }).locator("button.nxt").click(); await page.waitForTimeout(400);
 const nextName = await page.evaluate(() => { const s = JSON.parse(localStorage.getItem("bloom2")); return s.lib.find(x => x.k == s.draft.n).n; });
@@ -95,13 +95,24 @@ expect("recipe fills shopping list", (await $(".li").count()) >= 3, await $(".li
 await page.waitForTimeout(400);
 expect("no style button in the top bar", (await $('.top button[aria-label="Style"]').count()) == 0, "style button still there");
 await page.goto(URL + "#/profile"); await page.waitForTimeout(800);
-await $(".card button:has-text('Change')").click(); await page.waitForTimeout(300);
+expect("style is one row with the current look", /Urban glow/.test(await $(".lkrow").innerText()), await $(".card").last().innerText());
+await $(".lkrow").click(); await page.waitForTimeout(300);
+expect("style row opens the full list", (await page.locator(".sh .opt.lko").count()) >= 10, await page.locator(".sh .opt.lko").count());
 await page.locator(".sh button:has-text('Mist')").click();
 expect("style switch", (await page.evaluate(() => document.documentElement.dataset.look)) == "mi", "look not set");
 expect("selected style is marked", (await page.locator(".sh .opt.on .lkc").count()) == 1 && /Mist/.test(await page.locator(".sh .opt.on").innerText()), "no mark");
-await page.keyboard.press("Escape");
+await page.keyboard.press("Escape"); await page.waitForTimeout(300);
+expect("style row shows the new look", /Mist/.test(await $(".lkrow").innerText()), await $(".lkrow").innerText());
 
 await page.goto(URL + "#/cycle"); await page.waitForTimeout(1200);
+expect("Mist uses Clay mood glyphs", (await $(".chip.mood.clay").count()) == 5, await $(".chip.mood.clay").count());
+expect("banner text is bold", +(await $(".hero h1").evaluate(e => getComputedStyle(e).fontWeight)) >= 700, await $(".hero h1").evaluate(e => getComputedStyle(e).fontWeight));
+await page.evaluate(() => { const o = JSON.parse(localStorage.getItem("bloom2")); o.set.look = "gs"; localStorage.setItem("bloom2", JSON.stringify(o)); });
+await page.reload(); await page.waitForTimeout(1200);
+expect("Glow signal uses Squishy pebbles", (await $(".chip.mood").count()) == 5 && (await $(".chip.mood.clay").count()) == 0, await $(".chip.mood.clay").count());
+// Back to Mist: Glow signal shows labels in capitals, which the text checks below don't expect.
+await page.evaluate(() => { const o = JSON.parse(localStorage.getItem("bloom2")); o.set.look = "mi"; localStorage.setItem("bloom2", JSON.stringify(o)); });
+await page.reload(); await page.waitForTimeout(1200);
 await $(".pday.today").click(); await $(".seg button:has-text('Medium')").click(); await page.waitForTimeout(300);
 expect("flow logged on today", (await $(".pday.today").getAttribute("class")).includes("f2"), await $(".pday.today").getAttribute("class"));
 expect("period start sets phase", /Menstrual/.test(await $(".pill").first().innerText()), await $(".pill").first().innerText());

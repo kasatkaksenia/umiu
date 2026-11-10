@@ -8,7 +8,7 @@ import { S, commit, openSheet, render, useStore } from "../../lib/store";
 import { A_, TODAY, dAdd, dDiff, dayNo, dmy, mod } from "../../lib/util";
 import { Hero, Ico, MoodIcon, Svg, Wico } from "../../components/ui";
 import { Page } from "../../components/layout";
-import { MOODS } from "../../lib/moods";
+import { MOODS, isClay } from "../../lib/moods";
 import { LANG, pn, t as tt } from "../../lib/i18n";
 
 const HERO: Record<string, string> = { menstrual: "water", follicular: "grass", ovulation: "petal", luteal: "wind" };
@@ -263,7 +263,7 @@ function Today() {
       <b>Today</b>
       <div className="row" style={{ margin: "10px 0" }}>
         {[0, 1, 2, 3, 4].map(i => (
-          <button key={i} className={"chip mood" + (e.m == i + 1 ? " on" : "")} aria-label={`Mood: ${MOODS[i].n}`} aria-pressed={e.m == i + 1}
+          <button key={i} className={"chip mood" + (isClay() ? " clay" : "") + (e.m == i + 1 ? " on" : "")} aria-label={`Mood: ${MOODS[i].n}`} aria-pressed={e.m == i + 1}
             onClick={() => setMood(i + 1)}><MoodIcon i={i} s={38} /></button>
         ))}
       </div>

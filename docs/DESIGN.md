@@ -82,7 +82,7 @@ Use these; don't add new paddings to single elements.
 |---|---|---|---|
 | Main | plain `<button>` | filled (`--btn`) | the one key action of a card: Finish workout, Save, Add, Done |
 | Secondary | `button.g`, `.lab`, `.lab2` | soft tint, normal text colour | other actions: Add exercise, Change workout, Scan barcode, Shuffle |
-| Quiet | `button.q` (`.lnk` is an alias) | text only | navigation and low-stakes actions: ‹ Back, Edit ›, Reset, Clear, Dismiss |
+| Quiet | `button.q` (`.lnk` is an alias) | text only | navigation and low-stakes actions: Back, Edit ›, Reset, Clear, Dismiss |
 
 At most one main button per card. A choice between options is a `.seg` switch, not buttons or chips.
 Deletes don't ask first: they happen at once and show "Removed … · Undo" for 5 s (`offerUndo()` in `src/lib/undo.ts`).
@@ -103,7 +103,9 @@ Deletes don't ask first: they happen at once and show "Removed … · Undo" for 
 - Bottom sheet: `UI.sheet` + `Sheets.tsx`; header fixed, body scrolls (`.sh-head`, `.sh-body`).
 - Confirmations: `useIonAlert` (shows on top, nothing in the list moves). Never `window.confirm` / `alert`, never inline confirm boxes.
 - Multi-select pick lists: `AddMany` in `Sheets.tsx` (tap to tick, sticky "Add N" button).
-- Mood: `<MoodIcon>` draws the fluffy-character emojis from `src/lib/moods.ts`.
+- Mood: `<MoodIcon>` draws icons from `src/lib/moods.ts`, coloured from the look. Clay glyphs (a figure on its own tinted tile) in Clean white, Desert HUD, Pixel, Gallery and Mist; Squishy pebbles (a blob with a face) in the other looks.
+- Back: `<BackTxt />` inside `button.q.bk` (chevron icon + "Back"), never the "‹" character.
+- Banner (`.hero h1`) text is bold (700) in every look except Pixel.
 - Small round icon buttons: `className="g s ic"` (32px, 44px tap area). Button with a leading icon: add `ibtn`.
 - Drop-downs: plain `<select>`; the arrow is drawn by CSS, inset 16px from the right.
 - Confirmations: `useIonAlert`; the app styles it in `layout.css` (font, colours, pill buttons).

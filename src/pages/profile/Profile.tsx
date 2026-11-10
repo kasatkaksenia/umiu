@@ -55,10 +55,13 @@ export default function Profile() {
           </div>
           <div className="card">
             <b className="card-t">Style</b>
-            <div className="row">
-              <span>{look?.[1]}</span>
-              <button className="g s" style={{ flex: "none" }} onClick={() => openSheet({ t: "look" })}>Change</button>
-            </div>
+            <button className="cx lkrow" onClick={() => openSheet({ t: "look" })} aria-label={t("Style: {n}. Show all styles", { n: t(look?.[1] || "") })}>
+              <span className="th" aria-hidden="true">
+                {["--h1", "--h2", "--h3", "--btn"].map(v => <i key={v} style={{ background: `var(${v})` }} />)}
+              </span>
+              <span className="nm"><b>{look?.[1]}</b><span className="mu">{look?.[2]}</span></span>
+              <span className="chev" aria-hidden="true">›</span>
+            </button>
           </div>
         </div>
       </div>

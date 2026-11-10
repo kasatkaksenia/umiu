@@ -14,7 +14,7 @@ const step = async (name, fn) => {
 const nav = i => page.locator(".bnav button").nth(i).click();
 await step("open train", () => page.goto(URL + "#/train"));
 await step("open exercise", () => page.locator(active(".cx")).first().click());
-await step("back button", () => page.locator(active("button:has-text('‹ Back')")).click());
+await step("back button", () => page.locator(active("button.bk")).click());
 await step("tab food", () => nav(1));
 await step("food sub-tab recipes", () => page.locator(active(".tabs button")).nth(2).click());
 await step("tab cycle", () => nav(2));
