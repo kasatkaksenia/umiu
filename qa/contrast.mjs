@@ -1,7 +1,7 @@
 // Text contrast check (WCAG): every visible text element vs. its composited background, per look.
 // Usage: node qa/contrast.mjs [look …]   (needs the dev server). Lists texts under 4.5:1 (3:1 for large text).
 import { launch, newPage, deviceOpts, URL, ROUTES } from "./lib.mjs";
-const LOOKS = process.argv.slice(2).length ? process.argv.slice(2) : ["u", "w", "gs", "sl", "dh", "px", "em", "np", "ga", "mi"];
+const LOOKS = process.argv.slice(2).length ? process.argv.slice(2) : ["w", "gs", "dh", "px", "em", "np", "mi"];
 const b = await launch();
 const { page } = await newPage(b, deviceOpts("iPhone SE", { colorScheme: process.env.DARK ? "dark" : "light" }));
 let total = 0;

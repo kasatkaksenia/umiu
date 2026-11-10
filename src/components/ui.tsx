@@ -8,6 +8,7 @@ import { EX } from "../data/exercises";
 import { eqLbl, muscles } from "../lib/train";
 import { AlertOptions, useIonAlert } from "@ionic/react";
 import { LANG, tr } from "../lib/i18n";
+import { openSheet } from "../lib/store";
 
 /** Render trusted, generated SVG markup (figures, charts) inside an element. */
 export function Svg({ html, className, style, as: Tag = "div" }: { html: string; className?: string; style?: React.CSSProperties; as?: any }) {
@@ -38,6 +39,11 @@ export function BrandMark({ k, s = 28 }: { k: "wave" | "moon"; s?: number }) {
 }
 
 /** Chevron + "Back", sized so the arrow matches the text. Use inside a `q bk` button. */
+/** Small (i) button that opens an explanation sheet (see Info in Sheets.tsx). */
+export function InfoButton({ k, label }: { k: string; label: string }) {
+  return <button className="q ib" aria-label={label} onClick={() => openSheet({ t: "info", k })}><Ico k="info" s={20} /></button>;
+}
+
 // "Back" alone is also a body part in the dictionary (Спина), so the button text is chosen here.
 // "Back" alone is also a body part in the dictionary (Спина), so the button text is chosen here.
 export const BackTxt = () => <><Ico k="back" s={18} /><span>{LANG == "uk" ? "Назад" : "Back"}</span></>;
@@ -162,11 +168,11 @@ export function FigAnim({ id }: { id: string }) {
 }
 
 /** Hidden file input wrapped in a label styled as a button. */
-export function FileButton({ accept, multiple, capture, onFiles, className = "lab", style, children }: {
-  accept: string; multiple?: boolean; capture?: boolean; onFiles: (f: FileList) => void; className?: string; style?: React.CSSProperties; children: ReactNode;
+export function FileButton({ accept, multiple, capture, onFiles, className = "lab", style, children, label }: {
+  accept: string; multiple?: boolean; capture?: boolean; onFiles: (f: FileList) => void; className?: string; style?: React.CSSProperties; children: ReactNode; label?: string;
 }) {
   return (
-    <label className={className} style={style}>
+    <label className={className} style={style} aria-label={label} title={label} role={label ? "button" : undefined}>
       {children}
       <input type="file" accept={accept} multiple={multiple} hidden {...(capture ? { capture: "environment" } : {})}
         onChange={e => {

@@ -1,6 +1,6 @@
 // Food logic: daily targets, body fat, food search, barcode reading, shopping list, recipes.
 import { ALI, CATS, FD, FSRC, REC, Recipe, catOf, nz, stem } from "../data/foods";
-import { S, ShopItem, commit } from "./store";
+import { FoodEntry, MealKey, S, ShopItem, commit } from "./store";
 import { TODAY } from "./util";
 import { ai } from "./ai";
 import { t as tt } from "./i18n";
@@ -93,10 +93,24 @@ export function gpInfo(v: number | string) {
 
 /* ---------- today's log ---------- */
 export const todayLog = () => S.f.filter(x => x.d == TODAY());
+
+/* ---------- meals ---------- */
+/** Meal, its icon and its share of the daily calorie goal. */
+export const MEALS: [MealKey, string, string, number][] = [["b", "Breakfast", "cup", 0.3], ["l", "Lunch", "bowl", 0.35], ["d", "Dinner", "plate", 0.25], ["s", "Snacks", "apple", 0.1]];
+/** Meal chosen with a meal's "+" button; otherwise the meal follows the clock. */
+let chosen: MealKey | null = null;
+export const chooseMeal = (m: MealKey | null) => { chosen = m; };
+export const chosenMeal = () => chosen;
+export function mealNow(): MealKey {
+  if (chosen) return chosen;
+  const h = new Date().getHours();
+  return h < 11 ? "b" : h < 15 ? "l" : h >= 17 && h < 22 ? "d" : "s";
+}
+export const mealOf = (x: FoodEntry): MealKey => x.ml || "s";
 export const eaten = (k: "k" | "p" | "c" | "f") => Math.round(todayLog().reduce((a, x) => a + (x[k] || 0), 0));
 
 export function logRecipe(r: Recipe) {
-  S.f.push({ d: TODAY(), n: r.t, k: r.k, p: r.p, c: r.c, f: r.f });
+  S.f.push({ d: TODAY(), n: r.t, k: r.k, p: r.p, c: r.c, f: r.f, ml: mealNow() });
   commit();
 }
 

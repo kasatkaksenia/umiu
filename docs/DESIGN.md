@@ -37,7 +37,7 @@ Per screen: Train workout `c-main` (next workout left, plan and welcome-back rig
 
 ## Design tokens (`src/theme/base.css`)
 
-CSS variables on `:root`, redefined per look (`data-look` on `<html>`: `u` Urban glow (default), `w` Clean white; plus eight looks in `src/theme/looks.css`: `gs` Glow signal, `sl` Still life, `em` Ember, `np` Night planner (always dark), `dh` Desert HUD, `px` Pixel, `ga` Gallery, `mi` Mist. The plain `:root` tokens are the shared base; no look uses them on its own any more) and per colour scheme (`prefers-color-scheme`, or `data-theme="dark|light"`).
+CSS variables on `:root`, redefined per look (`data-look` on `<html>`: `w` Clean white (default); plus six looks in `src/theme/looks.css`: `gs` Glow signal, `em` Ember, `np` Night planner (always dark), `dh` Desert HUD, `px` Pixel, `mi` Mist. Still life and Gallery were removed; a saved removed look falls back to the default. The plain `:root` tokens are the shared base; no look uses them on its own any more) and per colour scheme (`prefers-color-scheme`, or `data-theme="dark|light"`).
 
 | Token | Use |
 |---|---|
@@ -54,7 +54,7 @@ CSS variables on `:root`, redefined per look (`data-look` on `<html>`: `u` Urban
 
 The logo (`<Logo>`) is "umiu" in Shantell Sans 500, converted to SVG shapes with each letter riding a gentle wave, plain black (`--logo`; white in dark mode). Brand marks: `BRAND.wave` (Cycle banner, `Hero icon="wave"`) and `BRAND.moon`, drawn with `<BrandMark k="moon" />` in the current colour. Icons inside buttons: just put `<Ico>` before the text; the 5px gap and centring come from CSS.
 
-Always use tokens, never raw colours, so all looks and dark mode keep working. Check new UI in at least the default look (Urban glow), one always-dark look (e.g. Glow signal) and dark mode (`QA_DARK=1`).
+Always use tokens, never raw colours, so all looks and dark mode keep working. Check new UI in at least the default look (Clean white), one always-dark look (e.g. Glow signal) and dark mode (`QA_DARK=1`).
 
 ## Spacing (one rule per element type)
 
@@ -103,8 +103,9 @@ Deletes don't ask first: they happen at once and show "Removed … · Undo" for 
 - Bottom sheet: `UI.sheet` + `Sheets.tsx`; header fixed, body scrolls (`.sh-head`, `.sh-body`).
 - Confirmations: `useIonAlert` (shows on top, nothing in the list moves). Never `window.confirm` / `alert`, never inline confirm boxes.
 - Multi-select pick lists: `AddMany` in `Sheets.tsx` (tap to tick, sticky "Add N" button).
-- Mood: `<MoodIcon>` draws icons from `src/lib/moods.ts`, coloured from the look. Clay glyphs (a figure on its own tinted tile) in Clean white, Desert HUD, Pixel, Gallery and Mist; Squishy pebbles (a blob with a face) in the other looks.
+- Mood: `<MoodIcon>` draws icons from `src/lib/moods.ts`, coloured from the look. Clay glyphs (a figure on its own tinted tile) in Clean white, Desert HUD, Pixel and Mist; Squishy pebbles (a blob with a face) in the other looks.
 - Back: `<BackTxt />` inside `button.q.bk` (chevron icon + "Back"), never the "‹" character.
+- Explanations: put them behind `<InfoButton k="…" />` (an (i) beside the card title) and add the text to `Info` in Sheets.tsx, instead of grey paragraphs in the card.
 - Banner (`.hero h1`) text is bold (700) in every look except Pixel.
 - Small round icon buttons: `className="g s ic"` (32px, 44px tap area). Button with a leading icon: add `ibtn`.
 - Drop-downs: plain `<select>`; the arrow is drawn by CSS, inset 16px from the right.

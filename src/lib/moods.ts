@@ -6,7 +6,7 @@ import { S } from "./store";
 export const MOODS: { n: string }[] = [{ n: "Awful" }, { n: "Low" }, { n: "Okay" }, { n: "Good" }, { n: "Great" }];
 
 /** Looks that use Clay glyphs; every other look uses Squishy pebbles. */
-const CLAY = new Set(["w", "dh", "px", "ga", "mi"]);
+const CLAY = new Set(["w", "dh", "px", "mi"]);
 
 // Five-step colour ramp from the look: cool for Awful, warm for Great.
 const C = ["var(--h2)", "color-mix(in srgb, var(--h2) 50%, var(--h1))", "var(--ol)", "var(--cr)", "var(--h1)"];
@@ -49,7 +49,9 @@ function pebble(m: number) {
 }
 
 /** True when the current look uses Clay glyphs (the icon is its own tile). */
-export const isClay = () => CLAY.has(S.set.look);
+// Same looks as LOOKS in Sheets.tsx; anything else (unset or removed) is the default, Clean white.
+const KNOWN = ["w", "gs", "dh", "px", "em", "np", "mi"];
+export const isClay = () => CLAY.has(KNOWN.includes(S.set.look) ? S.set.look : "w");
 
 /** SVG markup (viewBox 0 0 100 100) for mood i in the current look. */
 export const moodSvg = (i: number) => (isClay() ? clay(i) : pebble(i));

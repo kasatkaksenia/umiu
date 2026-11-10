@@ -6,7 +6,7 @@ import { hormones } from "../../lib/figures";
 import { QX } from "../../data/cycle";
 import { S, commit, openSheet, render, useStore } from "../../lib/store";
 import { A_, TODAY, dAdd, dDiff, dayNo, dmy, mod } from "../../lib/util";
-import { Hero, Ico, MoodIcon, Svg, Wico } from "../../components/ui";
+import { Hero, Ico, InfoButton, MoodIcon, Svg, Wico } from "../../components/ui";
 import { Page } from "../../components/layout";
 import { MOODS, isClay } from "../../lib/moods";
 import { LANG, pn, t as tt } from "../../lib/i18n";
@@ -22,7 +22,7 @@ export default function Cycle() {
     <Page title="Cycle">
       <Hero kind={p ? HERO[p.k] : "wind"} seed={3} a="Move with" b="your cycle" tag="balance" icon="wave" />
       <div className="masonry">
-        {fresh && <Setup p={p} />}
+        {fresh && <Setup />}
         <Status p={p} />
         {wOn("per") && <PeriodCard p={p} />}
         {p && wOn("horm") && <Hormones p={p} />}
@@ -38,7 +38,6 @@ export default function Cycle() {
         {p && wOn("mind") && <Mind p={p} />}
         {wOn("fact") && <Fact />}
         {wOn("reset") && <Breathing />}
-        {!fresh && <Setup p={p} />}
         <LastEntries />
       </div>
       <p className="mu">
@@ -134,7 +133,6 @@ function PeriodCard({ p }: { p: Phase | null }) {
   };
   const cur = perOn(t), away = Math.abs(dDiff(t, mid)) > 4;
   const fs = sel ? flowOf(sel) : null;
-  const n = avgOf();
   return (
     <div className="card pcard">
       <div className="ch"><b className="wt"><Wico k="per" /> Period tracker</b></div>
@@ -143,9 +141,6 @@ function PeriodCard({ p }: { p: Phase | null }) {
           : p?.late != null ? <b>{lateTxt(p.late)}</b>
           : p ? <>Next period in about <b>{pn(p.next, "day")}</b></>
             : "Tap the days of your last period to start tracking."}
-      </p>
-      <p className="mu pavg">
-        {n ? tt("Average cycle {d}, from your last {p}.", { d: pn(S.cyc!.len, "day"), p: pn(n + 1, "period") }) : tt("Cycle {d} until you log two periods.", { d: pn(S.cyc?.len || DEF_LEN, "day") })}
       </p>
       <div className="pmon">
         <b>{MON(mid)}</b>
@@ -177,9 +172,7 @@ function PeriodCard({ p }: { p: Phase | null }) {
             ))}
           </div>
         </div>
-      ) : (
-        <p className="mu phint">Tap a day to mark it as a period day, tap again to unmark. Scroll back to add earlier periods.</p>
-      )}
+      ) : null}
       <div className="plg mu" aria-hidden="true">
         <span><i className="lg-p" />Period</span><span><i className="lg-pr" />Predicted</span><span><i className="lg-f" />Fertile window</span>
       </div>
@@ -190,8 +183,7 @@ function PeriodCard({ p }: { p: Phase | null }) {
 function Hormones({ p }: { p: Phase }) {
   return (
     <div className="card">
-      <b>Hormone levels</b>
-      <p className="mu" style={{ margin: "2px 0 6px" }}>{tt("Typical pattern for a {n}-day cycle, schematic and not measured.", { n: p.L })}</p>
+      <div className="ch"><b>Hormone levels</b><InfoButton k="horm" label="About this chart" /></div>
       <Svg html={hormones(S.cyc, p)} />
       <div className="lg">
         <span><i style={{ background: "var(--h1)" }} />Estrogen</span>
@@ -251,8 +243,9 @@ function QuoteCard({ p }: { p: Phase | null }) {
 }
 
 function Today() {
-  const e = ent(), sy = !!S.set.sy;
+  const e = ent();
   const [ns, setNs] = useState("");
+  const [adding, setAdding] = useState(false);
   const [note, setNoteTxt] = useState(e.nt);
   const add = () => {
     addSym(ns);
@@ -261,36 +254,40 @@ function Today() {
   return (
     <div className="card">
       <b>Today</b>
-      <div className="row" style={{ margin: "10px 0" }}>
+      <div className={"row moods" + (e.m ? " has" : "")} role="radiogroup" aria-label="Mood" style={{ margin: "10px 0" }}>
         {[0, 1, 2, 3, 4].map(i => (
-          <button key={i} className={"chip mood" + (isClay() ? " clay" : "") + (e.m == i + 1 ? " on" : "")} aria-label={`Mood: ${MOODS[i].n}`} aria-pressed={e.m == i + 1}
+          <button key={i} className={"chip mood" + (isClay() ? " clay" : "") + (e.m == i + 1 ? " on" : "")} role="radio" aria-label={`Mood: ${MOODS[i].n}`} aria-checked={e.m == i + 1}
             onClick={() => setMood(i + 1)}><MoodIcon i={i} s={38} /></button>
         ))}
       </div>
-      <button className="g fh" aria-expanded={sy} onClick={() => {
-        S.set.sy = sy ? 0 : 1;
-        render();
-      }}>
-        <span>Symptoms{e.sy.length ? " · " + e.sy.length : ""}</span><span>{sy ? "▴" : "▾"}</span>
-      </button>
-      {sy && (
-        <>
-          <div style={{ marginTop: 8 }}>
-            {SYM.map(s => <button key={s} className={"chip" + (e.sy.includes(s) ? " on" : "")} aria-pressed={e.sy.includes(s)} onClick={() => togSym(s)}>{s}</button>)}
-            {S.symx.map((s, i) => (
-              <span className="cw" key={s}>
-                <button className={"chip" + (e.sy.includes(s) ? " on" : "")} aria-pressed={e.sy.includes(s)} onClick={() => togSym(s)}>{s}</button>
-                <button className="cwx" aria-label={`Remove ${s}`} onClick={() => delSym(i)}>×</button>
-              </span>
-            ))}
-          </div>
-          <div className="addr">
-            <input maxLength={28} placeholder="Add your own symptom or label" value={ns} onChange={ev => setNs(ev.target.value)} onKeyDown={ev => ev.key == "Enter" && add()} />
-            <button className="g" onClick={add}>Add</button>
-          </div>
-        </>
-      )}
-      <input placeholder="Notes (optional)" aria-label="Notes" value={note} onChange={ev => setNoteTxt(ev.target.value)} onBlur={() => setNote(note)} style={{ marginTop: 8 }} />
+      <div className="mu sylab">Symptoms{e.sy.length ? " · " + e.sy.length : ""}</div>
+      {/* One sideways row: chosen symptoms first, then the rest; "+" at the end adds your own. */}
+      <div className="syrow" role="group" aria-label="Symptoms">
+        {[...e.sy.filter(x => SYM.includes(x) || S.symx.includes(x)), ...[...SYM, ...S.symx].filter(x => !e.sy.includes(x))].map(s => {
+          const xi = S.symx.indexOf(s), on = e.sy.includes(s);
+          return (
+            <span className="cw" key={s}>
+              <button className={"chip" + (on ? " on" : "")} aria-pressed={on} onClick={() => togSym(s)}>{s}</button>
+              {xi >= 0 && !on && <button className="cwx" aria-label={`Remove ${s}`} onClick={() => delSym(xi)}>×</button>}
+            </span>
+          );
+        })}
+        {adding ? (
+          <input className="chip syin" autoFocus maxLength={28} placeholder="Your own symptom" aria-label="Your own symptom" value={ns}
+            onChange={ev => setNs(ev.target.value)} onKeyDown={ev => { if (ev.key == "Enter") { add(); setAdding(false); } if (ev.key == "Escape") setAdding(false); }}
+            onBlur={() => { add(); setAdding(false); }} />
+        ) : (
+          <button className="chip syadd" aria-label="Add your own symptom" onClick={() => setAdding(true)}><Ico k="plus" s={16} /></button>
+        )}
+      </div>
+      <label className="ntw">
+        <Ico k="pen" s={18} />
+        <textarea rows={1} placeholder="Add a note…" aria-label="Note" value={note} onChange={ev => {
+          setNoteTxt(ev.target.value);
+          ev.target.style.height = "auto";
+          ev.target.style.height = ev.target.scrollHeight + "px";
+        }} onBlur={() => setNote(note)} />
+      </label>
     </div>
   );
 }
@@ -319,13 +316,13 @@ function Fact() {
   const mf = MF[mod(dayNo() + (S.set.mf || 0), MF.length)];
   return (
     <div className="card">
-      <div className="ch"><Wico k="fact" /><span className="pill">{mf[0]}</span></div>
+      <div className="ch"><b className="wt"><Wico k="fact" /> Daily practice</b><span className="pill">{mf[0]}</span></div>
       <p style={{ margin: "8px 0 4px" }}>{mf[1]}</p>
       <p className="mu" style={{ margin: 0 }}>Try: {mf[2]}</p>
       <button className="g s" style={{ marginTop: 10 }} onClick={() => {
         S.set.mf = (S.set.mf || 0) + 1;
         commit();
-      }}>Another fact</button>
+      }}>Another practice</button>
     </div>
   );
 }
@@ -362,13 +359,16 @@ function Breathing() {
   return (
     <div className="card brw">
       <b>Breathing &amp; meditation</b>
-      <select aria-label="Practice" value={key} onChange={e => {
-        S.set.pr = e.target.value;
-        setRun(false);
-        commit();
-      }}>
-        {Object.entries(PR).map(([k, v]) => <option key={k} value={k}>{v.n}</option>)}
-      </select>
+      <span className="selw">
+        <select aria-label="Practice" value={key} onChange={e => {
+          S.set.pr = e.target.value;
+          setRun(false);
+          commit();
+        }}>
+          {Object.entries(PR).map(([k, v]) => <option key={k} value={k}>{v.n}</option>)}
+        </select>
+        <Ico k="down" s={18} />
+      </span>
       <div className="brs">
         <div className="brc" ref={orb} />
         <span className="brt" role="timer">{fmt(left)}</span>
@@ -385,13 +385,14 @@ function Breathing() {
   );
 }
 
-function Setup({ p }: { p: Phase | null }) {
+/** First-run card; once a period is logged, the period tracker keeps the cycle up to date. */
+function Setup() {
   const c = S.cyc;
   const [start, setStart] = useState(c?.start || "");
   const [len, setLen] = useState(String(c?.len || DEF_LEN));
   return (
     <div className="card">
-      <b>{p ? "Update your cycle" : "Set up your cycle"}</b>
+      <b>Set up your cycle</b>
       <div className="row" style={{ marginTop: 8 }}>
         <div><span className="mu">Period started</span><input type="date" aria-label="Period started" value={start} onChange={e => setStart(e.target.value)} /></div>
         <div><span className="mu">Cycle length</span><input type="number" aria-label="Cycle length in days" value={len} onChange={e => setLen(e.target.value)} /></div>

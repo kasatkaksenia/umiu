@@ -281,6 +281,32 @@ export function catOf(r: Recipe): Cat {
   return "dinner";
 }
 export const CATS: [Cat, string][] = [["breakfast", "Breakfast"], ["lunch", "Lunch"], ["dinner", "Dinner"], ["snack", "Snacks"], ["dessert", "Desserts"]];
+// Mediterranean staples and high-protein Mediterranean recipes (Nov 2026).
+Object.assign(FD,{wbean:{n:"White beans (canned)",k:100,p:7,c:17,f:.4},sard:{n:"Sardines in olive oil, drained",k:208,p:24.6,c:0,f:11.5},bass:{n:"Sea bass fillet",k:97,p:18.4,c:0,f:2},halloumi:{n:"Halloumi",k:321,p:21,c:2.2,f:25},olive:{n:"Olives",k:145,p:1,c:3.8,f:15},eggp:{n:"Aubergine (eggplant)",k:25,p:1,c:5.9,f:.2},bulgur:{n:"Bulgur (dry)",k:342,p:12.3,c:76,f:1.3}});
+Object.assign(ALI,{wbean:"белая фасоль|бял боб",sard:"сардины|сардини",bass:"сибас морской окунь|лаврак",halloumi:"халуми|халуми",olive:"оливки маслины|маслини",eggp:"баклажан|патладжан",bulgur:"булгур|булгур"});
+const RW6=`Greek white bean and tuna salad|wbean:150,tuna:120,tom:100,onion:30,olive:20,oil:8,lemon:10|Rinse and drain the beans.;Chop tomato and red onion; halve the olives.;Toss everything with tuna, oil, lemon and oregano.|10|lunch
+Sardines on rye with tomato|sard:100,rye:80,tom:100,lemon:5|Toast the rye bread.;Top with sliced tomato and sardines.;Finish with lemon, pepper and parsley.|8|breakfast
+Baked sea bass with lemon potatoes|bass:250,potato:250,olive:20,oil:8,lemon:15,garlic:5|Slice potatoes thinly, toss with oil and garlic; roast at 200 °C for 20 minutes.;Lay the fish and olives on top, add lemon slices.;Roast 12–15 minutes more until the fish flakes.|35|dinner
+Grilled halloumi and chickpea salad|halloumi:80,chick:150,cuc:100,tom:100,lett:50,lemon:10|Fry halloumi slices 2 minutes a side until golden.;Chop cucumber and tomato; rinse the chickpeas.;Toss with lettuce and lemon, top with halloumi.|15|lunch
+Chicken gyros bowl with tzatziki|chicken:180,gyog:120,cuc:80,tom:80,onion:30,bulgur:50|Rub chicken with paprika, oregano and garlic; pan-fry 6 minutes a side and slice.;Cook bulgur 12 minutes.;Grate half the cucumber into the yogurt for tzatziki; serve with chopped salad.|30|dinner
+Shrimp saganaki with feta|shrimp:200,pass:200,feta:40,garlic:5,oil:8,bread:40|Fry garlic in oil, add tomatoes and simmer 8 minutes.;Add the shrimp and crumble feta on top.;Cover 4 minutes until pink; serve with bread.|20|dinner
+Turkish eggs with garlic yogurt|egg:150,gyog:150,garlic:3,butter:5,bread:40|Mix yogurt with grated garlic and salt; spread on a plate.;Poach the eggs 3 minutes and place on the yogurt.;Drizzle with butter melted with chili flakes; serve with bread.|12|breakfast
+Bulgur tabbouleh with chickpeas and feta|bulgur:50,chick:120,tom:100,cuc:80,feta:40,oil:8,lemon:15|Pour boiling water over the bulgur, cover 15 minutes.;Chop tomato, cucumber, parsley and mint.;Mix with chickpeas, oil and lemon; crumble feta on top.|20|lunch
+Turkey and aubergine moussaka bake|turkey:200,eggp:250,pass:150,gyog:100,egg:50,parm:15|Slice and roast the aubergine at 200 °C for 15 minutes.;Brown the turkey with cinnamon, add tomatoes, simmer 10 minutes.;Layer in a dish, top with yogurt mixed with egg and parmesan; bake 20 minutes.|50|dinner
+Greek yogurt breakfast plate|gyog:200,egg:100,tom:80,cuc:80,olive:15,bread:40|Boil the eggs 8 minutes.;Spread yogurt on a plate with olive oil and za’atar or oregano.;Add eggs, tomato, cucumber, olives and bread.|10|breakfast
+Tuna and white bean pasta|wpasta:70,tuna:120,wbean:80,tom:100,spin:40,oil:8|Cook the pasta.;Warm beans, chopped tomato and spinach in oil 3 minutes.;Toss with pasta, tuna and lemon zest.|20|dinner
+Lemon chicken orzo with spinach and feta|chicken:180,pasta:60,spin:60,feta:30,lemon:15|Brown diced chicken in a pan.;Add orzo and 300 ml stock; simmer 10 minutes, stirring.;Stir in spinach and lemon; top with feta.|30|dinner
+Greek baked cod with white beans|cod:220,wbean:120,pass:150,onion:50,oil:8|Soften onion in oil, add tomatoes and beans, simmer 5 minutes.;Nestle the cod in the sauce.;Bake at 200 °C for 15 minutes.|30|dinner
+Skyr with honey, walnuts and orange|skyr:200,wal:15,honey:10,orange:100|Spoon skyr into a bowl.;Top with orange segments and walnuts.;Drizzle with honey.|5|snack
+White bean and tuna dip with crudités|wbean:120,tuna:80,lemon:10,oil:5,carrot:100,cuc:100|Blend beans, tuna, lemon and oil until smooth.;Cut the vegetables into sticks.;Dip and enjoy.|10|snack
+Sardine and tomato spaghetti|wpasta:70,sard:100,pass:150,garlic:5,spin:40|Cook the pasta.;Fry garlic, add tomatoes and simmer 5 minutes; flake in the sardines.;Stir in spinach and toss with the pasta.|20|dinner
+Halloumi and egg breakfast plate|halloumi:60,egg:100,tom:100,spin:40|Fry halloumi slices until golden; fry the eggs alongside.;Wilt the spinach in the same pan.;Serve with sliced tomato.|12|breakfast
+Spanish chickpea and spinach stew with eggs|chick:200,spin:150,pass:100,garlic:5,egg:100,oil:8|Fry garlic with smoked paprika and cumin.;Add tomatoes, chickpeas and spinach; simmer 8 minutes.;Make wells, crack in the eggs and cover until set.|20|lunch
+Chicken with smoky aubergine and tahini|chicken:180,eggp:200,tahini:15,lemon:10,bulgur:50|Roast halved aubergine at 220 °C for 30 minutes and scoop out the flesh.;Grill the chicken 6 minutes a side; cook the bulgur.;Mash aubergine with tahini and lemon; serve together.|35|dinner
+Sea bass with lentils and greens|bass:200,lent:60,spin:60,lemon:10,oil:8|Simmer the lentils 15 minutes and drain.;Pan-fry the sea bass skin-side down 4 minutes, flip for 1.;Stir spinach and lemon into the lentils; top with the fish.|25|dinner
+Cottage cheese with tomato and olives|cott:200,tom:100,olive:15,oil:3|Spoon cottage cheese into a bowl.;Add chopped tomato and olives.;Finish with olive oil, oregano and pepper.|5|snack
+Tuna-stuffed tomatoes|tom:300,tuna:120,gyog:50,olive:15|Cut the tops off the tomatoes and scoop out the seeds.;Mix tuna with yogurt, chopped olives and lemon.;Fill the tomatoes.|10|snack`;
+REC.push(...RW6.split("\n").map(l => mkR(l)));
 export const nz = (s: string) => String(s).toLowerCase().replace(/ё/g, "е").replace(/й/g, "и");
 export const FDK = Object.keys(FD);
 export const FSRC = FDK.map(k => ({ k, h: nz(FD[k].n + " " + (ALI[k] || "").replace("|", " ")) }));

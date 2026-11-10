@@ -39,7 +39,8 @@ const rng = (a: number) => () => {
 };
 const pick = <T,>(R: () => number, a: T[]) => a[Math.floor(R() * a.length)];
 /** Font size in container width units, smaller for longer quotes. */
-export const fz = (n: number, big: number) => (big * (n < 30 ? 1 : n < 50 ? 0.86 : n < 75 ? 0.74 : 0.64)).toFixed(2) + "cqw";
+// 1.15: quotes were enlarged by 15% (owner request, Nov 2026).
+export const fz = (n: number, big: number) => (1.15 * big * (n < 30 ? 1 : n < 50 ? 0.9 : n < 75 ? 0.8 : 0.72)).toFixed(2) + "cqw";
 const grain = (o = 0.4) => `<rect width="${W}" height="${H}" filter="url(#qa-grain)" opacity="${o}"/>`;
 const DEFS = `<defs>
 <filter id="qa-grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 -.45"/></filter>
@@ -250,12 +251,12 @@ const T: Tpl[] = [
 <ellipse cx="60" cy="-40" rx="330" ry="300" filter="url(#qa-tex)" opacity=".5"/>${lanes}<g filter="url(#qa-b28)"><ellipse cx="120" cy="80" rx="140" ry="40" fill="#1e3a10" opacity=".35"/></g>${grain(0.3)}`),
       tx: { ...TL, width: "58%", font: `700 ${fz(q.q.length, 4.8)}/1.2 ${F.hand}`, textTransform: "uppercase", letterSpacing: ".04em" }, ink: "#fff", chip: light };
   } },
-  { id: "chart", fit: ["grass", "moss", "t:i"], pals: 3, draw: (p, R, q) => {
+  { id: "chart", fit: ["grass", "moss", "t:i"], max: 56, pals: 3, draw: (p, R, q) => {
     const P = [["#a9b9a0", "#4d6b3a", "#2f4a20"], ["#b8bdb4", "#6a7466", "#3a4238"], ["#c9c08a", "#7a7038", "#4a4218"]][p];
     const a = parts(q.q, 4), n = a.length, pts = a.map((_, i) => [40 + (i * 330) / Math.max(1, n - 1), 196 - i * (84 / Math.max(1, n - 1)) + (i % 2 ? 18 : 0)]);
     let leaves = "";
     for (let i = 0; i < 6; i++) leaves += `<ellipse cx="${R() * 450}" cy="${R() * 310}" rx="${70 + R() * 60}" ry="${30 + R() * 20}" transform="rotate(${-40 + R() * 80} 225 155)" fill="${i % 2 ? P[1] : P[2]}" opacity=".8"/>`;
-    const labels = a.map((s, i) => wrap(s.toUpperCase(), 16).map((l, j) => `<tspan x="${Math.min(pts[i][0] - 6, 300)}" dy="${j ? 18 : 0}">${esc(l)}</tspan>`).join("")).map((t, i) => `<text y="${pts[i][1] + 28}" style="font:600 15px 'Inter Tight',sans-serif;fill:#fff;letter-spacing:.6px">${t}</text>`).join("");
+    const labels = a.map((s, i) => wrap(s.toUpperCase(), 12).map((l, j) => `<tspan x="${Math.min(pts[i][0] - 6, 292)}" dy="${j ? 20 : 0}">${esc(l)}</tspan>`).join("")).map((t, i) => `<text y="${pts[i][1] + 28}" style="font:600 17px 'Inter Tight',sans-serif;fill:#fff;letter-spacing:.4px">${t}</text>`).join("");
     return { svg: svg(`${bg(P[0])}<g filter="url(#qa-b14)">${leaves}</g><polyline points="${pts.map(x => x.join(",")).join(" ")}" fill="none" stroke="#fff" stroke-width="1.6" stroke-dasharray="2 5"/>${pts.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="6" fill="#fff"/>`).join("")}${labels}${grain(0.3)}`),
       tx: {}, lay: "none", ink: "#fff", chip: light };
   } },
@@ -382,7 +383,7 @@ ${fold(`M60 ${80 + y}C140 20 210 140 300 60S400 0 470 20V50C400 40 330 140 260 1
 <g opacity=".3">${figure(112, 210, 1, P[3], -12)}</g><g opacity=".45" filter="url(#qa-b2)">${figure(146, 212, 1, P[2], -5)}</g><g opacity=".85">${figure(180, 214, 1, P[2])}</g>${grain(0.6)}`),
       tx: { ...TR, width: "40%", font: `500 ${fz(q.q.length, 5)}/1.12 ${F.serif}` }, ink: P[2], chip: dark(P[2]) };
   } },
-  { id: "palmStorm", fit: ["wind", "t:w", "t:i"], pals: 2, draw: (p, R, q) => {
+  { id: "palmStorm", fit: ["wind", "t:w", "t:i"], max: 60, pals: 2, draw: (p, R, q) => {
     const P = [["#dcdcda", "#0d0d0d", "#2a2a2a"], ["#e6dccc", "#1a120c", "#3a2a1c"]][p];
     let palms = "";
     for (let i = 0; i < 5; i++) {
@@ -392,7 +393,7 @@ ${fold(`M60 ${80 + y}C140 20 210 140 300 60S400 0 470 20V50C400 40 330 140 260 1
     return { svg: svg(`${bg(P[0])}<g filter="url(#qa-b2)" opacity=".9">${palms}</g><rect y="190" width="450" height="120" fill="${P[1]}"/>${grain(0.6)}`),
       tx: { ...BL, width: "80%", font: `500 ${fz(q.q.length, 4.8)}/1.16 ${F.serif}` }, ink: "#f2f0ea", tag: P[1], chip: light };
   } },
-  { id: "mistDict", fit: ["wind", "moss", "moon", "t:w"], pals: 2, draw: (p, R, q) => {
+  { id: "mistDict", fit: ["wind", "moss", "moon", "t:w"], max: 75, pals: 2, draw: (p, R, q) => {
     const P = [{ sky: ["#d6d8d6", "#eceeec"], h: [["#b4bca8", "#8a9a7a"], ["#8a9a5a", "#4a5a2a"], ["#7a8a42", "#3a4a1a"]] }, { sky: ["#d8d4dc", "#ecebef"], h: [["#bab4c4", "#948aa6"], ["#8a7a9a", "#4e4060"], ["#6a5a7a", "#2e2440"]] }][p];
     return { svg: svg(`<defs>${lin("qmd", P.sky)}</defs>${bg("url(#qmd)")}${hills(P.h, R, 0.3)}<rect y="90" width="450" height="220" fill="#000" opacity=".12"/>${grain(0.3)}`),
       tx: { left: "6cqw", bottom: "calc(3.6cqw + 52px)", width: "76%" }, lay: "dict", head: pick(R, HEAD[q.e] || HEAD.wind), ink: "#fff", tag: "#2a2a2a", chip: light, lower: true };
@@ -411,17 +412,17 @@ ${fold(`M60 ${80 + y}C140 20 210 140 300 60S400 0 470 20V50C400 40 330 140 260 1
   { id: "catHat", fit: ["t:i", "t:c"], pals: 2, draw: (p, _R, q) => {
     const P = [["#2f6ad8", "#6a9af0", "#f5c63a"], ["#3a8ab8", "#8ac6e6", "#ffd84a"]][p];
     return { svg: svg(`<defs>${lin("qch", [P[0], P[1]])}</defs>${bg("url(#qch)")}<path d="M0 300Q120 250 240 280T450 260V310H0z" fill="#5a6a3a" opacity=".6" filter="url(#qa-b6)"/>${cat(225, 345, 0.6, { shades: true, hat: "bucket" })}${grain(0.4)}`),
-      tx: { ...CC, top: "24%", left: "18%", right: "18%", font: `500 ${fz(q.q.length, 4.6)}/1.2 ${F.sans}` }, lower: true, ink: P[2], chip: light };
+      tx: { ...CC, top: "24%", left: "17%", right: "17%", font: `500 ${fz(q.q.length, 5.4)}/1.2 ${F.sans}` }, lower: true, ink: P[2], chip: light };
   } },
   { id: "bathDuck", fit: ["t:g", "t:c", "water"], pals: 2, draw: (p, _R, q) => {
     const P = [["#c7ccd0", "#b6bcc1"], ["#d6ccc6", "#c2b6ae"]][p];
     return { svg: svg(`${bg(P[0])}<g stroke="${P[1]}" stroke-width="3" fill="none"><rect x="40" y="-20" width="150" height="190" rx="14"/><rect x="215" y="-20" width="150" height="190" rx="14"/><path d="M60 190h330"/></g>${duck(330, 232, 1.25)}<path d="M0 252q225-14 450 0v58H0z" fill="#fafaf8"/><path d="M0 252q225-14 450 0" stroke="#d8d8d2" stroke-width="2" fill="none"/>${grain(0.2)}`),
-      tx: { ...CC, top: "36%", font: `400 ${fz(q.q.length, 4.6)}/1.25 ${F.cond}`, textShadow: "0 1px 8px rgba(40,50,60,.45)" }, lower: true, ink: "#fff", chip: dark("#2b2b2b") };
+      tx: { ...CC, top: "36%", font: `400 ${fz(q.q.length, 5.4)}/1.25 ${F.cond}`, textShadow: "0 1px 8px rgba(40,50,60,.45)" }, lower: true, ink: "#fff", chip: dark("#2b2b2b") };
   } },
   { id: "duckShades", fit: ["t:c", "t:i", "sun"], pals: 2, draw: (p, _R, q) => {
     const P = [["#6f9ccc", "#b8d0e6"], ["#7aa6c8", "#e6eef4"]][p];
     return { svg: svg(`<defs>${lin("qds", [P[0], P[1]])}</defs>${bg("url(#qds)")}<g filter="url(#qa-b14)" fill="#fff" opacity=".6"><ellipse cx="380" cy="120" rx="60" ry="20"/></g>${duck(225, 262, 2.5, { shades: true })}${grain(0.3)}`),
-      tx: { ...CC, top: "24%", font: `400 ${fz(q.q.length, 4.6)}/1.25 ${F.cond}` }, lower: true, ink: "#f4f8fc", chip: light };
+      tx: { ...CC, top: "29%", left: "16%", right: "16%", font: `400 ${fz(q.q.length, 5.4)}/1.25 ${F.cond}` }, lower: true, ink: "#f4f8fc", chip: light };
   } },
   { id: "bunnyChill", fit: ["t:g", "t:c", "t:i"], pals: 2, draw: (p, _R, q) => {
     const P = [["#14100e", "#2a2018"], ["#10121a", "#24283a"]][p];
@@ -465,7 +466,7 @@ ${sparkle(70, 60, 10, P[5])}${sparkle(380, 240, 10, P[5])}${sparkle(330, 158, 7,
     const P = [{ sky: ["#c6ccc6", "#dfe2dc"], h: [["#a8b49a", "#7a8a6a"], ["#6a8a3a", "#3a5a1a"], ["#5a7a2a", "#2a4a12"]], f: "#222624" }, { sky: ["#d6cfc6", "#ece6de"], h: [["#c4b49a", "#9a8a6a"], ["#a08a5a", "#6a5a2a"], ["#8a7442", "#4a3a12"]], f: "#2a221c" }][p];
     return { svg: svg(`<defs>${lin("qbh", P.sky)}</defs>${bg("url(#qbh)")}${hills(P.h, R, 0.35)}
 <g fill="${P.f}"><ellipse cx="225" cy="196" rx="20" ry="24"/><path d="M190 230q35-20 70 0l30 90H160z"/><path d="M218 236l7-26 7 26z" fill="#4a4e4a"/></g>${grain(0.35)}`),
-      tx: { left: "8%", right: "8%", top: "13cqw", textAlign: "center", font: `500 ${fz(q.q.length, 4.6)}/1.12 ${F.serif}`, textTransform: "uppercase", letterSpacing: ".04em" }, ink: P.f, chip: dark(P.f) };
+      tx: { left: "14%", right: "14%", top: "13cqw", textAlign: "center", font: `500 ${fz(q.q.length, 4.6)}/1.12 ${F.serif}`, textTransform: "uppercase", letterSpacing: ".04em" }, ink: P.f, chip: dark(P.f) };
   } },
 ];
 

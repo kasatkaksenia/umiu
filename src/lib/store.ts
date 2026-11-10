@@ -9,7 +9,9 @@ export interface Draft { n: string; ids: string[]; sets: Record<string, SetRow[]
 export interface LoggedSet { w: number; r: number; i?: number }
 export interface Workout { d: string; n: string; it: { id: string; s: LoggedSet[] }[] }
 export interface LibWorkout { k: string; n: string; ids: string[] }
-export interface FoodEntry { d: string; n: string; k: number; p: number; c: number; f: number }
+export type MealKey = "b" | "l" | "d" | "s";
+/** ml: which meal it belongs to (older entries have none and count as Snacks). */
+export interface FoodEntry { d: string; n: string; k: number; p: number; c: number; f: number; ml?: MealKey }
 export interface SavedFood { n: string; k: number; p: number; c: number; f: number }
 export interface ShopItem { k: string; n: string; u: string; done: boolean; parts: { r: string; q: number | null; raw: string }[] }
 export interface DayEntry { m: number; sy: string[]; nt: string }
@@ -56,6 +58,8 @@ const clone = <T,>(o: T): T => JSON.parse(JSON.stringify(o));
 export let S: State = clone(BLANK);
 
 export type Sheet =
+  | { t: "fe"; s: { n: string; k: number; p: number; c: number; f: number; saved?: 1 } | null; code?: string }
+  | { t: "info"; k: string }
   | { t: "swap"; id: string }
   | { t: "add" }
   | { t: "wk"; del?: string | null }

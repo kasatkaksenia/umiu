@@ -5,7 +5,7 @@ import { EL, TL, WID } from "../data/cycle";
 import { figSvg } from "../lib/figures";
 import { S, Sheet, UI, commit, openSheet, render, useStore } from "../lib/store";
 import { addEx, chWk, delWk, dr, ensureLib, eqOk, isCustom, planKeys, UNDO_MS, ewDo, ewLeave, ewName, ewRename, ewRm, ewUndo, ewUndoMsg, genWk, libOf, nameOf, exOrder, newWk, swapList, swapTo } from "../lib/train";
-import { MealIng, RF, analyseMeal, gPct, gpInfo, recipesShown, resizeImage, rfChips, rfReset, searchIngredients } from "../lib/food";
+import { MEALS, MealIng, chooseMeal, mealNow, RF, analyseMeal, gPct, gpInfo, recipesShown, resizeImage, rfChips, rfReset, searchIngredients } from "../lib/food";
 import { ai } from "../lib/ai";
 import { CATS, FD } from "../data/foods";
 import { phase, qClr, qList, qTog, wOn, wTog } from "../lib/cycle";
@@ -67,6 +67,8 @@ function content(s: Sheet): { title: string; body: ReactNode; head?: ReactNode }
     }
     case "ai": return { title: "Generate a workout", body: <Generate s={s} /> };
     case "wid": return { title: "Widgets", body: <Widgets /> };
+    case "fe": return { title: s.s && !s.s.saved ? s.s.n : "Add food", body: <FoodEdit s={s.s} code={s.code} key={(s.s?.n || "") + (s.code || "")} /> };
+    case "info": return { title: INFO_T[s.k] || "", body: <Info k={s.k} /> };
     case "cm": return { title: "Add your meal", body: <CustomMeal /> };
     case "mp": return { title: "Meal from photo", body: <MealPhoto s={s} key={s.url} /> };
     case "pnd": return { title: "Which angle is each photo?", body: <Pending /> };
@@ -446,7 +448,7 @@ function MealPhoto({ s }: { s: Extract<Sheet, { t: "mp" }> }) {
         </div>
       )}
       <button style={{ width: "100%", marginTop: 12 }} disabled={!list.length} onClick={() => {
-        S.f.push({ d: TODAY(), n: (name.trim() || "Meal").slice(0, 40), k: sum("k"), p: sum("p"), c: sum("c"), f: sum("f") });
+        S.f.push({ d: TODAY(), n: (name.trim() || "Meal").slice(0, 40), k: sum("k"), p: sum("p"), c: sum("c"), f: sum("f"), ml: mealNow() });
         UI.sheet = null;
         commit();
       }}>{list.length ? "Add to today" : "Add ingredients first"}</button>
@@ -519,7 +521,7 @@ function ManualGoals() {
   return (
     <>
       <div className="row" style={{ marginTop: 10 }}>
-        {([["k", "kcal"], ["p", "protein g"], ["c", "carbs g"], ["f", "fat g"]] as const).map(([x, l]) => (
+        {([["k", "kcal"], ["p", "Protein (g)"], ["c", "Carbs (g)"], ["f", "Fat (g)"]] as const).map(([x, l]) => (
           <div key={x}><span className="mu">{l}</span><input type="number" inputMode="numeric" min={0} aria-label={l} value={g[x]}
             onKeyDown={e => e.key == "-" && e.preventDefault()} onChange={e => setG({ ...g, [x]: e.target.value.replace(/-/g, "") })} /></div>
         ))}
@@ -615,20 +617,24 @@ function PhotoView({ s }: { s: Extract<Sheet, { t: "pho" }> }) {
 
 /* ---------- style and backup ---------- */
 export const LOOKS: [string, string, string][] = [
-  ["u", "Urban glow", "City dusk and soft bokeh in blush and mauve"],
   ["w", "Clean white", "White and simple, like Apple Health"],
   // Extra looks (styles in theme/looks.css)
   ["gs", "Glow signal", "Black with a lime accent, magenta and sage glows, dot-matrix numbers"],
-  ["sl", "Still life", "Lemon and leaf colours behind liquid-glass panels"],
   ["dh", "Desert HUD", "Crisp white tiles, black bars and a desert-dusk sky"],
   ["px", "Pixel", "White dot grid, pixel headings, black accents"],
   ["em", "Ember", "Dark, lit by a warm amber glow, with frosted panels"],
   ["np", "Night planner", "Near-black with a moody glow, gold ticks and cream buttons"],
-  ["ga", "Gallery", "Paper grain, poster colour bursts and bold tight headlines"],
   ["mi", "Mist", "Soft grey with sage glass and light, thin numbers"],
 ];
-// Default look: Urban glow (also used when a saved look was removed).
-export const lookOf = () => (LOOKS.some(l => l[0] == S.set.look) ? S.set.look : "u");
+/** Banner colours of each look (light version), for the colour-orb previews. */
+export const ORB: Record<string, [string, string, string]> = { w: ["#e0507f", "#3a86d6", "#f0a020"], gs: ["#e0237d", "#8fb39c", "#d7f25b"], dh: ["#d9925a", "#5d7a96", "#6e4a3a"], px: ["#d9763a", "#8a5a7a", "#6b7a4e"], em: ["#ff6a2c", "#f5b52c", "#fff0e0"], np: ["#c99a6b", "#8a9aa8", "#e7c95b"], mi: ["#8fa38c", "#6f876f", "#b8c7b4"] };
+/** Soft sphere blended from a look's banner colours. */
+export const LookOrb = ({ k, s = 36 }: { k: string; s?: number }) => {
+  const [a, b, c] = ORB[k] || ORB.w;
+  return <span className="orb" aria-hidden="true" style={{ width: s, height: s, background: `radial-gradient(circle at 30% 30%, ${c}, transparent 55%), radial-gradient(circle at 75% 70%, ${b}, transparent 60%), ${a}` }} />;
+};
+// Default look: Clean white (also used when a saved look was removed).
+export const lookOf = () => (LOOKS.some(l => l[0] == S.set.look) ? S.set.look : "w");
 function Look() {
   return (
     <>
@@ -636,8 +642,111 @@ function Look() {
         <button key={k} className={"opt lko" + (lookOf() == k ? " on" : "")} aria-pressed={lookOf() == k} onClick={() => {
           S.set.look = k;
           commit();
-        }}><b>{n}</b><span className="mu">{d}</span>{lookOf() == k && <span className="lkc" aria-hidden="true">✓</span>}</button>
+        }}><LookOrb k={k} /><span className="lkt"><b>{n}</b><span className="mu">{d}</span></span>{lookOf() == k && <span className="lkc" aria-hidden="true">✓</span>}</button>
       ))}
+    </>
+  );
+}
+
+/* ---------- info (i) sheets ---------- */
+const INFO_T: Record<string, string> = { horm: "About this chart", bf: "How to measure" };
+
+/** Body outline with the three tape lines for the US Navy method. */
+function TapeFigure({ hip }: { hip: boolean }) {
+  const tape = (y: number, x1: number, x2: number, l: string, on: boolean) => on ? (
+    <g key={l}>
+      <path d={`M${x1} ${y}q${(x2 - x1) / 2} 7 ${x2 - x1} 0`} fill="none" stroke="var(--ac)" strokeWidth="3.2" strokeLinecap="round" />
+      <path d={`M${x2 + 6} ${y + 2}H186`} stroke="var(--mu)" strokeWidth="1" strokeDasharray="2 3" />
+      <text x="190" y={y + 6} style={{ font: "700 13px var(--ff)", fill: "var(--tx)" }}>{l}</text>
+    </g>
+  ) : null;
+  return (
+    <svg viewBox="0 0 260 250" width="100%" style={{ maxWidth: 300, display: "block", margin: "4px auto 10px" }} role="img" aria-label="Where to measure neck, waist and hips">
+      <g fill="var(--ac2)" stroke="var(--tx)" strokeWidth="1.6" strokeLinejoin="round">
+        <circle cx="100" cy="30" r="20" />
+        <path d="M90 49v12c-22 3-36 10-40 22l-8 70c-1 7 9 9 11 2l9-58 4 46c-3 12-6 30-6 46l2 50h22l6-60h1l6 60h22l2-50c0-16-3-34-6-46l4-46 9 58c2 7 12 5 11-2l-8-70c-4-12-18-19-40-22V49z" />
+      </g>
+      {tape(56, 88, 112, "Neck", true)}
+      {tape(118, 66, 134, "Waist", true)}
+      {tape(152, 62, 138, "Hips", hip)}
+    </svg>
+  );
+}
+
+function Info({ k }: { k: string }) {
+  if (k == "horm") {
+    const p = phase();
+    return <p>{tt("Typical pattern for a {n}-day cycle, schematic and not measured.", { n: p?.L || 28 })}</p>;
+  }
+  if (k == "bf") {
+    const f = S.prof.sex == "f";
+    return (
+      <>
+        <TapeFigure hip={f} />
+        <ol className="steps">
+          <li><b>Neck:</b> just below the Adam’s apple (larynx), tape sloping slightly down to the front.</li>
+          <li><b>Waist:</b> {f ? "at the narrowest point, usually just above the navel." : "at the navel."} Breathe out normally, don’t pull in.</li>
+          {f && <li><b>Hips:</b> around the widest part of the bottom, feet together.</li>}
+        </ol>
+        <p className="mu">Use a soft tape, snug but not pressing into the skin. Measure on bare skin in the morning, twice, and use the average.</p>
+      </>
+    );
+  }
+  return null;
+}
+
+/* ---------- food: edit before adding ---------- */
+const r0 = (v: number) => Math.round(v || 0);
+/**
+ * Opened by "+" in the food search. A per-100 g food gets gram chips and live nutrients;
+ * a saved food, a barcode or "Enter manually" gets plain fields. Nutrients can always be edited.
+ */
+function FoodEdit({ s, code }: { s: { n: string; k: number; p: number; c: number; f: number; saved?: 1 } | null; code?: string }) {
+  const per100 = !!s && !s.saved;
+  const [name, setName] = useState(s?.n || "");
+  const [g, setG] = useState("100");
+  const mk = (x: { k: number; p: number; c: number; f: number } | null, gr = 100) => ({ k: x ? String(r0((x.k * gr) / 100)) : "", p: x ? String(r0((x.p * gr) / 100)) : "", c: x ? String(r0((x.c * gr) / 100)) : "", f: x ? String(r0((x.f * gr) / 100)) : "" });
+  const [m, setM] = useState(mk(s && s.k ? s : null));
+  const [bc, setBc] = useState(code || "");
+  const grams = (v: string) => {
+    setG(v);
+    if (per100) setM(mk(s, +v || 0));
+  };
+  const meal = MEALS.find(x => x[0] == mealNow())![1];
+  return (
+    <>
+      {!per100 && (
+        <label className="fl"><span className="mu">Name</span>
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Greek yogurt" autoFocus={!name} /></label>
+      )}
+      {per100 && (
+        <>
+          <span className="mu">Amount</span>
+          <div className="hs fech">
+            {[50, 100, 150, 200, 250].map(x => <Chip key={x} on={+g == x} onClick={() => grams(String(x))}>{x} g</Chip>)}
+          </div>
+          <label className="fl"><span className="mu">Amount (g)</span>
+            <input type="number" inputMode="decimal" aria-label="Amount in grams" value={g} onChange={e => grams(e.target.value)} /></label>
+        </>
+      )}
+      <div className="fegrid">
+        {([["k", "kcal"], ["p", "Protein (g)"], ["c", "Carbs (g)"], ["f", "Fat (g)"]] as const).map(([k, l]) => (
+          <label key={k} className="fl"><span className="mu">{l}</span>
+            <input type="number" inputMode="decimal" aria-label={l} value={m[k]} onChange={e => setM({ ...m, [k]: e.target.value })} /></label>
+        ))}
+      </div>
+      {!per100 && (
+        <label className="fl"><span className="mu">Barcode (optional)</span>
+          <input inputMode="numeric" aria-label="Barcode" value={bc} onChange={e => setBc(e.target.value)} /></label>
+      )}
+      <button style={{ width: "100%", marginTop: 14 }} disabled={!name.trim()} onClick={() => {
+        const o = { n: name.trim().slice(0, 60), k: r0(+m.k), p: r0(+m.p), c: r0(+m.c), f: r0(+m.f) };
+        if (bc.trim()) S.foods[bc.trim()] = { ...o };
+        S.f.push({ d: TODAY(), ...o, ml: mealNow() });
+        chooseMeal(null);
+        UI.sheet = null;
+        commit();
+      }}>{per100 ? tt("Add {g} g to {m}", { g: +g || 0, m: tt(meal) }) : tt("Add to {m}", { m: tt(meal) })}</button>
     </>
   );
 }

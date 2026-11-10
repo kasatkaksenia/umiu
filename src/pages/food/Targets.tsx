@@ -4,7 +4,7 @@ import { AC, bfCat, calc, gTxt, navy } from "../../lib/food";
 import { PHOTOS, setPending } from "../../lib/photos";
 import { resizeImage } from "../../lib/food";
 import { Profile, S, commit, openSheet } from "../../lib/store";
-import { FileButton, Ico, NumField } from "../../components/ui";
+import { FileButton, Ico, NumField, InfoButton } from "../../components/ui";
 import { showChanges } from "../../lib/photos";
 import { useState } from "react";
 import { A_, dayNo, dmy, mod } from "../../lib/util";
@@ -74,7 +74,7 @@ export function Targets() {
           <div style={{ marginTop: 8 }}>
             <span className="mu">Goal</span>
             <button className="fldb" aria-haspopup="dialog" onClick={() => openSheet({ t: "gp" })}>
-              <span>{gTxt(c.t, p.g)}</span><span aria-hidden="true">▾</span>
+              <span>{gTxt(c.t, p.g)}</span><Ico k="down" s={16} />
             </button>
           </div>
           <div className="row" style={{ marginTop: 8 }}>{F("Protein (g/kg)", "pk")}</div>
@@ -92,7 +92,7 @@ export function Targets() {
             S.goal = { k: c.k, p: c.p, c: c.c, f: c.f };
             commit();
             r.push("/food/log", "none", "replace");
-          }}>Use these as my daily goals</button>
+          }}>Set my goals</button>
         </div>
       </div>
       <div className="col">
@@ -106,7 +106,7 @@ export function Targets() {
 
 function BodyFat({ F }: { F: (l: string, k: keyof Profile, step?: string, u?: "w" | "l") => JSX.Element }) {
   const p = S.prof, c = calc(), bf = navy(), def = Math.max(0, c.t - c.k);
-  let body: JSX.Element;
+  let body: JSX.Element | null = null;
   if (bf != null && bf > 0 && bf < 70) {
     const lean = p.w * (1 - bf / 100), fat = p.w - lean;
     let goal: JSX.Element | null = null;
@@ -131,13 +131,10 @@ function BodyFat({ F }: { F: (l: string, k: keyof Profile, step?: string, u?: "w
         {goal}
       </>
     );
-  } else body = <p className="mu" style={{ marginBottom: 0 }}>{p.sex == "f" ? "Enter neck, waist and hip to calculate body fat." : "Enter neck and waist to calculate body fat."}</p>;
+  }
   return (
     <div className="card">
-      <b>Body fat (US Navy method)</b>
-      <p className="mu" style={{ margin: "4px 0 8px" }}>
-        {p.sex == "f" ? "Measure the neck below the larynx, the waist at the navel and the hips at the widest point." : "Measure the neck below the larynx and the waist at the navel."}
-      </p>
+      <div className="ch" style={{ marginBottom: 6 }}><b>Body fat (US Navy method)</b><InfoButton k="bf" label="How to measure" /></div>
       <div className="row">{F("Neck", "neck", undefined, "l")}{F("Waist", "waist", undefined, "l")}{p.sex == "f" && F("Hip", "hip", undefined, "l")}</div>
       {body}
       <div className="row" style={{ marginTop: 8 }}>{F("Goal body fat %", "gbf")}</div>
@@ -151,9 +148,8 @@ function PhotosCard() {
   return (
     <div className="card">
       <b>Progress photos</b>
-      <p className="mu" style={{ margin: "4px 0 8px" }}>
-        <Ico k="lock" s={14} /> Stored only on this device. They are never uploaded or sent to AI.
-      </p>
+      <p style={{ margin: "6px 0 4px" }}>Add photos now and then, then put a few side by side to see how you change.</p>
+      <p className="mu" style={{ margin: "0 0 8px", fontSize: 14 }}>For a fair comparison: same light and place, same underwear, same pose (front, side, back), morning before eating, and ideally the same cycle day.</p>
       <div className="pg">
         {PHOTOS.map(p => (
           <button key={p.id} className="pt" aria-label={`${dmy(p.d)} ${p.lab || ""}`} onClick={() => openSheet({ t: "pho", id: p.id })}>

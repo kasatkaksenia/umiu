@@ -80,6 +80,21 @@ Back to [AGENTS.md](../AGENTS.md). Add an entry whenever you make a non-obvious 
 | 2026-11-10 | Back uses a chevron icon (stroke 2.4, 18 px) beside the text instead of "‹" | the glyph sat small and high next to the word |
 | 2026-11-10 | Profile › Style is one tappable row like an exercise row (colour swatch, name, description, ›) that opens the full list | owner request |
 | 2026-11-10 | Banner titles bold in every look but Pixel; Manrope and Montserrat 700 are now loaded so Night planner and Still life really render bold | owner request |
+| 2026-11-10 | Cycle: "Update your cycle" card removed; the setup card shows only until the first period is logged, then the period tracker keeps the cycle current | owner request |
+| 2026-11-10 | Explanations moved behind a small (i) button that opens a sheet (`InfoButton` + `Info` in Sheets.tsx): hormone chart note, body-fat measuring guide with a drawing | owner request; keeps cards short |
+| 2026-11-10 | "Daily fact" widget renamed **Daily practice**, same format (finding + Try), plus 14 short practices from CBT, DBT, ACT and others | owner request |
+| 2026-11-10 | Quote text 15% larger (`fz` in qart.ts), long quotes shrink less; chart, palm storm and mist dictionary pictures take only shorter quotes so text never collides | owner request |
+| 2026-11-10 | 22 Mediterranean high-protein recipes and 7 staples (white beans, sardines, sea bass, halloumi, olives, aubergine, bulgur) | owner request |
+| 2026-11-10 | Food › Today grouped by meal (Breakfast 30%, Lunch 35%, Dinner 25%, Snacks 10% of the calorie goal): ring per meal, foods in one line, tap to open/remove, “+” to add to that meal. New entries get `ml`; without “+” the meal follows the clock; older entries count as Snacks | owner's reference screenshot |
+| 2026-11-10 | Still life and Gallery looks removed; a saved removed look falls back to the default | owner request |
+| 2026-11-10 | Pixel and Desert HUD: every button-like control uses the look's button font and weight; tappable cards (plan card, options, meal rows, style row) keep normal card text | font audit found mixed weights and button capitals inside cards |
+| 2026-11-10 | Mood row is a single-choice radio group: the chosen icon gets a strong ring, the others fade back, in every look | owner said it looked like multi-select (coloured Clay tiles all looked “on”; lime pebble vanished on the lime highlight) |
+| 2026-11-10 | Urban glow removed; **Clean white is the default** look (also for removed looks) | owner request |
+| 2026-11-10 | Style previews are colour orbs (Style C, 36 px) built from each look's banner colours (`ORB` in Sheets.tsx) | owner picked C, smaller |
+| 2026-11-10 | Food search is option A: one field with photo and barcode buttons inside, results with “+”. “+” opens an edit window (sheet `fe`) with gram chips and editable kcal/protein/carbs/fat; “Enter manually” opens it empty; “Build a meal” keeps the multi-ingredient builder | owner picked A and asked for the edit window |
+| 2026-11-10 | Cycle symptoms are option A: one sideways row, chosen first, dashed “+” adds your own; the note is one line that grows | owner picked A |
+| 2026-11-10 | Goal field looks exactly like the dropdowns (no button fill); every dropdown keeps its arrow in every look | owner request; Glow signal, Desert HUD and Mist had lost the arrow |
+| 2026-11-10 | Goals button reads “Set my goals”; Progress photos explain the collage idea and how to take comparable photos | owner request |
 
 ## Lessons learned (gotchas)
 

@@ -107,3 +107,8 @@ With the Claude in Chrome extension connected (`/chrome` in Claude Code), Claude
 | Mist's grey day style hid period colours | Period-day rules use higher specificity |
 | Night planner banner stayed medium weight when set to bold | Manrope 700 wasn't loaded; added it (and Montserrat 700) |
 | New Back label would read "Спина" (body part) in Ukrainian | `BackTxt` picks the word by language |
+| Chart quote picture cut "SMALL THING W…" at the right edge; larger quotes collided in chart, palm storm, mist dictionary, duck and Buddha pictures | Narrower wrap, `max` length per picture, text boxes moved; checked all 40 pictures with the longest fitting quote |
+| Breathing practice picker showed no arrow in looks that restyle selects | Real chevron icon in `.selw` |
+| Selected mood hard to spot (Clay tiles all coloured; Glow signal lime on lime) | Ring on the chosen one, others faded; checked 8 looks × light/dark |
+| Meal icons filled the whole ring | Ring rule no longer matches the icon svg |
+| Dropdowns had no arrow in Glow signal, Desert HUD and Mist (look background rule removed it) | Arrow forced on every `select` |
